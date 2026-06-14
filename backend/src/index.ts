@@ -6,6 +6,10 @@ import { clerkWebhookHandler } from './webhooks/clerk';
 import { getEnv } from './lib/env';
 import fs from 'node:fs';
 import path from 'node:path';
+import cronJob from './lib/cron';
+import meRoute from './routes/meRouter';
+import productRouter from './routes/productRouter';
+import streamRouter from './routes/streamRouter';
  
 
 const env = getEnv();
@@ -20,6 +24,15 @@ app.post("/webhooks/clerk",rawJson,(req,res)=>{
 app.use(express.json());
 app.use(cors());
 app.use(clerkMiddleware());
+
+app.get("/health",(_req,res)=>{
+    res.json({ok:true});
+});
+
+app.use("/api/me",meRoute);
+app.use("/api/products",productRouter);
+app.use("/api/stream",streamRouter);
+
 
 const publicDir=path.join(process.cwd(),"public");
 if(fs.existsSync(publicDir)){
@@ -39,4 +52,11 @@ if(fs.existsSync(publicDir)){
     });
 }
 
-app.listen(env.PORT,()=>console.log('Server is running on port '+env.PORT));
+
+
+app.listen(env.PORT,()=>{console.log('Server is running on port '+env.PORT)
+    if(env.NODE_ENV==="production"){
+        cronJob.start();
+    }
+    
+});
