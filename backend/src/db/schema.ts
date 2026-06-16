@@ -7,7 +7,7 @@ export type UserRole = "admin" | "customer" | "support";
 export type CheckoutSessionLine = {
   productId: string;
   quantity: number;
-  unitPriceCents: number;
+  unitPricePounds: number;
 };
 
 export const users = pgTable("users",{
@@ -26,7 +26,7 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   category: text("category").notNull().default("General"),
   description: text("description").notNull().default(""),
-  priceCents: integer("price_cents").notNull(),
+  pricePounds: integer("price_pounds").notNull(),
   currency: text("currency").notNull().default("usd"),
   imageUrl: text("image_url"),
   /** ImageKit `fileId` for deletes */
@@ -42,7 +42,7 @@ export const checkoutSessions = pgTable("checkout_sessions", {
     .references(() => users.id, { onDelete: "cascade" }),
   polarCheckoutId: text("polar_checkout_id").unique(),
   lines: jsonb("lines").$type<CheckoutSessionLine[]>().notNull(),
-  totalCents: integer("total_cents").notNull(),
+  totalPounds: integer("total_pounds").notNull(),
   currency: text("currency").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -57,7 +57,7 @@ export const orderItems = pgTable("order_items", {
     .notNull()
     .references(() => products.id, { onDelete: "restrict" }),
   quantity: integer("quantity").notNull(),
-  unitPriceCents: integer("unit_price_cents").notNull(),
+  unitPricePounds: integer("unit_price_Pounds").notNull(),
 });
 
 export const orders = pgTable("orders", {
@@ -68,7 +68,7 @@ export const orders = pgTable("orders", {
   status: text("status").$type<OrderStatus>().notNull().default("pending"),
   polarCheckoutId: text("polar_checkout_id"),
   polarOrderId: text("polar_order_id").unique(),
-  totalCents: integer("total_cents").notNull().default(0),
+  totalPounds: integer("total_pounds").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
