@@ -13,7 +13,7 @@ const CATALOG = [
     category: "Audio",
     description:
       "Hybrid active noise cancellation, 40mm titanium drivers, 32-hour battery (ANC on), multipoint Bluetooth 5.3, fold-flat case included. Tuned for balanced mids — ideal for travel and focused work.",
-    pricePounds: 24900,
+    pricePounds: 2500,
     imageUrl:
       "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
   },
@@ -23,7 +23,7 @@ const CATALOG = [
     category: "Wearables",
     description:
       'Always-on AMOLED 1.4", SpO₂ & ECG-ready sensors, sleep stages, 5 ATM swim-proof, 18-day battery in saver mode. GPS + GLONASS for outdoor workouts.',
-    pricePounds: 19900,
+    pricePounds: 250,
     imageUrl:
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
   },
@@ -33,7 +33,7 @@ const CATALOG = [
     category: "Audio",
     description:
       "360° sound with dual passive radiators, IP67 dust/water, 14h playtime, stereo pairing. USB-C fast charge — party-ready footprint.",
-    pricePounds: 8900,
+    pricePounds: 900,
     imageUrl:
       "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&q=80",
   },
@@ -43,7 +43,7 @@ const CATALOG = [
     category: "Workspace",
     description:
       'Ergonomic 6-step height, silicone pads, supports up to 10 kg. Folds flat for commute. Fits 11–17" laptops.',
-    pricePounds: 7900,
+    pricePounds: 899,
     imageUrl:
       "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=800&q=80",
   },
@@ -53,7 +53,7 @@ const CATALOG = [
     category: "Workspace",
     description:
       "Hot-swappable linear switches, PBT keycaps, gasket mount, tri-mode (USB-C / BT / 2.4G). Per-key RGB with onboard profiles.",
-    pricePounds: 15900,
+    pricePounds: 200,
     imageUrl:
       "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&q=80",
   },
@@ -63,7 +63,7 @@ const CATALOG = [
     category: "Workspace",
     description:
       "Vertical 57° grip, silent main buttons, 4000 DPI sensor, 70-day battery, USB-C. Reduces wrist pronation during long sessions.",
-    pricePounds: 6900,
+    pricePounds: 70,
     imageUrl:
       "https://images.unsplash.com/photo-1527814050087-3793815479db?w=800&q=80",
   },
@@ -73,7 +73,7 @@ const CATALOG = [
     category: "Workspace",
     description:
       "Asymmetric optics avoid screen glare, RA>95, auto-dimming via ambient sensor. Touch controls + warm/cool CCT presets.",
-    pricePounds: 9900,
+    pricePounds: 130,
     imageUrl:
       "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80",
   },
@@ -83,7 +83,7 @@ const CATALOG = [
     category: "Home",
     description:
       "Variable temperature 40–100°C, keep-warm 2h, stainless interior, boil-dry protection. App scheduling (Wi‑Fi).",
-    pricePounds: 12900,
+    pricePounds: 145,
     imageUrl:
       "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&q=80",
   },
@@ -93,7 +93,7 @@ const CATALOG = [
     category: "Home",
     description:
       "CADR 350 m³/h, H13 HEPA + carbon, whisper 24 dB sleep mode, filter life indicator. Rooms up to 40 m².",
-    pricePounds: 22900,
+    pricePounds: 280,
     imageUrl:
       "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&q=80",
   },
@@ -103,7 +103,7 @@ const CATALOG = [
     category: "Travel",
     description:
       'Weatherproof shell, lay-flat laptop compartment (16"), luggage pass-through, recycled ripstop. 980 g.',
-    pricePounds: 13900,
+    pricePounds: 160,
     imageUrl:
       "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&q=80",
   },
@@ -113,7 +113,7 @@ const CATALOG = [
     category: "Travel",
     description:
       "Ripstop panels, elastic grids for cables & adapters, RFID pocket, slim profile for carry-on.",
-    pricePounds: 4500,
+    pricePounds: 500,
     imageUrl:
       "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=800&q=80",
   },
@@ -123,7 +123,7 @@ const CATALOG = [
     category: "Cameras",
     description:
       "24 MP BSI sensor, 4K60 10-bit internal, 5-axis IBIS, dual SD. Weather-sealed magnesium chassis — body only.",
-    pricePounds: 149900,
+    pricePounds: 10000,
     imageUrl:
       "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
   },
@@ -133,7 +133,7 @@ const CATALOG = [
     category: "Cameras",
     description:
       "Nano-coated elements, linear AF motor, 0.25 m close focus, 67 mm filter thread. Street & low-light staple.",
-    pricePounds: 79900,
+    pricePounds: 8000,
     imageUrl:
       "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=800&q=80",
   },
@@ -143,7 +143,7 @@ const CATALOG = [
     category: "Accessories",
     description:
       "2× USB-A 10 Gbps, HDMI 2.1 4K120, SD/microSD UHS-II, 100 W PD passthrough. Aluminum unibody, braided cable.",
-    pricePounds: 7900,
+    pricePounds: 1800,
     imageUrl:
       "https://images.unsplash.com/photo-1591488320449-011701bb6704?w=800&q=80",
   },
@@ -153,7 +153,7 @@ const CATALOG = [
     category: "Accessories",
     description:
       "20000 mAh, 140 W PD PPS, dual USB-C + USB-A, airline-safe. OLED charge readout, soft-touch shell.",
-    pricePounds: 8900,
+    pricePounds: 400,
     imageUrl:
       "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=800&q=80",
   },
@@ -163,7 +163,7 @@ const CATALOG = [
     category: "Audio",
     description:
       "Adaptive ANC, spatial audio, 8h buds + 28h case, wireless charging. IPX4 sweat resistance.",
-    pricePounds: 17900,
+    pricePounds: 700,
     imageUrl:
       "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=800&q=80",
   },
@@ -173,7 +173,7 @@ const CATALOG = [
     category: "Workspace",
     description:
       "900×400 mm vegan leather surface, anti-slip base, stitched edges. Coffee & pen safe.",
-    pricePounds: 5900,
+    pricePounds: 1290,
     imageUrl:
       "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=800&q=80",
   },
@@ -183,7 +183,7 @@ const CATALOG = [
     category: "Travel",
     description:
       "32 oz vacuum stainless, 24h cold / 12h hot, powder coat, leakproof chug cap + optional straw.",
-    pricePounds: 3900,
+    pricePounds: 450,
     imageUrl:
       "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&q=80",
   },

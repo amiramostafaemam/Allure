@@ -1,4 +1,4 @@
-// instead of wrtiting sql queries, we can use an ORM (Object-Relational Mapping) library like drizzle-orm to interact with the database in a more intuitive way. This allows us to define our database schema using TypeScript and perform CRUD operations without writing raw SQL queries.
+// backend/src/db/schema.ts
 import { pgTable, serial, text, timestamp , integer , uuid , boolean , jsonb} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 

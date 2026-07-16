@@ -19,7 +19,7 @@ const items = [
   {
     icon: CreditCardIcon,
     title: "Transparent",
-    desc: "Prices in Pounds, tax where applicable",
+    desc: "Prices in EGP, tax where applicable",
   },
   {
     icon: HeadphonesIcon,

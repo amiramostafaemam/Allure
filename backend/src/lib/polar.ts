@@ -37,4 +37,5 @@ export async function polarCreateCheckout(env: Env, body: CheckoutCreateBody) {
 
   const data = (await res.json()) as { id: string; url: string };
   return { id: data.id, url: data.url };
+  
 }

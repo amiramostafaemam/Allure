@@ -17,8 +17,6 @@ import { sentryClerkUserMiddleware } from './middleware/sentryClerkUser';
 import adminRouter from './routes/adminRouter';
 import orderRouter from './routes/orderRouter';
 
- 
-
 const env = getEnv();
 const app = express();
 
