@@ -25,7 +25,6 @@ const cartSchema = z.object({
 export async function createCheckout(
   req: Request,
   res: Response,
-  next: NextFunction,
 ) {
   try {
     const { userId, isAuthenticated } = getAuth(req);
