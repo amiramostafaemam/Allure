@@ -17,14 +17,19 @@ function checkoutSessionIdFromMetadata(order: Record<string, unknown>) {
   return typeof sessionId === "string" ? sessionId : undefined;
 }
 
-async function alreadyPaid(polarOrderId?: string, checkoutId?: string) {
+// Checks whether an order already exists for this Polar order/checkout —
+// i.e. this webhook delivery is a duplicate. Deliberately checks existence,
+// not `status === "paid"`: once an order's status can move on (shipped,
+// refunded, ...), a redelivered webhook must still short-circuit here rather
+// than trying to re-fulfill an already-deleted checkout session.
+async function orderAlreadyFulfilled(polarOrderId?: string, checkoutId?: string) {
   if (polarOrderId) {
     const [row] = await db
       .select()
       .from(orders)
       .where(eq(orders.polarOrderId, polarOrderId))
       .limit(1);
-    if (row?.status === "paid") return true;
+    if (row) return true;
   }
   if (checkoutId) {
     const [row] = await db
@@ -32,7 +37,7 @@ async function alreadyPaid(polarOrderId?: string, checkoutId?: string) {
       .from(orders)
       .where(eq(orders.polarCheckoutId, checkoutId))
       .limit(1);
-    if (row?.status === "paid") return true;
+    if (row) return true;
   }
   return false;
 }
@@ -58,6 +63,7 @@ async function fulfillCheckoutSession(
         status: "paid",
         totalPounds: session.totalPounds,
         polarCheckoutId: checkoutId ?? session.polarCheckoutId ?? null,
+        shippingAddress: session.shippingAddress ?? null,
         ...(polarOrderId ? { polarOrderId } : {}),
       })
       .returning();
@@ -91,7 +97,11 @@ export async function polarWebhookHandler(req:Request,res:Response){
 
         const raw=req.body instanceof Buffer ? req.body:Buffer.from(String(req.body));
         
-        const wh =new Webhook(Buffer.from(env.POLAR_WEBHOOK_SECRET,"utf8").toString("base64"));
+        // POLAR_WEBHOOK_SECRET already comes formatted as "whsec_<base64>" per
+        // the Standard Webhooks spec — the Webhook class strips the prefix and
+        // base64-decodes the rest itself. Re-encoding it here (as this used to)
+        // double-encodes the key and makes every signature check fail.
+        const wh =new Webhook(env.POLAR_WEBHOOK_SECRET);
 
         const id=headerString(req.headers,"webhook-id");
         const ts=headerString(req.headers,"webhook-timestamp");
@@ -104,28 +114,37 @@ export async function polarWebhookHandler(req:Request,res:Response){
 
         wh.verify(raw,{"webhook-id":id,"webhook-timestamp":ts,"webhook-signature":sig});
 
-        const event=JSON.parse(raw.toString("utf8")) as {type:string; 
+        const event=JSON.parse(raw.toString("utf8")) as {type:string;
             data?:Record<string,unknown>;};
+
+        console.log(`Polar webhook received: ${event.type}`);
 
         if(event.type==="order.paid"&&event.data){
             const data = event.data;
             const polarOrderId=typeof data.id==="string"?data.id:undefined;
             const checkoutId=typeof data.checkout_id==="string"?data.checkout_id:undefined;
 
-            if(await alreadyPaid(polarOrderId,checkoutId)){
+            if(await orderAlreadyFulfilled(polarOrderId,checkoutId)){
                 res.json({ok:true , duplicate:true});
                 return;
             }
 
             const sessionId=checkoutSessionIdFromMetadata(data);
 
-            if(sessionId){
-              const ok=  await fulfillCheckoutSession(sessionId,polarOrderId,checkoutId);
-              if(ok){
-                  res.json({ok:true});
-                  return;
-              }
-                if(await alreadyPaid(polarOrderId,checkoutId)){
+            if(!sessionId){
+                console.error("Polar order.paid: missing checkout_session_id in metadata",{polarOrderId,checkoutId});
+                res.status(400).json({error:"Missing checkout_session_id in metadata"});
+                return;
+            }
+
+            const ok=await fulfillCheckoutSession(sessionId,polarOrderId,checkoutId);
+            if(ok){
+                console.log(`Order fulfilled from checkout session ${sessionId} (polar order ${polarOrderId})`);
+                res.json({ok:true});
+                return;
+            }
+
+            if(await orderAlreadyFulfilled(polarOrderId,checkoutId)){
                 res.json({ok:true,duplicate:true});
                 return;
             }
@@ -134,8 +153,6 @@ export async function polarWebhookHandler(req:Request,res:Response){
 
             res.status(500).json({error:"Checkout fulfillment failed"})
             return;
-            }
-
         }
         res.json({ok:true});
 
