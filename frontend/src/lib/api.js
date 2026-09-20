@@ -38,7 +38,9 @@ export async function apiFetch(path, opts = {}) {
     throw e;
   }
 
-  const data = await res.json();
+  const hasBody =
+    res.status !== 204 && res.headers.get("content-length") !== "0";
+  const data = hasBody ? await res.json() : null;
 
   Sentry.addBreadcrumb({
     category: "api",

@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import { products } from "../src/db/schema.js";
+import { categories, products } from "../src/db/schema.js";
+import { slugify } from "../src/lib/slugify.js";
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool);
@@ -190,6 +191,15 @@ const CATALOG = [
 ];
 
 async function main() {
+  const categoryNames = [...new Set(CATALOG.map((p) => p.category))];
+
+  for (const name of categoryNames) {
+    await db
+      .insert(categories)
+      .values({ name, slug: slugify(name) })
+      .onConflictDoUpdate({ target: categories.name, set: { slug: slugify(name) } });
+  }
+
   const rows = CATALOG.map((p) => ({
     slug: p.slug,
     name: p.name,
@@ -218,7 +228,7 @@ async function main() {
         },
       });
   }
-  console.log(`Seed complete (${CATALOG.length} products upserted).`);
+  console.log(`Seed complete (${categoryNames.length} categories, ${CATALOG.length} products upserted).`);
   await pool.end();
 }
 

@@ -1,6 +1,4 @@
-import { Show, SignInButton, useAuth, UserButton } from "@clerk/react";
-import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "../lib/api";
+import { Show, SignInButton, UserButton } from "@clerk/react";
 import { Link } from "react-router";
 
 import {
@@ -12,18 +10,10 @@ import {
   StoreIcon,
 } from "lucide-react";
 import { useCart } from "../store/cart";
+import { useMe } from "../hooks/useMe";
 
 const Navbar = () => {
-  const { getToken, isSignedIn } = useAuth();
-
-  const { data: meData } = useQuery({
-    queryKey: ["me"],
-    queryFn: () => apiFetch("/api/me", { getToken }),
-    enabled: isSignedIn,
-  });
-
-  const role = meData?.role?.trim?.().toLowerCase();
-
+  const { role } = useMe();
 
   const cartCount = useCart((s) =>
     s.items.reduce((n, line) => n + line.quantity, 0),

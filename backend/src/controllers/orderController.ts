@@ -3,10 +3,13 @@ import type {Request,Response,NextFunction} from 'express';
 import { getLocalUser } from '../lib/users';
 import { isStaff } from '../lib/roles';
 import { db } from '../db';
-import { orderItems, orders, products, users } from '../db/schema';
+import { orderItems, orders, orderStatusEvents, products, users } from '../db/schema';
 import { asc, desc, eq, inArray } from 'drizzle-orm';
 import { getStreamChatServer, streamChatDisplayName, streamUserId } from '../lib/stream';
 import { getEnv } from '../lib/env';
+import { parsePagination } from '../lib/pagination';
+import { canTransition, isChatEligible, MANUAL_STATUSES } from '../lib/orderStatus';
+import { z } from 'zod';
 
 const env=getEnv();
 
@@ -25,10 +28,27 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
             return;
         }
 
-        const rows=isStaff(localUser.role) ? await db.select().from(orders).orderBy(desc(orders.createdAt)) : await db.select().from(orders).where(eq(orders.userId,localUser.id)).orderBy(desc(orders.createdAt));
+        const {limit,offset}=parsePagination(req);
+        const staffView=isStaff(localUser.role);
+
+        const rows=staffView
+            ? await db.select().from(orders).orderBy(desc(orders.createdAt)).limit(limit).offset(offset)
+            : await db.select().from(orders).where(eq(orders.userId,localUser.id)).orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
 
         const orderIds=rows.map((r)=>r.id);
         const previewByOrder=new Map();
+        const customerByUserId=new Map();
+
+        if(staffView && rows.length>0){
+            const customerIds=[...new Set(rows.map((r)=>r.userId))];
+            const customerRows=await db.select({id:users.id,email:users.email,displayName:users.displayName})
+                .from(users)
+                .where(inArray(users.id,customerIds));
+
+            for(const c of customerRows){
+                customerByUserId.set(c.id,c);
+            }
+        }
 
        if(orderIds.length>0){
             const orderItemsRows=await db.select({
@@ -52,8 +72,12 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
             }
         }
 
-        const ordersPayload=rows.map((r)=>({...r,previewItems:previewByOrder.get(r.id) ?? []}));
-        res.json({orders:ordersPayload});
+        const ordersPayload=rows.map((r)=>({
+            ...r,
+            previewItems:previewByOrder.get(r.id) ?? [],
+            ...(staffView ? {customer:customerByUserId.get(r.userId) ?? null} : {}),
+        }));
+        res.json({orders:ordersPayload,limit,offset});
                 
     }catch(err){
         next(err);
@@ -134,7 +158,7 @@ export async function createStreamChannel(req:Request,res:Response,next:NextFunc
             return;
         }
 
-        if(order.status!=="paid"){
+        if(!isChatEligible(order.status)){
             res.status(403).json({error:"Order must be paid to open support chat"});
             return;
         }
@@ -186,12 +210,17 @@ export async function createVideoInvite(req: Request, res: Response, next: NextF
       .where(eq(orders.id, req.params.id as string))
       .limit(1);
 
-    if (!order || order.status !== "paid") {
+    if (!order || !isChatEligible(order.status)) {
       res.status(404).json({ error: "Order not found or not paid" });
       return;
     }
 
     const [owner] = await db.select().from(users).where(eq(users.id, order.userId)).limit(1);
+
+    if (!owner) {
+      res.status(404).json({ error: "Order owner not found" });
+      return;
+    }
 
     const customerSid = streamUserId(owner.clerkUserId);
     await server.upsertUser({
@@ -205,7 +234,7 @@ export async function createVideoInvite(req: Request, res: Response, next: NextF
       name: streamChatDisplayName(localUser.role, localUser.displayName, localUser.email),
     });
 
-    const channelId = `order-${order.id}`;
+    const channelId = `order:${order.id}`;
     const channel = server.channel("messaging", channelId, {
       name: `Support · order ${order.id.slice(0, 8)}`,
       created_by_id: customerSid,
@@ -228,5 +257,68 @@ export async function createVideoInvite(req: Request, res: Response, next: NextF
     res.json({ ok: true, joinUrl });
   } catch (e) {
     next(e);
+  }
+}
+
+const updateOrderStatusSchema = z.object({
+  status: z.enum(MANUAL_STATUSES),
+  note: z.string().trim().min(1).max(500).optional(),
+});
+
+// Admin-only manual status change (mounted under adminRouter's requireAdmin).
+// "refunded" here is bookkeeping only — it does not call Polar's refund API.
+export async function updateOrderStatus(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { userId, isAuthenticated } = getAuth(req);
+    if (!isAuthenticated || !userId) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const parsed = updateOrderStatusSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid status", details: parsed.error.flatten() });
+      return;
+    }
+
+    const actingUser = await getLocalUser(userId);
+    if (!actingUser) {
+      res.status(503).json({ error: "Account not synced yet" });
+      return;
+    }
+
+    const [order] = await db.select().from(orders).where(eq(orders.id, req.params.id as string)).limit(1);
+    if (!order) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+
+    const { status: toStatus, note } = parsed.data;
+    if (!canTransition(order.status, toStatus)) {
+      res.status(409).json({ error: `Cannot move an order from "${order.status}" to "${toStatus}"` });
+      return;
+    }
+
+    const [updated] = await db.transaction(async (tx) => {
+      const rows = await tx
+        .update(orders)
+        .set({ status: toStatus, updatedAt: new Date() })
+        .where(eq(orders.id, order.id))
+        .returning();
+
+      await tx.insert(orderStatusEvents).values({
+        orderId: order.id,
+        fromStatus: order.status,
+        toStatus,
+        note: note ?? null,
+        changedByUserId: actingUser.id,
+      });
+
+      return rows;
+    });
+
+    res.json({ order: updated });
+  } catch (err) {
+    next(err);
   }
 }

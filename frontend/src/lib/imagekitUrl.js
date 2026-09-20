@@ -8,7 +8,7 @@ function buildAllureTextLayer({ w, h }) {
     h != null && h > 0 ? h : 0,
     200,
   );
-  let fs = 28;
+  let fs;
   if (maxDim <= 180) fs = 11;
   else if (maxDim <= 240) fs = 13;
   else if (maxDim <= 400) fs = 16;

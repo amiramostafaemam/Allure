@@ -6,10 +6,21 @@ import { getAuth } from "@clerk/express";
 import { getLocalUser } from "../lib/users";
 import { db } from "../db";
 import { and, eq, inArray } from "drizzle-orm";
-import { CheckoutSessionLine, checkoutSessions, products } from "../db/schema";
+import { checkoutSessions, products } from "../db/schema";
 import { polarCreateCheckout } from "../lib/polar";
+import { computeCheckoutTotal } from "../lib/pricing";
 
 const env = getEnv();
+
+const shippingAddressSchema = z.object({
+  fullName: z.string().trim().min(1).max(120),
+  phone: z.string().trim().min(6).max(30),
+  line1: z.string().trim().min(1).max(200),
+  line2: z.string().trim().max(200).optional(),
+  city: z.string().trim().min(1).max(100),
+  governorate: z.string().trim().min(1).max(100),
+  country: z.string().trim().min(1).max(100),
+});
 
 const cartSchema = z.object({
   items: z
@@ -20,11 +31,13 @@ const cartSchema = z.object({
       }),
     )
     .min(1),
+  shippingAddress: shippingAddressSchema,
 });
 
 export async function createCheckout(
   req: Request,
   res: Response,
+  next: NextFunction,
 ) {
   try {
     const { userId, isAuthenticated } = getAuth(req);
@@ -66,19 +79,9 @@ export async function createCheckout(
     }
 
     const byId = new Map(prodRows.map((p) => [p.id, p]));
-    // totalPounds و unitPricePounds كلهم بالجنيه المصري الصحيح (أرقام كاملة، من غير قروش)
-    let totalPounds = 0;
-    const lines: CheckoutSessionLine[] = [];
+    // totalPounds and unitPricePounds are whole Egyptian pounds (no piastres)
+    const { totalPounds, lines } = computeCheckoutTotal(parsed.data.items, byId);
 
-    for (const line of parsed.data.items) {
-      const prod = byId.get(line.productId)!;
-      totalPounds += prod.pricePounds * line.quantity;
-      lines.push({
-        productId: prod.id,
-        quantity: line.quantity,
-        unitPricePounds: prod.pricePounds, // بالجنيه الصحيح، من غير أي ×100
-      });
-    }
     if (totalPounds < 50) {
       res.status(400).json({
         error: "Total below polar minimum (e.g. Total requires at least £50)",
@@ -86,7 +89,7 @@ export async function createCheckout(
       return;
     }
 
-    // بنخزن في الداتابيز بالجنيه الصحيح زي ما هو، من غير أي تحويل
+    // stored in the database as whole pounds, unconverted
     const [session] = await db
       .insert(checkoutSessions)
       .values({
@@ -94,14 +97,15 @@ export async function createCheckout(
         lines,
         totalPounds,
         currency: "egp",
+        shippingAddress: parsed.data.shippingAddress,
       })
       .returning();
 
     const successUrl = `${env.FRONTEND_URL}/checkout/return?checkout_id={CHECKOUT_ID}`;
     const returnUrl = `${env.FRONTEND_URL}/cart`;
 
-    // النقطة الوحيدة في الكود كله اللي بتضرب ×100 - لأن Polar API
-    // بيتطلب إجباريًا إن price_amount يتبعت بأصغر وحدة نقدية (قروش)
+    // The only place in the codebase that multiplies by 100 - Polar's API
+    // requires price_amount in the smallest currency unit (piastres).
     const checkout = await polarCreateCheckout(env, {
       products: [env.POLAR_CHECKOUT_PRODUCT_ID],
       prices: {
@@ -126,10 +130,6 @@ export async function createCheckout(
 
     res.json({ checkoutUrl: checkout.url });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: err instanceof Error ? err.message : String(err),
-    });
+    next(err);
   }
 }

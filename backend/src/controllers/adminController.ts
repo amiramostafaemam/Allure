@@ -5,17 +5,19 @@ import { isAdmin } from '../lib/roles';
 import ImageKit from '@imagekit/nodejs';
 import { getEnv } from '../lib/env';
 import { db } from '../db';
-import { orderItems, products } from '../db/schema';
+import { categories, orderItems, products } from '../db/schema';
 import { count, desc, eq } from 'drizzle-orm';
 import {z} from 'zod';
 import { deleteImageKitAsset } from '../lib/imagekit';
+import { parsePagination } from '../lib/pagination';
+import { isUniqueViolation } from '../lib/dbErrors';
 
 const env=getEnv();
 
 const productCreate=z.object({
     slug:z.string().min(1),
     name:z.string().min(1),
-    category:z.string().min(1).default("General"),
+    category:z.string().min(1),
     description:z.string().default(""),
     pricePounds:z.number().int().positive(),
     currency:z.string().min(1).default("egp"),
@@ -51,8 +53,8 @@ export async function requireAdmin(req:Request,res:Response,next:NextFunction){
      }
         
         const user=await getLocalUser(userId);
-        
-        if(!isAdmin(user.role)){res.status(403).json({error:"Forbidden Access : Admin only"})
+
+        if(!user||!isAdmin(user.role)){res.status(403).json({error:"Forbidden Access : Admin only"})
         return;
     }
         
@@ -80,14 +82,25 @@ export function getImageKitAuth(_req:Request,res:Response,next:NextFunction){
     }
 }
 
-export async function listAdminProducts(_req:Request,res:Response,next:NextFunction){
+export async function listAdminProducts(req:Request,res:Response,next:NextFunction){
     try{
-        const rows=await db.select().from(products).orderBy(desc(products.createdAt));
-        res.json({products:rows});
+        const {limit,offset}=parsePagination(req);
+
+        const [rows,[totalRow]]=await Promise.all([
+            db.select().from(products).orderBy(desc(products.createdAt)).limit(limit).offset(offset),
+            db.select({c:count()}).from(products),
+        ]);
+
+        res.json({products:rows,total:Number(totalRow?.c ?? 0),limit,offset});
 
     }catch(err){
         next(err);
     }
+}
+
+async function categoryExists(name: string): Promise<boolean> {
+    const [row] = await db.select({ id: categories.id }).from(categories).where(eq(categories.name, name)).limit(1);
+    return Boolean(row);
 }
 
 export async function createAdminProduct(req:Request,res:Response,next:NextFunction){
@@ -98,8 +111,14 @@ export async function createAdminProduct(req:Request,res:Response,next:NextFunct
             res.status(400).json({error:"Invalid product",details:parsed.error.flatten()});
             return;
         }
+
+        if(!(await categoryExists(parsed.data.category))){
+            res.status(400).json({error:`Unknown category "${parsed.data.category}"`});
+            return;
+        }
+
         const {imageUrl,imageKitFileId,...rest}=parsed.data;
-        
+
         const [row]=await db.insert(products).values({
             ...rest,
             imageUrl:imageUrl || null,
@@ -109,6 +128,10 @@ export async function createAdminProduct(req:Request,res:Response,next:NextFunct
         res.status(201).json({product:row});
 
     }catch(err){
+        if(isUniqueViolation(err)){
+            res.status(409).json({error:"A product with this slug already exists"});
+            return;
+        }
         next(err);
     }
 }
@@ -119,6 +142,11 @@ export async function updateAdminProduct(req:Request,res:Response,next:NextFunct
 
         if(!parsed.success){
             res.status(400).json({error:"Invalid product",details:parsed.error.flatten()});
+            return;
+        }
+
+        if(parsed.data.category!==undefined && !(await categoryExists(parsed.data.category))){
+            res.status(400).json({error:`Unknown category "${parsed.data.category}"`});
             return;
         }
 
@@ -139,6 +167,10 @@ export async function updateAdminProduct(req:Request,res:Response,next:NextFunct
         res.json({product:row});
 
     }catch(err){
+        if(isUniqueViolation(err)){
+            res.status(409).json({error:"A product with this slug already exists"});
+            return;
+        }
         next(err);
     }
 }

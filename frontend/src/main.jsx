@@ -19,21 +19,25 @@ const tracePropagationTargets =
       ? [window.location.origin]
       : [];
 
+const isProduction = import.meta.env.MODE === "production";
+
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
-  sendDefaultPii: true,
+  sendDefaultPii: false,
   integrations: [
     Sentry.browserTracingIntegration(),
+    // Masking stays on: session replays would otherwise record every
+    // keystroke (order chat, admin forms, etc.) verbatim.
     Sentry.replayIntegration({
-      maskAllText: false,
-      maskAllInputs: false,
-      blockAllMedia: false,
+      maskAllText: true,
+      maskAllInputs: true,
+      blockAllMedia: true,
     }),
   ],
-  tracesSampleRate: 1.0,
+  tracesSampleRate: isProduction ? 0.2 : 1.0,
   tracePropagationTargets: tracePropagationTargets,
-  replaysSessionSampleRate: 1.0,
+  replaysSessionSampleRate: isProduction ? 0.05 : 0,
   replaysOnErrorSampleRate: 1.0,
   enableLogs: true,
 });

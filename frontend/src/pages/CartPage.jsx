@@ -10,7 +10,7 @@ import {
 import useCartPage from "../hooks/useCartPage";
 import EmptyCart from "../components/EmptyCart";
 import { CartSkeleton } from "../components/LoadingSkeletons";
-import  PageError  from "../components/PageError";
+import PageError from "../components/PageError";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { Link } from "react-router";
 import { formatPrice } from "../utils/format";
@@ -18,8 +18,6 @@ import { Show, SignInButton } from "@clerk/react";
 
 function CartPage() {
   const {
-    checkout,
-    checkoutLoading,
     items,
     lines,
     productsError,
@@ -153,23 +151,10 @@ function CartPage() {
             </div>
 
             <Show when="signed-in">
-              <button
-                type="button"
-                onClick={checkout}
-                disabled={checkoutLoading}
-                aria-busy={checkoutLoading}
-                className="btn btn-primary mt-6 w-full gap-2"
-              >
-                {checkoutLoading ? (
-                  <span
-                    className="loading loading-spinner loading-sm"
-                    aria-hidden
-                  />
-                ) : (
-                  <ShoppingCartIcon className="size-4" aria-hidden />
-                )}
-                {checkoutLoading ? "Opening checkout…" : "Checkout securely"}
-              </button>
+              <Link to="/checkout" className="btn btn-primary mt-6 w-full gap-2">
+                <ShoppingCartIcon className="size-4" aria-hidden />
+                Checkout securely
+              </Link>
             </Show>
 
             <Show when="signed-out">

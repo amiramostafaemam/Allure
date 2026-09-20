@@ -110,6 +110,54 @@ export function AdminProductsTableSkeleton() {
   );
 }
 
+export function AdminOverviewSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="card border border-base-300 bg-base-100 p-5">
+            <div className="skeleton h-4 w-20" />
+            <div className="skeleton mt-3 h-8 w-28" />
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="skeleton h-64 w-full rounded-box" />
+        <div className="skeleton h-64 w-full rounded-box" />
+      </div>
+    </div>
+  );
+}
+
+export function AdminTableSkeleton({ columns = 5, rows = 6 }) {
+  return (
+    <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
+      <table className="table">
+        <thead>
+          <tr>
+            {Array.from({ length: columns }).map((_, i) => (
+              <th key={i}>
+                <div className="skeleton h-4 w-16" />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: rows }).map((_, row) => (
+            <tr key={row}>
+              {Array.from({ length: columns }).map((_, col) => (
+                <td key={col}>
+                  <div className="skeleton h-5 w-full max-w-32" />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function OrderDetailSkeleton() {
   return (
     <div className="space-y-8 text-left">

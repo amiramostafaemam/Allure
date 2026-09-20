@@ -27,6 +27,8 @@ export async function clerkWebhookHandler (req: Request, res: Response) {
         //throws if the signature is wrong or body was tampered with; otherwise returns the parsed event object
         const evt = await verifyWebhook(request,{signingSecret: env.CLERK_WEBHOOK_SECRET});
 
+        console.log(`Clerk webhook received: ${evt.type}`);
+
         //handle the event
         if(evt.type === "user.created" || evt.type === "user.updated"){
             // Process the event
@@ -48,6 +50,8 @@ export async function clerkWebhookHandler (req: Request, res: Response) {
                 displayName,
                 role
             }).onConflictDoUpdate({target: users.clerkUserId, set:{email, displayName, role ,updatedAt: new Date()}}).execute();
+
+            console.log(`User synced: ${user.id} (${email}, role=${role})`);
         }
 
         if(evt.type === "user.deleted"){
