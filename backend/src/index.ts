@@ -91,11 +91,13 @@ if(fs.existsSync(publicDir)){
 
 
 Sentry.setupExpressErrorHandler(app);
-app.use((_err:unknown,_req:express.Request,res:express.Response,_next:express.NextFunction)=>{
+app.use((err:unknown,req:express.Request,res:express.Response,_next:express.NextFunction)=>{
     const sentryId=(res as express.Response & {sentry?:string}).sentry;
 
+    console.error(`Unhandled error on ${req.method} ${req.path}:`,err);
+
     res.status(500).json({error:"Internal server error",...(sentryId!==undefined&&{sentryId}),});
-    
+
 })
 
 app.listen(env.PORT,()=>{console.log('Server is running on port '+env.PORT)

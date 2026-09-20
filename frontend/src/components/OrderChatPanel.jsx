@@ -58,6 +58,10 @@ export function OrderChatPanel({ orderId }) {
         method: "POST",
       }),
     enabled: Boolean(orderId),
+    // This creates a channel server-side on every call — retrying 3x
+    // (TanStack's default) on a real failure just triples the wait before
+    // the error shows. One retry is enough to ride out a transient blip.
+    retry: 1,
   });
 
   const [client, setClient] = useState(null);
