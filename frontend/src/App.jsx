@@ -23,6 +23,12 @@ const AdminOrdersPage = lazy(() => import('./pages/AdminOrdersPage'))
 const AdminCustomersPage = lazy(() => import('./pages/AdminCustomersPage'))
 const AdminCategoriesPage = lazy(() => import('./pages/AdminCategoriesPage'))
 const AdminProductsPage = lazy(() => import('./pages/AdminProductsPage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+const FaqPage = lazy(() => import('./pages/FaqPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const ShippingPolicyPage = lazy(() => import('./pages/ShippingPolicyPage'))
 
 function App() {
   const {isLoaded}=useAuth()
@@ -48,6 +54,12 @@ function App() {
          <Route path='categories' element={<AdminCategoriesPage/>}/>
          <Route path='products' element={<AdminProductsPage/>}/>
        </Route>
+       <Route path='/about' element={<AboutPage/>}/>
+       <Route path='/contact' element={<ContactPage/>}/>
+       <Route path='/faq' element={<FaqPage/>}/>
+       <Route path='/terms' element={<TermsPage/>}/>
+       <Route path='/privacy' element={<PrivacyPage/>}/>
+       <Route path='/shipping-policy' element={<ShippingPolicyPage/>}/>
        <Route path='*' element={<NotFoundPage/>}/>
       </Routes>
      </Suspense>

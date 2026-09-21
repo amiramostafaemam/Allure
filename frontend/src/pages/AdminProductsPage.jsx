@@ -6,12 +6,14 @@ import { useAdminCategories } from "../hooks/useAdminCategories";
 import { AdminProductFormModal } from "../components/AdminProductFormModal";
 import { AdminProductsTableSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
+import { SearchInput } from "../components/SearchInput";
 import { uploadProductImage } from "../lib/imagekitUpload";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { formatPrice } from "../utils/format";
 
 function AdminProductsPage() {
   const { getToken } = useAuth();
+  const [q, setQ] = useState("");
   const {
     products,
     isLoading,
@@ -19,7 +21,7 @@ function AdminProductsPage() {
     createProduct,
     updateProduct,
     deleteProduct,
-  } = useAdminProducts();
+  } = useAdminProducts({ q });
 
   const { categories } = useAdminCategories();
 
@@ -107,20 +109,27 @@ function AdminProductsPage() {
           <SettingsIcon className="size-8 text-primary" aria-hidden />
           Manage products
         </h1>
-        <button
-          type="button"
-          className="btn btn-primary gap-2 shadow-md"
-          onClick={openCreate}
-        >
-          <PlusIcon className="size-4" aria-hidden />
-          New product
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <SearchInput value={q} onChange={setQ} placeholder="Search products…" className="w-64" />
+          <button
+            type="button"
+            className="btn btn-primary gap-2 shadow-md"
+            onClick={openCreate}
+          >
+            <PlusIcon className="size-4" aria-hidden />
+            New product
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
         <AdminProductsTableSkeleton />
       ) : isError ? (
         <PageError message="We couldn't load products." />
+      ) : products.length === 0 ? (
+        <div className="rounded-box border border-dashed border-base-300 bg-base-100 py-16 text-center text-base-content/60">
+          No products match.
+        </div>
       ) : (
         <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
           <table className="table">

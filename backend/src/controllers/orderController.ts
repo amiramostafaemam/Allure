@@ -4,11 +4,11 @@ import { getLocalUser } from '../lib/users';
 import { isStaff } from '../lib/roles';
 import { db } from '../db';
 import { notifications, orderItems, orders, orderStatusEvents, products, users } from '../db/schema';
-import { asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { getStreamChatServer, streamChatDisplayName, streamUserId } from '../lib/stream';
 import { getEnv } from '../lib/env';
 import { parsePagination } from '../lib/pagination';
-import { canTransition, isChatEligible, MANUAL_STATUSES, REQUESTABLE_STATUSES } from '../lib/orderStatus';
+import { canTransition, isChatEligible, isOrderStatus, MANUAL_STATUSES, REQUESTABLE_STATUSES } from '../lib/orderStatus';
 import { z } from 'zod';
 
 const env=getEnv();
@@ -31,9 +31,31 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
         const {limit,offset}=parsePagination(req);
         const staffView=isStaff(localUser.role);
 
-        const rows=staffView
-            ? await db.select().from(orders).orderBy(desc(orders.createdAt)).limit(limit).offset(offset)
-            : await db.select().from(orders).where(eq(orders.userId,localUser.id)).orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
+        const rawStatus=typeof req.query.status==="string" ? req.query.status.trim() : "";
+        const statusFilter=isOrderStatus(rawStatus) ? rawStatus : "";
+        const q=typeof req.query.q==="string" ? req.query.q.trim() : "";
+
+        let rows;
+        if(staffView){
+            const conditions=[];
+            if(statusFilter) conditions.push(eq(orders.status,statusFilter));
+
+            if(q){
+                const matchingCustomers=await db.select({id:users.id}).from(users)
+                    .where(or(ilike(users.email,`%${q}%`),ilike(users.displayName,`%${q}%`)));
+                const customerIds=matchingCustomers.map((c)=>c.id);
+
+                const qConditions=[ilike(sql`${orders.id}::text`,`${q}%`)];
+                if(customerIds.length>0) qConditions.push(inArray(orders.userId,customerIds));
+                conditions.push(or(...qConditions)!);
+            }
+
+            rows=await db.select().from(orders)
+                .where(conditions.length>0 ? and(...conditions) : undefined)
+                .orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
+        }else{
+            rows=await db.select().from(orders).where(eq(orders.userId,localUser.id)).orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
+        }
 
         const orderIds=rows.map((r)=>r.id);
         const previewByOrder=new Map();

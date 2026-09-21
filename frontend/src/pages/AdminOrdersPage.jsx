@@ -4,8 +4,11 @@ import { PackageIcon } from "lucide-react";
 import { useAdminOrders } from "../hooks/useAdminOrders";
 import { AdminTableSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
+import { SearchInput } from "../components/SearchInput";
 import { formatOrderWhen, formatPrice } from "../utils/format";
 import { nextStatusOptions, statusBadgeClass } from "../utils/orderStatus";
+
+const ALL_STATUSES = ["pending", "paid", "failed", "shipped", "delivered", "cancelled", "refunded"];
 
 function StatusControl({ order, onChange, pending }) {
   const options = nextStatusOptions(order.status);
@@ -33,7 +36,9 @@ function StatusControl({ order, onChange, pending }) {
 }
 
 function AdminOrdersPage() {
-  const { orders, isLoading, isError, updateStatus, dismissRequest } = useAdminOrders();
+  const [q, setQ] = useState("");
+  const [status, setStatus] = useState("");
+  const { orders, isLoading, isError, updateStatus, dismissRequest } = useAdminOrders({ status, q });
   const [errorForId, setErrorForId] = useState(null);
 
   async function handleStatusChange(id, status) {
@@ -45,19 +50,43 @@ function AdminOrdersPage() {
     }
   }
 
-  if (isLoading) return <AdminTableSkeleton columns={6} />;
-  if (isError) return <PageError message="We couldn't load orders." />;
-
   return (
     <div>
-      <h1 className="mb-8 flex items-center gap-2 text-3xl font-bold text-base-content">
-        <PackageIcon className="size-8 text-primary" aria-hidden />
-        Orders
-      </h1>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="flex items-center gap-2 text-3xl font-bold text-base-content">
+          <PackageIcon className="size-8 text-primary" aria-hidden />
+          Orders
+        </h1>
 
-      {orders.length === 0 ? (
+        <div className="flex flex-wrap gap-2">
+          <SearchInput
+            value={q}
+            onChange={setQ}
+            placeholder="Search order # or customer…"
+            className="w-64"
+          />
+          <select
+            className="select select-bordered"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="">All statuses</option>
+            {ALL_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <AdminTableSkeleton columns={6} />
+      ) : isError ? (
+        <PageError message="We couldn't load orders." />
+      ) : orders.length === 0 ? (
         <div className="rounded-box border border-dashed border-base-300 bg-base-100 py-16 text-center text-base-content/60">
-          No orders yet.
+          No orders match.
         </div>
       ) : (
         <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">

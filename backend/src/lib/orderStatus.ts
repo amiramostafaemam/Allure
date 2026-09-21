@@ -25,6 +25,12 @@ export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
   return ALLOWED_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
+export const ALL_STATUSES = Object.keys(ALLOWED_TRANSITIONS) as OrderStatus[];
+
+export function isOrderStatus(value: string): value is OrderStatus {
+  return (ALL_STATUSES as string[]).includes(value);
+}
+
 // Statuses under which support/admin can still open chat or send a video
 // invite for an order — broader than just "paid" so a shipped/delivered
 // order doesn't lose customer support access.

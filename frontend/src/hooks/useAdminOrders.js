@@ -2,13 +2,19 @@ import { useAuth } from "@clerk/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
 
-export function useAdminOrders() {
+export function useAdminOrders({ status = "", q = "" } = {}) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-orders"],
-    queryFn: () => apiFetch("/api/orders", { getToken }),
+    queryKey: ["admin-orders", status, q],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (status) params.set("status", status);
+      if (q) params.set("q", q);
+      const qs = params.toString();
+      return apiFetch(qs ? `/api/orders?${qs}` : "/api/orders", { getToken });
+    },
   });
 
   const updateStatus = useMutation({

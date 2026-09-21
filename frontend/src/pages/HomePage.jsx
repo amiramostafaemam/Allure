@@ -1,53 +1,9 @@
-import { useEffect, useState } from "react";
-import { SearchIcon, XIcon } from "lucide-react";
 import { CatalogProductCard } from "../components/CatalogProductCard";
 import { HomeHero } from "../components/HomeHero";
 import PageError from "../components/PageError";
+import { SearchInput } from "../components/SearchInput";
 import { TrustStrip } from "../components/TrustStrip";
 import { useHomeCatalog } from "../hooks/useHomeCatalog";
-
-function SearchBox({ value, onChange }) {
-  const [draft, setDraft] = useState(value);
-  const [syncedValue, setSyncedValue] = useState(value);
-
-  // Keep the input in sync with external changes (e.g. browser back/forward)
-  // without an effect — adjusting state during render per React's guidance.
-  if (value !== syncedValue) {
-    setSyncedValue(value);
-    setDraft(value);
-  }
-
-  useEffect(() => {
-    const id = setTimeout(() => {
-      if (draft !== value) onChange(draft);
-    }, 300);
-    return () => clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft]);
-
-  return (
-    <label className="input input-bordered flex w-full items-center gap-2 sm:w-64">
-      <SearchIcon className="size-4 text-base-content/50" aria-hidden />
-      <input
-        type="search"
-        className="grow"
-        placeholder="Search products…"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-      />
-      {draft ? (
-        <button
-          type="button"
-          className="text-base-content/40 hover:text-base-content"
-          onClick={() => setDraft("")}
-          aria-label="Clear search"
-        >
-          <XIcon className="size-4" aria-hidden />
-        </button>
-      ) : null}
-    </label>
-  );
-}
 
 function HomePage() {
   const {
@@ -78,7 +34,12 @@ function HomePage() {
             </h2>
           </div>
 
-          <SearchBox value={searchTerm} onChange={setSearchTerm} />
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Search products…"
+            className="w-full sm:w-64"
+          />
 
           <div className="flex flex-wrap gap-2">
             <button

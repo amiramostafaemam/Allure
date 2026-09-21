@@ -2,13 +2,14 @@ import { useAuth } from "@clerk/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
 
-export function useAdminProducts() {
+export function useAdminProducts({ q = "" } = {}) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-products"],
-    queryFn: () => apiFetch("/api/admin/products", { getToken }),
+    queryKey: ["admin-products", q],
+    queryFn: () =>
+      apiFetch(`/api/admin/products${q ? `?q=${encodeURIComponent(q)}` : ""}`, { getToken }),
   });
 
   const invalidate = () =>

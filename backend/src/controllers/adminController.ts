@@ -6,7 +6,7 @@ import ImageKit from '@imagekit/nodejs';
 import { getEnv } from '../lib/env';
 import { db } from '../db';
 import { categories, orderItems, products } from '../db/schema';
-import { count, desc, eq } from 'drizzle-orm';
+import { count, desc, eq, ilike } from 'drizzle-orm';
 import {z} from 'zod';
 import { deleteImageKitAsset } from '../lib/imagekit';
 import { parsePagination } from '../lib/pagination';
@@ -85,10 +85,12 @@ export function getImageKitAuth(_req:Request,res:Response,next:NextFunction){
 export async function listAdminProducts(req:Request,res:Response,next:NextFunction){
     try{
         const {limit,offset}=parsePagination(req);
+        const q=typeof req.query.q==="string" ? req.query.q.trim() : "";
+        const whereClause=q ? ilike(products.name,`%${q}%`) : undefined;
 
         const [rows,[totalRow]]=await Promise.all([
-            db.select().from(products).orderBy(desc(products.createdAt)).limit(limit).offset(offset),
-            db.select({c:count()}).from(products),
+            db.select().from(products).where(whereClause).orderBy(desc(products.createdAt)).limit(limit).offset(offset),
+            db.select({c:count()}).from(products).where(whereClause),
         ]);
 
         res.json({products:rows,total:Number(totalRow?.c ?? 0),limit,offset});
