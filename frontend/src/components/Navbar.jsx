@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../store/cart";
 import { useMe } from "../hooks/useMe";
+import NotificationBell from "./NotificationBell";
 
 const Navbar = () => {
   const { role } = useMe();
@@ -55,6 +56,8 @@ const Navbar = () => {
                 <span className="hidden sm:inline">Admin</span>
               </Link>
             ) : null}
+
+            <NotificationBell />
           </Show>
 
           <Link

@@ -15,9 +15,11 @@ import productRouter from './routes/productRouter';
 import streamRouter from './routes/streamRouter';
 import checkoutRouter from './routes/checkoutRouter';
 import { polarWebhookHandler } from './webhooks/polar';
+import { streamWebhookHandler } from './webhooks/stream';
 import { sentryClerkUserMiddleware } from './middleware/sentryClerkUser';
 import adminRouter from './routes/adminRouter';
 import orderRouter from './routes/orderRouter';
+import notificationRouter from './routes/notificationRouter';
 
 const env = getEnv();
 const app = express();
@@ -30,6 +32,10 @@ app.post("/webhooks/clerk",rawJson,(req,res)=>{
 
 app.post("/webhooks/polar",rawJson,(req,res)=>{
    void polarWebhookHandler(req,res);
+});
+
+app.post("/webhooks/stream",rawJson,(req,res)=>{
+   void streamWebhookHandler(req,res);
 });
 
 // CSP is disabled: the SPA loads scripts/iframes/websockets from Clerk, Sentry,
@@ -67,6 +73,7 @@ app.use("/api/stream",streamRouter);
 app.use("/api/checkout",checkoutLimiter,checkoutRouter);
 app.use("/api/admin",adminRouter)
 app.use("/api/orders",orderRouter);
+app.use("/api/notifications",notificationRouter);
 
 
 

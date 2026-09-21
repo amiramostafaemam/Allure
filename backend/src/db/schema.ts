@@ -150,3 +150,26 @@ export const orderStatusEventsRelations = relations(orderStatusEvents, ({ one })
   order: one(orders, { fields: [orderStatusEvents.orderId], references: [orders.id] }),
   changedBy: one(users, { fields: [orderStatusEvents.changedByUserId], references: [users.id] }),
 }));
+
+// In-app "new chat message" alerts, populated by the Stream Chat webhook
+// (webhooks/stream.ts) on message.new: customer messages notify every
+// staff/admin, staff messages notify that order's customer.
+export const notifications = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  orderId: uuid("order_id")
+    .notNull()
+    .references(() => orders.id, { onDelete: "cascade" }),
+  message: text("message").notNull(),
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  index("notifications_user_id_idx").on(table.userId),
+]);
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, { fields: [notifications.userId], references: [users.id] }),
+  order: one(orders, { fields: [notifications.orderId], references: [orders.id] }),
+}));
