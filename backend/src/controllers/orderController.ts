@@ -167,7 +167,8 @@ export async function createStreamChannel(req:Request,res:Response,next:NextFunc
 
         await streamChatServer.upsertUser({id:streamChatUserId,name:streamChatDisplayName(localUser.role,localUser.displayName,localUser.email)});
 
-        const channelId=`order:${order.id}`;
+        // Stream channel IDs can't contain ":" (it rejects the request).
+        const channelId=`order-${order.id}`;
         const channel=streamChatServer.channel("messaging",channelId,{name:`Support for order #${order.id.slice(0,8)}`,
         created_by_id:streamChatUserId});
 
@@ -234,7 +235,8 @@ export async function createVideoInvite(req: Request, res: Response, next: NextF
       name: streamChatDisplayName(localUser.role, localUser.displayName, localUser.email),
     });
 
-    const channelId = `order:${order.id}`;
+    // Stream channel IDs can't contain ":" (it rejects the request).
+    const channelId = `order-${order.id}`;
     const channel = server.channel("messaging", channelId, {
       name: `Support · order ${order.id.slice(0, 8)}`,
       created_by_id: customerSid,
