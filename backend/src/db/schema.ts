@@ -191,9 +191,15 @@ export const notifications = pgTable("notifications", {
     .references(() => orders.id, { onDelete: "cascade" }),
   message: text("message").notNull(),
   read: boolean("read").notNull().default(false),
+  // Stream can (and does) redeliver the same message.new webhook event more
+  // than once for a single chat message. Recording which message a
+  // notification came from lets the webhook handler skip a redelivery
+  // instead of inserting a duplicate row per recipient.
+  streamMessageId: text("stream_message_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index("notifications_user_id_idx").on(table.userId),
+  unique("notifications_user_stream_message_unique").on(table.userId, table.streamMessageId),
 ]);
 
 export const notificationsRelations = relations(notifications, ({ one }) => ({

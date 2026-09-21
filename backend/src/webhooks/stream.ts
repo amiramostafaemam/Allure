@@ -28,7 +28,7 @@ export async function streamWebhookHandler(req: Request, res: Response) {
       type?: string;
       channel_id?: string;
       user?: { id?: string };
-      message?: { text?: string };
+      message?: { id?: string; text?: string };
     };
 
     if (event.type !== "message.new" || !event.channel_id) {
@@ -69,10 +69,21 @@ export async function streamWebhookHandler(req: Request, res: Response) {
 
     const rows = recipientIds
       .filter((id) => id !== sender.id)
-      .map((userId) => ({ userId, orderId: order.id, message: preview }));
+      .map((userId) => ({
+        userId,
+        orderId: order.id,
+        message: preview,
+        streamMessageId: event.message?.id ?? null,
+      }));
 
     if (rows.length > 0) {
-      await db.insert(notifications).values(rows);
+      // Stream redelivers message.new at least once in practice — this
+      // upsert target (userId, streamMessageId) makes a redelivery a no-op
+      // instead of a duplicate notification per recipient.
+      await db
+        .insert(notifications)
+        .values(rows)
+        .onConflictDoNothing({ target: [notifications.userId, notifications.streamMessageId] });
     }
 
     res.json({ ok: true });
