@@ -8,6 +8,7 @@ import { ClerkProvider } from "@clerk/react";
 import { BrowserRouter } from "react-router";
 import SentryErrorFallback from "./components/SentryErrorFallback.jsx";
 import SentryUserSync from "./components/SentryUserSync.jsx";
+import CartSignOutSync from "./components/CartSignOutSync.jsx";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ClerkProvider>
       <SentryUserSync />
+      <CartSignOutSync />
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Sentry.ErrorBoundary fallback={<SentryErrorFallback />}>
