@@ -133,7 +133,7 @@ export function OrderChatPanel({ orderId }) {
       </div>
 
       <div className="h-140 overflow-hidden rounded-box border border-base-300">
-        <Chat client={client}>
+        <Chat client={client} theme="messaging dark">
           <Channel channel={channel}>
             <Window>
               <MessageList Message={VideoInviteMessage} />

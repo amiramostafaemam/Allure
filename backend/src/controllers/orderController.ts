@@ -165,7 +165,11 @@ export async function createStreamChannel(req:Request,res:Response,next:NextFunc
 
         const streamChatUserId=streamUserId(userId);
 
-        await streamChatServer.upsertUser({id:streamChatUserId,name:streamChatDisplayName(localUser.role,localUser.displayName,localUser.email)});
+        await streamChatServer.upsertUser({
+            id:streamChatUserId,
+            name:streamChatDisplayName(localUser.role,localUser.displayName,localUser.email),
+            image:localUser.avatarUrl ?? undefined,
+        });
 
         // Stream channel IDs can't contain ":" (it rejects the request).
         const channelId=`order-${order.id}`;
@@ -227,12 +231,14 @@ export async function createVideoInvite(req: Request, res: Response, next: NextF
     await server.upsertUser({
       id: customerSid,
       name: owner.displayName ?? owner.email ?? "Customer",
+      image: owner.avatarUrl ?? undefined,
     });
 
     const staffStreamUserId = streamUserId(userId);
     await server.upsertUser({
       id: staffStreamUserId,
       name: streamChatDisplayName(localUser.role, localUser.displayName, localUser.email),
+      image: localUser.avatarUrl ?? undefined,
     });
 
     // Stream channel IDs can't contain ":" (it rejects the request).

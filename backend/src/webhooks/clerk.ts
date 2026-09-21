@@ -41,6 +41,7 @@ export async function clerkWebhookHandler (req: Request, res: Response) {
             }
 
             const displayName = [user.first_name, user.last_name].filter(Boolean).join(" ") || user.username || null;
+            const avatarUrl = user.image_url || null;
 
             const role=parseRole(user.public_metadata?.role);
 
@@ -48,8 +49,9 @@ export async function clerkWebhookHandler (req: Request, res: Response) {
                 clerkUserId: user.id,
                 email,
                 displayName,
+                avatarUrl,
                 role
-            }).onConflictDoUpdate({target: users.clerkUserId, set:{email, displayName, role ,updatedAt: new Date()}}).execute();
+            }).onConflictDoUpdate({target: users.clerkUserId, set:{email, displayName, avatarUrl, role ,updatedAt: new Date()}}).execute();
 
             console.log(`User synced: ${user.id} (${email}, role=${role})`);
         }
