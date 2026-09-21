@@ -9,6 +9,7 @@ import { getStreamChatServer, streamChatDisplayName, streamUserId } from '../lib
 import { getEnv } from '../lib/env';
 import { parsePagination } from '../lib/pagination';
 import { canTransition, isChatEligible, isOrderStatus, MANUAL_STATUSES, REQUESTABLE_STATUSES } from '../lib/orderStatus';
+import { sendOrderStatusEmail } from '../lib/email';
 import { z } from 'zod';
 
 const env=getEnv();
@@ -357,6 +358,12 @@ export async function updateOrderStatus(req: Request, res: Response, next: NextF
 
       return rows;
     });
+
+    const [customer] = await db.select({ email: users.email }).from(users).where(eq(users.id, order.userId)).limit(1);
+    if (customer?.email) {
+      // Non-blocking — a failed email must never fail the status change itself.
+      void sendOrderStatusEmail(env, { to: customer.email, orderId: order.id, status: toStatus });
+    }
 
     res.json({ order: updated });
   } catch (err) {

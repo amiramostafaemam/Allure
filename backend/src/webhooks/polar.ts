@@ -1,9 +1,10 @@
 import type { Request,Response} from "express";
 import { getEnv } from "../lib/env";
-import {checkoutSessions, orders, orderItems} from "../db/schema";
+import {checkoutSessions, orders, orderItems, users} from "../db/schema";
 import {eq} from "drizzle-orm";
 import {db} from "../db/index";
 import {Webhook} from "standardwebhooks"
+import { sendOrderConfirmationEmail } from "../lib/email";
 
 function headerString(headers:Request["headers"],name:string){
     const value=headers[name];
@@ -45,7 +46,7 @@ async function orderAlreadyFulfilled(polarOrderId?: string, checkoutId?: string)
 async function fulfillCheckoutSession(
   sessionId: string,
   polarOrderId: string | undefined,
-  checkoutId: string | undefined, 
+  checkoutId: string | undefined,
 ) {
   return await db.transaction(async (tx) => {
     const [session] = await tx
@@ -54,7 +55,7 @@ async function fulfillCheckoutSession(
       .where(eq(checkoutSessions.id, sessionId))
       .for("update");
 
-    if (!session) return false;
+    if (!session) return null;
 
     const [order] = await tx
       .insert(orders)
@@ -81,7 +82,9 @@ async function fulfillCheckoutSession(
 
     await tx.delete(checkoutSessions).where(eq(checkoutSessions.id, sessionId));
 
-    return true;
+    const [customer] = await tx.select({ email: users.email }).from(users).where(eq(users.id, session.userId)).limit(1);
+
+    return { order, lines: session.lines, customerEmail: customer?.email };
   });
 }
 
@@ -137,9 +140,21 @@ export async function polarWebhookHandler(req:Request,res:Response){
                 return;
             }
 
-            const ok=await fulfillCheckoutSession(sessionId,polarOrderId,checkoutId);
-            if(ok){
+            const fulfillment=await fulfillCheckoutSession(sessionId,polarOrderId,checkoutId);
+            if(fulfillment){
                 console.log(`Order fulfilled from checkout session ${sessionId} (polar order ${polarOrderId})`);
+
+                if(fulfillment.customerEmail){
+                    // Non-blocking — a failed email must never turn a successful
+                    // payment into an error response back to Polar.
+                    void sendOrderConfirmationEmail(env,{
+                        to:fulfillment.customerEmail,
+                        orderId:fulfillment.order.id,
+                        totalPounds:fulfillment.order.totalPounds,
+                        lines:fulfillment.lines,
+                    });
+                }
+
                 res.json({ok:true});
                 return;
             }

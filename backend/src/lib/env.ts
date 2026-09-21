@@ -24,6 +24,9 @@ const envSchema = z.object({
     IMAGEKIT_URL_ENDPOINT: z.string().url(),
 
     SENTRY_DSN: z.string().url().optional(),
+
+    RESEND_API_KEY: z.string().optional(),
+    RESEND_FROM_EMAIL: z.string().default("Allure <onboarding@resend.dev>"),
 });
 
 export type Env = z.infer<typeof envSchema>;
