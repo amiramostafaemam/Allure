@@ -33,3 +33,7 @@ export const CHAT_ELIGIBLE_STATUSES: OrderStatus[] = ["paid", "shipped", "delive
 export function isChatEligible(status: OrderStatus): boolean {
   return CHAT_ELIGIBLE_STATUSES.includes(status);
 }
+
+// Orders in these statuses count as a "real" purchase — used both for
+// realized-revenue stats and to gate who can leave a product review.
+export const FULFILLED_STATUSES: OrderStatus[] = ["paid", "shipped", "delivered"];

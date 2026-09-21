@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useProductPage } from "../hooks/useProductPage";
 import { CatalogProductCard } from "../components/CatalogProductCard";
+import { ProductReviews } from "../components/ProductReviews";
 import { ProductPageSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
@@ -170,6 +171,8 @@ function ProductPage() {
           </div>
         </div>
       </div>
+
+      <ProductReviews slug={product.slug} />
 
       {relatedProducts.length > 0 ? (
         <section className="mt-16 border-t border-base-300 pt-12">

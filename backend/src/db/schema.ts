@@ -1,5 +1,5 @@
 // backend/src/db/schema.ts
-import { pgTable, serial, text, timestamp , integer , uuid , boolean , jsonb, index} from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp , integer , uuid , boolean , jsonb, index, unique} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // "pending"/"failed" are currently unreachable: fulfillCheckoutSession() in
@@ -68,6 +68,26 @@ export const categories = pgTable("categories", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const reviews = pgTable("reviews", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  unique("reviews_product_user_unique").on(table.productId, table.userId),
+]);
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  product: one(products, { fields: [reviews.productId], references: [products.id] }),
+  user: one(users, { fields: [reviews.userId], references: [users.id] }),
+}));
+
 export const checkoutSessions = pgTable("checkout_sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
@@ -132,9 +152,10 @@ export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
 }));
 
-// the same product can show up on many order lines
+// the same product can show up on many order lines and have many reviews
 export const productsRelations = relations(products, ({ many }) => ({
   orderItems: many(orderItems),
+  reviews: many(reviews),
 }));
 
 // each order belongs to exactly one user; each order can have many line items

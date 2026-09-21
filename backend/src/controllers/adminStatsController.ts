@@ -1,10 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { db } from "../db";
-import { orderItems, orders, products, users, type OrderStatus } from "../db/schema";
+import { orderItems, orders, products, users } from "../db/schema";
 import { count, desc, eq, inArray, sum } from "drizzle-orm";
-
-// Orders in these statuses count as realized revenue.
-const REVENUE_STATUSES: OrderStatus[] = ["paid", "shipped", "delivered"];
+import { FULFILLED_STATUSES } from "../lib/orderStatus";
 
 export async function getAdminStats(_req: Request, res: Response, next: NextFunction) {
   try {
@@ -13,7 +11,7 @@ export async function getAdminStats(_req: Request, res: Response, next: NextFunc
         db
           .select({ total: sum(orders.totalPounds) })
           .from(orders)
-          .where(inArray(orders.status, REVENUE_STATUSES)),
+          .where(inArray(orders.status, FULFILLED_STATUSES)),
         db.select({ c: count() }).from(orders),
         db.select({ c: count() }).from(users),
         db.select({ status: orders.status, c: count() }).from(orders).groupBy(orders.status),

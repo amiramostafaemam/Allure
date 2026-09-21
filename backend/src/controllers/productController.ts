@@ -2,21 +2,22 @@ import type { Request, Response , NextFunction } from 'express';
 import { products } from '../db/schema';
 import { desc } from 'drizzle-orm/sql/expressions/select';
 import { db } from '../db';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, ilike } from 'drizzle-orm';
 
 export async function listProducts(req:Request,res:Response,next:NextFunction){
     try{
         const category=typeof req.query.category==="string" ? req.query.category.trim():"";
+        const q=typeof req.query.q==="string" ? req.query.q.trim():"";
 
-        const activeOnly=eq(products.active,true);
-
-        const whereClause=category ? and(activeOnly,eq(products.category,category)) : activeOnly;
+        const conditions=[eq(products.active,true)];
+        if(category) conditions.push(eq(products.category,category));
+        if(q) conditions.push(ilike(products.name,`%${q}%`));
 
         const rows=await db.select()
         .from(products)
-        .where(whereClause)
+        .where(and(...conditions))
         .orderBy(desc(products.createdAt));
-        
+
         res.json({products:rows});
     }catch(err){
         next(err);
