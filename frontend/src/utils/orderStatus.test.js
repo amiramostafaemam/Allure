@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isChatEligible, nextStatusOptions, statusBadgeClass } from "./orderStatus";
+import { isChatEligible, nextStatusOptions, requestableStatusOptions, statusBadgeClass } from "./orderStatus";
 
 describe("statusBadgeClass", () => {
   it("maps known statuses to their badge class", () => {
@@ -29,6 +29,22 @@ describe("nextStatusOptions", () => {
     expect(nextStatusOptions("pending")).toEqual([]);
     expect(nextStatusOptions("cancelled")).toEqual([]);
     expect(nextStatusOptions(undefined)).toEqual([]);
+  });
+});
+
+describe("requestableStatusOptions", () => {
+  it("excludes shipped/delivered from paid's transitions, keeping cancel/refund", () => {
+    expect(requestableStatusOptions("paid")).toEqual(["cancelled", "refunded"]);
+  });
+
+  it("only offers refunded from shipped/delivered", () => {
+    expect(requestableStatusOptions("shipped")).toEqual(["refunded"]);
+    expect(requestableStatusOptions("delivered")).toEqual(["refunded"]);
+  });
+
+  it("is empty for terminal statuses", () => {
+    expect(requestableStatusOptions("cancelled")).toEqual([]);
+    expect(requestableStatusOptions("refunded")).toEqual([]);
   });
 });
 

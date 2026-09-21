@@ -5,6 +5,12 @@ import type { OrderStatus } from "../db/schema";
 export const MANUAL_STATUSES = ["shipped", "delivered", "cancelled", "refunded"] as const;
 export type ManualOrderStatus = (typeof MANUAL_STATUSES)[number];
 
+// Subset of MANUAL_STATUSES a customer can request (not "shipped"/"delivered"
+// — those are operational calls only staff make). Still gated through the
+// same canTransition() rules as the admin endpoint.
+export const REQUESTABLE_STATUSES = ["cancelled", "refunded"] as const;
+export type RequestableOrderStatus = (typeof REQUESTABLE_STATUSES)[number];
+
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   pending: [],
   paid: ["shipped", "cancelled", "refunded"],

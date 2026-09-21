@@ -104,6 +104,11 @@ export const orders = pgTable("orders", {
   polarOrderId: text("polar_order_id").unique(),
   totalPounds: integer("total_pounds").notNull().default(0),
   shippingAddress: jsonb("shipping_address").$type<ShippingAddress>(),
+  // Customer-initiated cancellation/refund request, cleared whenever the
+  // order's status is next changed (approved or not).
+  requestedStatus: text("requested_status").$type<OrderStatus>(),
+  requestedNote: text("requested_note"),
+  requestedAt: timestamp("requested_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

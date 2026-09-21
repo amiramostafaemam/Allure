@@ -3,12 +3,12 @@ import type {Request,Response,NextFunction} from 'express';
 import { getLocalUser } from '../lib/users';
 import { isStaff } from '../lib/roles';
 import { db } from '../db';
-import { orderItems, orders, orderStatusEvents, products, users } from '../db/schema';
+import { notifications, orderItems, orders, orderStatusEvents, products, users } from '../db/schema';
 import { asc, desc, eq, inArray } from 'drizzle-orm';
 import { getStreamChatServer, streamChatDisplayName, streamUserId } from '../lib/stream';
 import { getEnv } from '../lib/env';
 import { parsePagination } from '../lib/pagination';
-import { canTransition, isChatEligible, MANUAL_STATUSES } from '../lib/orderStatus';
+import { canTransition, isChatEligible, MANUAL_STATUSES, REQUESTABLE_STATUSES } from '../lib/orderStatus';
 import { z } from 'zod';
 
 const env=getEnv();
@@ -114,14 +114,18 @@ export async function getOrder(req:Request,res:Response,next:NextFunction){
         }
 
         const orderItemsRows=await db.select({
-            orderId:orderItems.id,quantity:orderItems.quantity, 
+            orderId:orderItems.id,quantity:orderItems.quantity,
             unitPricePounds:orderItems.unitPricePounds,
-            product:products      
+            product:products
         }).from(orderItems)
         .innerJoin(products,eq(orderItems.productId,products.id))
         .where(eq(orderItems.orderId,order.id));
 
-        res.json({order,orderItemsRows});
+        const statusEvents=await db.select().from(orderStatusEvents)
+            .where(eq(orderStatusEvents.orderId,order.id))
+            .orderBy(asc(orderStatusEvents.createdAt));
+
+        res.json({order,orderItemsRows,statusEvents});
 
     }catch(err){
         next(err);
@@ -308,9 +312,16 @@ export async function updateOrderStatus(req: Request, res: Response, next: NextF
     }
 
     const [updated] = await db.transaction(async (tx) => {
+      // Acting on the order (any way) resolves any pending customer request.
       const rows = await tx
         .update(orders)
-        .set({ status: toStatus, updatedAt: new Date() })
+        .set({
+          status: toStatus,
+          updatedAt: new Date(),
+          requestedStatus: null,
+          requestedNote: null,
+          requestedAt: null,
+        })
         .where(eq(orders.id, order.id))
         .returning();
 
@@ -324,6 +335,88 @@ export async function updateOrderStatus(req: Request, res: Response, next: NextF
 
       return rows;
     });
+
+    res.json({ order: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+const requestOrderActionSchema = z.object({
+  status: z.enum(REQUESTABLE_STATUSES),
+  note: z.string().trim().min(1).max(500).optional(),
+});
+
+// Customer-only: flags an order for staff review instead of changing its
+// status directly. Gated by the same canTransition() rules as the admin
+// endpoint, so a request is never possible where a direct change wouldn't be.
+export async function requestOrderAction(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { userId, isAuthenticated } = getAuth(req);
+    if (!isAuthenticated || !userId) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const parsed = requestOrderActionSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid request", details: parsed.error.flatten() });
+      return;
+    }
+
+    const localUser = await getLocalUser(userId);
+    if (!localUser) {
+      res.status(503).json({ error: "Account not synced yet" });
+      return;
+    }
+
+    const [order] = await db.select().from(orders).where(eq(orders.id, req.params.id as string)).limit(1);
+    if (!order || order.userId !== localUser.id) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
+
+    const { status: requestedStatus, note } = parsed.data;
+    if (!canTransition(order.status, requestedStatus)) {
+      res.status(409).json({ error: `Cannot request "${requestedStatus}" from "${order.status}"` });
+      return;
+    }
+
+    await db
+      .update(orders)
+      .set({ requestedStatus, requestedNote: note ?? null, requestedAt: new Date() })
+      .where(eq(orders.id, order.id));
+
+    const staffRows = await db.select({ id: users.id }).from(users).where(inArray(users.role, ["admin", "support"]));
+    if (staffRows.length > 0) {
+      await db.insert(notifications).values(
+        staffRows.map((s) => ({
+          userId: s.id,
+          orderId: order.id,
+          message: `Customer requested "${requestedStatus}" for order #${order.id.slice(0, 8)}`,
+        })),
+      );
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Admin-only: clears a pending customer request without changing status.
+export async function dismissOrderRequest(req: Request, res: Response, next: NextFunction) {
+  try {
+    const [updated] = await db
+      .update(orders)
+      .set({ requestedStatus: null, requestedNote: null, requestedAt: null })
+      .where(eq(orders.id, req.params.id as string))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Order not found" });
+      return;
+    }
 
     res.json({ order: updated });
   } catch (err) {

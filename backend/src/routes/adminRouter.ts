@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import { createAdminProduct, deleteAdminProduct, getImageKitAuth, listAdminProducts, requireAdmin, updateAdminProduct } from '../controllers/adminController';
-import { updateOrderStatus } from '../controllers/orderController';
+import { dismissOrderRequest, updateOrderStatus } from '../controllers/orderController';
 import { getAdminStats } from '../controllers/adminStatsController';
 import { listCustomers, updateCustomerRole } from '../controllers/adminUsersController';
 import { createCategory, deleteCategory, listCategories, renameCategory } from '../controllers/adminCategoriesController';
@@ -17,6 +17,7 @@ adminRouter.patch("/products/:id",validateUuidParam("id"),updateAdminProduct);
 adminRouter.delete("/products/:id",validateUuidParam("id"),deleteAdminProduct);
 
 adminRouter.patch("/orders/:id/status",validateUuidParam("id"),updateOrderStatus);
+adminRouter.patch("/orders/:id/dismiss-request",validateUuidParam("id"),dismissOrderRequest);
 
 adminRouter.get("/stats",getAdminStats);
 

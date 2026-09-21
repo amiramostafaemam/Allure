@@ -30,6 +30,15 @@ export function nextStatusOptions(status) {
   return MANUAL_TRANSITIONS[status] ?? [];
 }
 
+// Mirrors backend/src/lib/orderStatus.ts's REQUESTABLE_STATUSES — the subset
+// of nextStatusOptions() a customer may request instead of staff setting
+// directly.
+const REQUESTABLE_STATUSES = new Set(["cancelled", "refunded"]);
+
+export function requestableStatusOptions(status) {
+  return nextStatusOptions(status).filter((s) => REQUESTABLE_STATUSES.has(s));
+}
+
 // Mirrors backend/src/lib/orderStatus.ts's CHAT_ELIGIBLE_STATUSES.
 const CHAT_ELIGIBLE_STATUSES = ["paid", "shipped", "delivered"];
 

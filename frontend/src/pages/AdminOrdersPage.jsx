@@ -33,7 +33,7 @@ function StatusControl({ order, onChange, pending }) {
 }
 
 function AdminOrdersPage() {
-  const { orders, isLoading, isError, updateStatus } = useAdminOrders();
+  const { orders, isLoading, isError, updateStatus, dismissRequest } = useAdminOrders();
   const [errorForId, setErrorForId] = useState(null);
 
   async function handleStatusChange(id, status) {
@@ -88,15 +88,41 @@ function AdminOrdersPage() {
                     <span className={`badge badge-sm capitalize ${statusBadgeClass(order.status)}`}>
                       {order.status}
                     </span>
+                    {order.requestedStatus ? (
+                      <div className="mt-1 text-xs text-warning">
+                        {order.requestedStatus} requested
+                      </div>
+                    ) : null}
                   </td>
                   <td className="text-sm text-base-content/60">{formatOrderWhen(order.createdAt)}</td>
                   <td>
                     <div className="flex flex-col items-end gap-1">
-                      <StatusControl
-                        order={order}
-                        onChange={handleStatusChange}
-                        pending={updateStatus.isPending}
-                      />
+                      {order.requestedStatus ? (
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-primary"
+                            disabled={updateStatus.isPending}
+                            onClick={() => handleStatusChange(order.id, order.requestedStatus)}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-xs"
+                            disabled={dismissRequest.isPending}
+                            onClick={() => dismissRequest.mutate(order.id)}
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      ) : (
+                        <StatusControl
+                          order={order}
+                          onChange={handleStatusChange}
+                          pending={updateStatus.isPending}
+                        />
+                      )}
                       {errorForId === order.id ? (
                         <p className="text-xs text-error">Couldn't update status</p>
                       ) : null}

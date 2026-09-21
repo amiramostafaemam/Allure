@@ -1,20 +1,120 @@
+import { useState } from "react";
 import { Link } from "react-router";
-import { ArrowLeftIcon, LogInIcon, MapPinIcon, PhoneIcon, VideoIcon } from "lucide-react";
+import { ArrowLeftIcon, BanIcon, LogInIcon, MapPinIcon, PhoneIcon, RotateCcwIcon, VideoIcon } from "lucide-react";
 import { SignInButton } from "@clerk/react";
 import { useOrderDetail } from "../hooks/useOrderDetail";
 import { useMe } from "../hooks/useMe";
 import { OrderChatPanel } from "../components/OrderChatPanel";
+import OrderTimeline from "../components/OrderTimeline";
 import { OrderDetailSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { formatOrderWhen, formatPrice } from "../utils/format";
-import { isChatEligible, statusBadgeClass } from "../utils/orderStatus";
+import { isChatEligible, requestableStatusOptions, statusBadgeClass } from "../utils/orderStatus";
+
+const REQUEST_LABEL = { cancelled: "cancellation", refunded: "refund" };
+const REQUEST_ICON = { cancelled: BanIcon, refunded: RotateCcwIcon };
+
+function OrderRequestPanel({ order, requestAction }) {
+  const [pendingStatus, setPendingStatus] = useState(null);
+  const [note, setNote] = useState("");
+
+  if (order.requestedStatus) {
+    return (
+      <div className="card border border-dashed border-warning/40 bg-warning/5">
+        <div className="card-body">
+          <h3 className="font-semibold text-base-content">
+            {REQUEST_LABEL[order.requestedStatus]} requested
+          </h3>
+          <p className="text-sm text-base-content/65">
+            You asked for a {REQUEST_LABEL[order.requestedStatus]} on{" "}
+            {formatOrderWhen(order.requestedAt)}. Our team will review it shortly.
+          </p>
+          {order.requestedNote ? (
+            <p className="text-sm italic text-base-content/60">"{order.requestedNote}"</p>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  const options = requestableStatusOptions(order.status);
+  if (options.length === 0) return null;
+
+  return (
+    <div className="card border border-base-300 bg-base-100">
+      <div className="card-body gap-3">
+        <h3 className="font-semibold text-base-content">Need something changed?</h3>
+
+        {pendingStatus ? (
+          <div className="space-y-3">
+            <label className="form-control">
+              <span className="label-text mb-1">
+                Note for our team (optional)
+              </span>
+              <textarea
+                className="textarea textarea-bordered w-full"
+                rows={2}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="btn btn-sm"
+                onClick={() => setPendingStatus(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-primary"
+                disabled={requestAction.isPending}
+                onClick={() => {
+                  requestAction.mutate(
+                    { status: pendingStatus, note: note.trim() || undefined },
+                    { onSuccess: () => setPendingStatus(null) },
+                  );
+                }}
+              >
+                {requestAction.isPending ? "Sending…" : `Submit ${REQUEST_LABEL[pendingStatus]} request`}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {options.map((status) => {
+              const Icon = REQUEST_ICON[status];
+              return (
+                <button
+                  key={status}
+                  type="button"
+                  className="btn btn-sm btn-outline gap-2"
+                  onClick={() => setPendingStatus(status)}
+                >
+                  <Icon className="size-4" aria-hidden />
+                  Request {REQUEST_LABEL[status]}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {requestAction.isError ? (
+          <p className="text-sm text-error">Couldn't send the request. Try again.</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 function OrderDetailPage() {
   const {
     orderId,
     order,
     items,
+    statusEvents,
     isLoading,
     isError,
     isSignedIn,
@@ -22,6 +122,7 @@ function OrderDetailPage() {
     sendingInvite,
     inviteError,
     inviteSent,
+    requestAction,
   } = useOrderDetail();
   const { role } = useMe();
   const isStaff = role === "support" || role === "admin";
@@ -130,6 +231,8 @@ function OrderDetailPage() {
         </ul>
       </div>
 
+      <OrderTimeline order={order} statusEvents={statusEvents} />
+
       {order.shippingAddress ? (
         <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
           <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">
@@ -153,6 +256,8 @@ function OrderDetailPage() {
           </div>
         </div>
       ) : null}
+
+      {!isStaff ? <OrderRequestPanel order={order} requestAction={requestAction} /> : null}
 
       {isStaff ? (
         <div className="card border border-dashed border-secondary/40 bg-secondary/5">

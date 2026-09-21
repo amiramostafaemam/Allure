@@ -28,10 +28,21 @@ export function useOrderDetail() {
     },
   });
 
+  const requestAction = useMutation({
+    mutationFn: ({ status, note }) =>
+      apiFetch(`/api/orders/${id}/request`, {
+        getToken,
+        method: "POST",
+        body: { status, ...(note ? { note } : {}) },
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["order", id] }),
+  });
+
   return {
     orderId: id,
     order: data?.order ?? null,
     items: data?.orderItemsRows ?? [],
+    statusEvents: data?.statusEvents ?? [],
     isLoading: isSignedIn && isLoading,
     isError,
     isSignedIn,
@@ -39,5 +50,6 @@ export function useOrderDetail() {
     sendingInvite: sendVideoInvite.isPending,
     inviteError: sendVideoInvite.isError,
     inviteSent,
+    requestAction,
   };
 }

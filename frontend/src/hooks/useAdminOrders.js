@@ -24,10 +24,17 @@ export function useAdminOrders() {
     },
   });
 
+  const dismissRequest = useMutation({
+    mutationFn: (id) =>
+      apiFetch(`/api/admin/orders/${id}/dismiss-request`, { getToken, method: "PATCH" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-orders"] }),
+  });
+
   return {
     orders: data?.orders ?? [],
     isLoading,
     isError,
     updateStatus,
+    dismissRequest,
   };
 }
