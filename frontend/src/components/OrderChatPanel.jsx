@@ -14,6 +14,7 @@ import {
 import "stream-chat-react/dist/css/index.css";
 import { VideoIcon, MessageCircleIcon } from "lucide-react";
 import { apiFetch } from "../lib/api";
+import { useTheme } from "../store/theme";
 import { useStreamToken } from "../hooks/useStreamToken";
 import { OrderChatPanelSkeleton } from "./LoadingSkeletons";
 import PageError from "./PageError";
@@ -40,6 +41,7 @@ function VideoInviteMessage(props) {
 
 export function OrderChatPanel({ orderId }) {
   const { getToken } = useAuth();
+  const theme = useTheme((s) => s.theme);
   const {
     data: streamAuth,
     isLoading: tokenLoading,
@@ -133,7 +135,7 @@ export function OrderChatPanel({ orderId }) {
       </div>
 
       <div className="h-140 overflow-hidden rounded-box border border-base-300">
-        <Chat client={client} theme="str-chat__theme-dark">
+        <Chat client={client} theme={theme === "light" ? "str-chat__theme-light" : "str-chat__theme-dark"}>
           <Channel channel={channel}>
             <Window>
               <MessageList Message={VideoInviteMessage} />

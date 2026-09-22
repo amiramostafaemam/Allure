@@ -1,29 +1,9 @@
-import { useState } from "react";
 import { MoonIcon, SunIcon } from "lucide-react";
-
-const STORAGE_KEY = "allure-theme";
-
-function readInitialTheme() {
-  return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "forest";
-}
-
-function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
-  try {
-    localStorage.setItem(STORAGE_KEY, theme);
-  } catch {
-    // per-viewer convenience only — fine if storage is unavailable
-  }
-}
+import { useTheme } from "../store/theme";
 
 function ThemeToggle() {
-  const [theme, setTheme] = useState(readInitialTheme);
-
-  function toggle() {
-    const next = theme === "forest" ? "light" : "forest";
-    applyTheme(next);
-    setTheme(next);
-  }
+  const theme = useTheme((s) => s.theme);
+  const toggle = useTheme((s) => s.toggle);
 
   return (
     <button
