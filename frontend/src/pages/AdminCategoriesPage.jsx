@@ -72,7 +72,11 @@ function AdminCategoriesPage() {
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
         />
-        <button type="submit" className="btn btn-primary gap-2" disabled={createCategory.isPending}>
+        <button
+          type="submit"
+          className="btn btn-primary gap-2"
+          disabled={createCategory.isPending || !newName.trim()}
+        >
           <PlusIcon className="size-4" aria-hidden />
           Add category
         </button>
