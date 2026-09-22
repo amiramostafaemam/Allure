@@ -4,6 +4,7 @@ import { useAdminPromoCodes } from "../hooks/useAdminPromoCodes";
 import { AdminTableSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { TextField } from "../components/FormField";
+import { DatePickerField } from "../components/DatePickerField";
 import { formatOrderWhen } from "../utils/format";
 
 function emptyForm() {
@@ -84,12 +85,11 @@ function AdminPromoCodesPage() {
           value={form.percentOff}
           onChange={(e) => setForm((f) => ({ ...f, percentOff: e.target.value }))}
         />
-        <TextField
+        <DatePickerField
           label="Expires"
           optional
-          type="date"
           value={form.expiresAt}
-          onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
+          onChange={(dateStr) => setForm((f) => ({ ...f, expiresAt: dateStr }))}
         />
         <div className="flex items-end">
           <button
