@@ -85,7 +85,7 @@ function CartPage() {
                     ) : null}
                     <div className="mt-2 flex flex-wrap items-center gap-3">
                       <span className="text-sm text-base-content/70">Qty</span>
-                      <div className="join border border-base-300">
+                      <div className="join overflow-hidden rounded-full border border-base-300">
                         <button
                           type="button"
                           className="btn btn-sm join-item gap-0 px-2.5"

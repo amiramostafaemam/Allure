@@ -27,7 +27,7 @@ export function CatalogProductCard({ product }) {
             />
           ) : null}
         </figure>
-        <span className="badge badge-sm absolute left-3 top-3 border-0 bg-primary/15 text-xs font-medium text-primary backdrop-blur">
+        <span className="badge badge-sm badge-primary absolute left-3 top-3 border-0 text-xs font-medium shadow">
           {product.category ?? "General"}
         </span>
       </Link>

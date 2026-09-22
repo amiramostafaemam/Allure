@@ -75,7 +75,7 @@ function ProductPage() {
                   className="h-full w-full object-cover"
                 />
               ) : null}
-              <span className="badge absolute left-4 top-4 border-0 bg-primary/15 text-xs font-medium text-primary shadow backdrop-blur">
+              <span className="badge badge-primary absolute left-4 top-4 border-0 text-xs font-medium shadow">
                 {product.category ?? "General"}
               </span>
             </figure>
