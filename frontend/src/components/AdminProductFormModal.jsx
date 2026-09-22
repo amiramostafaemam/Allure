@@ -102,7 +102,7 @@ export function AdminProductFormModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="modal-box w-full max-w-lg">
+      <div className="modal-box w-full max-w-lg opacity-100! scale-100!">
         <h3 className="text-lg font-bold text-base-content">
           {product ? "Edit product" : "New product"}
         </h3>

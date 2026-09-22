@@ -68,7 +68,7 @@ function AdminCategoriesPage() {
         <input
           type="text"
           placeholder="New category name"
-          className="input"
+          className="input focus:[--input-color:var(--color-primary)] focus:outline-none!"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
         />
@@ -98,7 +98,7 @@ function AdminCategoriesPage() {
                       <input
                         type="text"
                         autoFocus
-                        className="input input-sm"
+                        className="input input-sm focus:[--input-color:var(--color-primary)] focus:outline-none!"
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
                       />

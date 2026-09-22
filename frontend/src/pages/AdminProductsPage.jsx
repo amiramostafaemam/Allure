@@ -236,7 +236,7 @@ function AdminProductsPage() {
             if (e.target === e.currentTarget) setConfirmDelete(null);
           }}
         >
-          <div className="modal-box w-full max-w-sm">
+          <div className="modal-box w-full max-w-sm opacity-100! scale-100!">
             <h3 className="text-lg font-bold text-base-content">
               Delete product?
             </h3>
