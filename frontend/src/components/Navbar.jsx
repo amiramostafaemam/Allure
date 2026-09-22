@@ -29,12 +29,13 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 border-b border-base-300 bg-base-100/95 shadow-sm backdrop-blur-md">
       <div className="navbar mx-auto min-h-14 max-w-7xl px-4 py-2.5 md:px-6 md:py-3">
         <div className="flex-1">
-          <Link
-            to="/"
-            className="btn btn-ghost gap-2 px-2 font-mono text-lg font-semibold uppercase tracking-wide md:text-xl"
-          >
-            <img src="/favicon.svg" alt="" className="size-8" aria-hidden />
-            <span className="leading-none">Allure</span>
+          <Link to="/" className="btn btn-ghost px-2">
+            <span
+              className="text-[2.1rem] leading-none text-primary drop-shadow-[0_0_10px_rgba(31,184,84,0.4)]"
+              style={{ fontFamily: "'Alex Brush', cursive" }}
+            >
+              Allure
+            </span>
           </Link>
         </div>
 

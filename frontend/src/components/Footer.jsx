@@ -7,8 +7,10 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-6">
         <div className="grid gap-10 md:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2 font-semibold text-base-content">
-              <img src="/favicon.svg" alt="" className="size-8" aria-hidden />
+            <div
+              className="text-3xl leading-none text-primary"
+              style={{ fontFamily: "'Alex Brush', cursive" }}
+            >
               Allure
             </div>
             <p className="mt-3 text-sm leading-relaxed text-base-content/65">
