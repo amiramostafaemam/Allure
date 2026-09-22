@@ -61,7 +61,7 @@ function AdminCustomersPage() {
                   <td>
                     <div className="flex flex-col items-end gap-1">
                       <select
-                        className="select select-bordered select-xs"
+                        className="select select-xs"
                         value={customer.role}
                         disabled={isSelf || updateRole.isPending}
                         title={isSelf ? "You can't change your own role" : undefined}

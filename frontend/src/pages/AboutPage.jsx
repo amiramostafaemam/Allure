@@ -5,7 +5,7 @@ function AboutPage() {
   return (
     <StaticPageLayout title="About Allure" icon={InfoIcon}>
       <p>
-        Allure Supply curates hardware and workspace tools — audio, wearables,
+        Allure curates hardware and workspace tools — audio, wearables,
         desk setups, cameras, travel gear, and the accessories that tie a
         setup together. We pick products we'd actually use, not just list
         whatever's trending.

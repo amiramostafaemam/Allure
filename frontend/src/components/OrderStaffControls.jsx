@@ -43,7 +43,7 @@ export function OrderStaffControls({
           if (options.length === 0) return null;
           return (
             <select
-              className={`select select-bordered ${selectSize}`}
+              className={`select ${selectSize}`}
               value=""
               disabled={statusPending}
               onChange={(e) => {

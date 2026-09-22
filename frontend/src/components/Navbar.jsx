@@ -1,5 +1,5 @@
 import { Show, SignInButton, UserButton } from "@clerk/react";
-import { Link } from "react-router";
+import { Link, NavLink } from "react-router";
 
 import {
   LogInIcon,
@@ -7,11 +7,16 @@ import {
   SettingsIcon,
   ShoppingBagIcon,
   ShoppingCartIcon,
-  StoreIcon,
 } from "lucide-react";
 import { useCart } from "../store/cart";
 import { useMe } from "../hooks/useMe";
 import NotificationBell from "./NotificationBell";
+
+// Ghost nav link, highlighted only while its route is actually active —
+// not a permanently-colored link regardless of where you are.
+function navLinkClass({ isActive }) {
+  return `btn btn-ghost gap-2 font-medium ${isActive ? "btn-active text-primary" : ""}`;
+}
 
 const Navbar = () => {
   const { role } = useMe();
@@ -28,41 +33,36 @@ const Navbar = () => {
             to="/"
             className="btn btn-ghost gap-2 px-2 font-mono text-lg font-semibold uppercase tracking-wide md:text-xl"
           >
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary/15 p-1 text-primary">
-              <StoreIcon className="size-6" aria-hidden />
-            </span>
+            <img src="/favicon.svg" alt="" className="size-8" aria-hidden />
             <span className="leading-none">Allure</span>
           </Link>
         </div>
 
         <nav className="flex items-center gap-1 md:gap-1.5">
-          <Link to="/" className="btn btn-ghost gap-2 font-medium">
+          <NavLink to="/" end className={navLinkClass}>
             <ShoppingBagIcon className="size-6 opacity-90" aria-hidden />
             <span className="hidden sm:inline">Shop</span>
-          </Link>
+          </NavLink>
 
           <Show when={"signed-in"}>
-            <Link to="/orders" className="btn btn-ghost gap-2 font-medium">
+            <NavLink to="/orders" className={navLinkClass}>
               <PackageIcon className="size-6 opacity-90" aria-hidden />
               <span className="hidden sm:inline">Orders</span>
-            </Link>
+            </NavLink>
 
             {role === "admin" ? (
-              <Link
-                to="/admin"
-                className="btn btn-ghost gap-2 font-medium text-secondary"
-              >
+              <NavLink to="/admin" className={navLinkClass}>
                 <SettingsIcon className="size-6" aria-hidden />
                 <span className="hidden sm:inline">Admin</span>
-              </Link>
+              </NavLink>
             ) : null}
 
             <NotificationBell />
           </Show>
 
-          <Link
+          <NavLink
             to="/cart"
-            className="btn btn-ghost gap-2 font-medium indicator"
+            className={({ isActive }) => `${navLinkClass({ isActive })} indicator`}
             aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
           >
             {cartCount > 0 ? (
@@ -72,7 +72,7 @@ const Navbar = () => {
             ) : null}
             <ShoppingCartIcon className="size-6 opacity-90" aria-hidden />
             <span className="hidden sm:inline">Cart</span>
-          </Link>
+          </NavLink>
 
           <Show when={"signed-out"}>
             <SignInButton mode="modal">

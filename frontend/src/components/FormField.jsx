@@ -1,14 +1,19 @@
-// Shared, deliberately nicer-looking form controls — larger padding,
-// rounded corners, a tinted background that lifts on focus, and a soft
-// glow focus ring in the theme's primary color instead of daisyUI's default
-// hard outline. Use these for any new form instead of bare input-bordered.
+// Shared form controls. daisyUI 5 dropped `form-control`/`label-text`/
+// `*-bordered` entirely (its `.input`/`.select`/`.textarea` are bordered by
+// default, and `.label` is now an inline row for prefix/suffix content, not
+// a block label-above-input wrapper) — those class names are silently inert
+// in this app's daisyUI version, which is why spacing here used to rely on
+// unstyled default flow instead of a real layout. Plain flex classes below
+// instead. Focus color hooks into daisyUI's own --input-color variable
+// (consumed by its built-in outline/box-shadow) rather than layering a
+// second custom ring on top of it, which was doubling up visibly.
 const CONTROL_CLASS =
-  "w-full rounded-xl border-base-300 bg-base-200/40 px-4 py-3 transition-all duration-150 outline-none focus:border-primary focus:bg-base-100 focus:ring-4 focus:ring-primary/15";
+  "w-full rounded-xl px-4 py-3 transition-colors duration-150 focus:[--input-color:var(--color-primary)]";
 
 function FieldLabel({ label, optional }) {
   if (!label) return null;
   return (
-    <span className="label-text mb-1.5 text-sm font-medium text-base-content/80">
+    <span className="text-sm font-medium text-base-content/80">
       {label}
       {optional ? <span className="text-base-content/40"> (optional)</span> : null}
     </span>
@@ -17,27 +22,27 @@ function FieldLabel({ label, optional }) {
 
 export function TextField({ label, optional, className = "", ...inputProps }) {
   return (
-    <label className="form-control">
+    <label className="flex flex-col gap-1.5">
       <FieldLabel label={label} optional={optional} />
-      <input className={`input input-bordered ${CONTROL_CLASS} ${className}`} {...inputProps} />
+      <input className={`input ${CONTROL_CLASS} ${className}`} {...inputProps} />
     </label>
   );
 }
 
 export function TextAreaField({ label, optional, className = "", ...textareaProps }) {
   return (
-    <label className="form-control">
+    <label className="flex flex-col gap-1.5">
       <FieldLabel label={label} optional={optional} />
-      <textarea className={`textarea textarea-bordered ${CONTROL_CLASS} ${className}`} {...textareaProps} />
+      <textarea className={`textarea ${CONTROL_CLASS} ${className}`} {...textareaProps} />
     </label>
   );
 }
 
 export function SelectField({ label, optional, className = "", children, ...selectProps }) {
   return (
-    <label className="form-control">
+    <label className="flex flex-col gap-1.5">
       <FieldLabel label={label} optional={optional} />
-      <select className={`select select-bordered ${CONTROL_CLASS} ${className}`} {...selectProps}>
+      <select className={`select ${CONTROL_CLASS} ${className}`} {...selectProps}>
         {children}
       </select>
     </label>

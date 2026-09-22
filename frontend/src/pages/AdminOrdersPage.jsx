@@ -42,7 +42,7 @@ function AdminOrdersPage() {
             className="w-64"
           />
           <select
-            className="select select-bordered"
+            className="select"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >

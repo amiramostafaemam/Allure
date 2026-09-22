@@ -38,7 +38,7 @@ function layout(bodyHtml: string): string {
       <h1 style="font-size:20px;margin:0 0 16px">Allure</h1>
       ${bodyHtml}
       <p style="margin-top:32px;font-size:12px;color:#6b7280">
-        This is an automated message from Allure Supply.
+        This is an automated message from Allure.
       </p>
     </div>
   `;

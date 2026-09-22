@@ -128,8 +128,8 @@ export function AdminProductFormModal({
 
           <div className="grid gap-4 sm:grid-cols-2">
             {creatingCategory ? (
-              <div className="form-control">
-                <span className="label-text mb-1.5 text-sm font-medium text-base-content/80">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium text-base-content/80">
                   New category
                 </span>
                 <div className="flex gap-2">
@@ -209,12 +209,12 @@ export function AdminProductFormModal({
             }
           />
 
-          <label className="form-control">
-            <span className="label-text mb-1">Image</span>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium text-base-content/80">Image</span>
             <input
               type="file"
               accept="image/*"
-              className="file-input file-input-bordered w-full"
+              className="file-input w-full"
               onChange={handleFileChange}
             />
             {imagePreview ? (
@@ -226,7 +226,7 @@ export function AdminProductFormModal({
             ) : null}
           </label>
 
-          <label className="label cursor-pointer justify-start gap-3">
+          <label className="flex cursor-pointer items-center gap-3">
             <input
               type="checkbox"
               className="toggle toggle-primary"
@@ -235,7 +235,7 @@ export function AdminProductFormModal({
                 setForm((f) => ({ ...f, active: e.target.checked }))
               }
             />
-            <span className="label-text">Active (visible in catalog)</span>
+            <span className="text-sm text-base-content/80">Active (visible in catalog)</span>
           </label>
 
           {error ? <p className="text-sm text-error">{error}</p> : null}

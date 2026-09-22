@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { HeadphonesIcon, TruckIcon } from "lucide-react";
+import { HeadphonesIcon } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -8,8 +8,8 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-2 font-semibold text-base-content">
-              <TruckIcon className="size-8 text-primary" aria-hidden />
-              Allure Supply
+              <img src="/favicon.svg" alt="" className="size-8" aria-hidden />
+              Allure
             </div>
             <p className="mt-3 text-sm leading-relaxed text-base-content/65">
               Curated hardware and workspace tools. Paid orders include priority
@@ -58,7 +58,7 @@ export default function Footer() {
                   aria-hidden
                 />
                 <span>
-                  Order-scoped chat after payment; video links shared in-thread.
+                  Order-scoped chat after payment. Video links shared in-thread.
                 </span>
               </li>
               <li>
@@ -109,7 +109,7 @@ export default function Footer() {
 
         <div className="mt-10 space-y-4 border-t border-base-300 pt-6">
           <p className="text-center text-xs text-base-content/50">
-            © {new Date().getFullYear()} Allure Supply · All prices in EGP
+            © {new Date().getFullYear()} Allure · All prices in EGP
           </p>
         </div>
       </div>

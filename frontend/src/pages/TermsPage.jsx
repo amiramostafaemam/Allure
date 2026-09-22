@@ -5,7 +5,7 @@ function TermsPage() {
   return (
     <StaticPageLayout title="Terms of service" icon={FileTextIcon}>
       <p>
-        By placing an order on Allure Supply, you agree to the terms below.
+        By placing an order on Allure, you agree to the terms below.
         This is a general summary, not legal advice — replace with your
         counsel-reviewed terms before taking real orders.
       </p>

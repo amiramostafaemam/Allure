@@ -31,12 +31,12 @@ function ReviewForm({ createReview }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
       <div className="flex items-center gap-3">
-        <label className="label-text" htmlFor="review-rating">
+        <label className="text-sm font-medium text-base-content/80" htmlFor="review-rating">
           Your rating
         </label>
         <select
           id="review-rating"
-          className="select select-bordered select-sm w-24"
+          className="select select-sm w-24 focus:[--input-color:var(--color-primary)]"
           value={rating}
           onChange={(e) => setRating(e.target.value)}
         >
@@ -48,7 +48,7 @@ function ReviewForm({ createReview }) {
         </select>
       </div>
       <textarea
-        className="textarea textarea-bordered w-full"
+        className="textarea w-full focus:[--input-color:var(--color-primary)]"
         rows={3}
         placeholder="Share your experience with this product (optional)"
         value={comment}

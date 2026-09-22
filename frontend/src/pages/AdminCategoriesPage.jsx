@@ -68,7 +68,7 @@ function AdminCategoriesPage() {
         <input
           type="text"
           placeholder="New category name"
-          className="input input-bordered"
+          className="input"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
         />
@@ -98,7 +98,7 @@ function AdminCategoriesPage() {
                       <input
                         type="text"
                         autoFocus
-                        className="input input-bordered input-sm"
+                        className="input input-sm"
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
                       />
