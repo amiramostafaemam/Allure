@@ -43,7 +43,7 @@ export function OrderStaffControls({
           if (options.length === 0) return null;
           return (
             <select
-              className={`select ${selectSize}`}
+              className={`select select-primary rounded-lg font-medium focus:outline-none! ${selectSize}`}
               value=""
               disabled={statusPending}
               onChange={(e) => {
@@ -51,7 +51,9 @@ export function OrderStaffControls({
                 e.target.value = "";
               }}
             >
-              <option value="">Change status…</option>
+              <option value="" disabled>
+                Change status…
+              </option>
               {options.map((status) => (
                 <option key={status} value={status}>
                   Mark {status}

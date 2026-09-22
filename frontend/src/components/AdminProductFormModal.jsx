@@ -128,35 +128,38 @@ export function AdminProductFormModal({
 
           <div className="grid gap-4 sm:grid-cols-2">
             {creatingCategory ? (
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 sm:col-span-2">
                 <span className="text-sm font-medium text-base-content/80">
                   New category
                 </span>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <TextField
                     autoFocus
+                    placeholder="Category name"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="flex-1"
+                    className="min-w-0 flex-1"
                   />
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    disabled={categorySaving || !newCategoryName.trim()}
-                    onClick={handleCreateCategory}
-                  >
-                    {categorySaving ? "…" : "Add"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => {
-                      setCreatingCategory(false);
-                      setCategoryError("");
-                    }}
-                  >
-                    Cancel
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      disabled={categorySaving || !newCategoryName.trim()}
+                      onClick={handleCreateCategory}
+                    >
+                      {categorySaving ? "…" : "Add"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => {
+                        setCreatingCategory(false);
+                        setCategoryError("");
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
                 {categoryError ? <p className="mt-1 text-xs text-error">{categoryError}</p> : null}
               </div>

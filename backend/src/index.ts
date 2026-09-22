@@ -24,6 +24,16 @@ import notificationRouter from './routes/notificationRouter';
 const env = getEnv();
 const app = express();
 
+// Render sits the app behind a reverse proxy. Without this, Express's
+// req.ip resolves to the proxy's own address for every single request
+// (not the real visitor), which silently turns the rate limiters below
+// into one shared bucket across every visitor of the entire site instead
+// of a separate bucket per real IP — exactly the kind of bug that looks
+// like "random actions just stop working" under any real concurrent
+// traffic. `1` trusts exactly one hop (Render's own proxy), not an
+// arbitrary chain, so a client can't spoof X-Forwarded-For to dodge limits.
+app.set("trust proxy", 1);
+
 const rawJson=express.raw({type:'application/json',limit:'1mb'});
 
 app.post("/webhooks/clerk",rawJson,(req,res)=>{

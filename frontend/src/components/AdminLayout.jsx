@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router";
 import {
+  BoxIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   LayoutDashboardIcon,
   PackageIcon,
-  SettingsIcon,
   ShapesIcon,
   TagIcon,
   UsersIcon,
@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { to: "/admin/orders", label: "Orders", icon: PackageIcon },
   { to: "/admin/customers", label: "Customers", icon: UsersIcon },
   { to: "/admin/categories", label: "Categories", icon: ShapesIcon },
-  { to: "/admin/products", label: "Products", icon: SettingsIcon },
+  { to: "/admin/products", label: "Products", icon: BoxIcon },
   { to: "/admin/promo-codes", label: "Promo codes", icon: TagIcon },
 ];
 
@@ -59,20 +59,18 @@ function AdminLayout() {
   }
 
   return (
-    <div className={`grid gap-8 ${collapsed ? "lg:grid-cols-[72px_1fr]" : "lg:grid-cols-[220px_1fr]"}`}>
+    <div className={`grid gap-8 ${collapsed ? "lg:grid-cols-[52px_1fr]" : "lg:grid-cols-[176px_1fr]"}`}>
       <nav className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
         <button
           type="button"
           onClick={toggleCollapsed}
-          className="btn btn-ghost btn-sm hidden shrink-0 justify-center gap-2 border border-base-300 lg:flex lg:w-full lg:justify-start"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="btn btn-ghost btn-sm hidden shrink-0 justify-center border border-base-300 lg:flex lg:w-full"
         >
           {collapsed ? (
             <ChevronRightIcon className="size-4" aria-hidden />
           ) : (
-            <>
-              <ChevronLeftIcon className="size-4" aria-hidden />
-              <span>Collapse</span>
-            </>
+            <ChevronLeftIcon className="size-4" aria-hidden />
           )}
         </button>
 

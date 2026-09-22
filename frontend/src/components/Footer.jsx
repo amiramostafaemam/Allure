@@ -15,7 +15,7 @@ export default function Footer() {
             </div>
             <p className="mt-3 text-sm leading-relaxed text-base-content/65">
               Curated hardware and workspace tools. Paid orders include priority
-              support; chat with our team and join a video call when we share a
+              support, chat with our team and join a video call when we share a
               link.
             </p>
           </div>

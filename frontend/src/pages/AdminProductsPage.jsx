@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@clerk/react";
-import { PencilIcon, PlusIcon, SettingsIcon, Trash2Icon } from "lucide-react";
+import { BoxIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useAdminProducts } from "../hooks/useAdminProducts";
 import { useAdminCategories } from "../hooks/useAdminCategories";
 import { AdminProductFormModal } from "../components/AdminProductFormModal";
@@ -106,7 +106,7 @@ function AdminProductsPage() {
     <div className="text-left">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1 className="flex items-center gap-2 text-3xl font-bold text-base-content">
-          <SettingsIcon className="size-8 text-primary" aria-hidden />
+          <BoxIcon className="size-8 text-primary" aria-hidden />
           Manage products
         </h1>
         <div className="flex flex-wrap gap-2">
