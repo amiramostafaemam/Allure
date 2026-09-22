@@ -1,15 +1,27 @@
 # Allure
 
+[![CI](https://github.com/amiramostafaemam/Allure/actions/workflows/ci.yml/badge.svg)](https://github.com/amiramostafaemam/Allure/actions/workflows/ci.yml)
+[![License: ISC](https://img.shields.io/badge/license-ISC-blue.svg)](#license)
+
 A full-stack e-commerce platform with authenticated checkout, an admin product dashboard, and post-purchase support via live chat and video calls.
+
+## Screenshots
+
+|                                                        |                                                          |
+| ------------------------------------------------------ | -------------------------------------------------------- |
+| ![Shop](docs/screenshots/home.png)<br>Shop              | ![Product page](docs/screenshots/product.png)<br>Product page |
+| ![Checkout](docs/screenshots/checkout.png)<br>Checkout  | ![Admin dashboard](docs/screenshots/admin-dashboard.png)<br>Admin dashboard |
+| ![Order chat](docs/screenshots/chat.png)<br>Order support chat | ![Light mode](docs/screenshots/light-mode.png)<br>Light mode |
 
 ## Features
 
-- **Catalog & cart** — browsable product catalog with category filters, a persisted cart (Zustand), and per-product pages.
-- **Checkout** — server-priced checkout sessions via [Polar](https://polar.sh), with idempotent, signature-verified webhook fulfillment.
-- **Orders** — order history and detail pages for customers; staff/admin views for every order.
-- **Admin dashboard** — create/edit/deactivate products with image upload to ImageKit.
+- **Catalog & cart** — browsable product catalog with category filters, a persisted cart (Zustand), and per-product pages with customer reviews.
+- **Checkout** — server-priced checkout sessions via [Polar](https://polar.sh), with idempotent, signature-verified webhook fulfillment and percentage-based promo codes.
+- **Orders** — order history and detail pages for customers, with friendly order numbers; staff/admin views for every order with inline status controls and grouped, real-time notifications.
+- **Admin dashboard** — create/edit/deactivate products with image upload to ImageKit, manage categories and promo codes, and change customer roles.
 - **Support chat & video calls** — once an order is paid, the customer and support staff get a dedicated Stream Chat channel; staff can drop a one-tap video call invite into it.
 - **Auth** — Clerk-backed sign-in, with roles (`customer` / `support` / `admin`) synced into the local database via Clerk webhooks.
+- **Light/dark mode** — a theme toggle with the brand accent carried across both palettes, persisted per visitor.
 - **Observability** — Sentry error tracking and performance monitoring on both the API and the browser, with session replay input/text masking left on for privacy.
 
 ## Tech stack
