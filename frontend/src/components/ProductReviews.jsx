@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { StarIcon } from "lucide-react";
 import { useProductReviews } from "../hooks/useProductReviews";
+import { TextAreaField } from "./FormField";
 import { formatOrderWhen } from "../utils/format";
 
 function Stars({ value, className = "size-4" }) {
@@ -68,8 +69,7 @@ function ReviewForm({ createReview }) {
         <span className="text-sm font-medium text-base-content/80">Your rating</span>
         <StarRatingInput value={rating} onChange={setRating} />
       </div>
-      <textarea
-        className="textarea w-full focus:[--input-color:var(--color-primary)] focus:outline-none!"
+      <TextAreaField
         rows={3}
         placeholder="Share your experience with this product (optional)"
         value={comment}

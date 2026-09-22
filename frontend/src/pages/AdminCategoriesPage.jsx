@@ -3,6 +3,7 @@ import { CheckIcon, PencilIcon, PlusIcon, ShapesIcon, Trash2Icon, XIcon } from "
 import { useAdminCategories } from "../hooks/useAdminCategories";
 import { AdminTableSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
+import { TextField } from "../components/FormField";
 
 function AdminCategoriesPage() {
   const { categories, isLoading, isError, createCategory, renameCategory, deleteCategory } =
@@ -65,10 +66,9 @@ function AdminCategoriesPage() {
       </h1>
 
       <form onSubmit={handleCreate} className="mb-6 flex flex-wrap items-start gap-3">
-        <input
-          type="text"
+        <TextField
           placeholder="New category name"
-          className="input focus:[--input-color:var(--color-primary)] focus:outline-none!"
+          className="max-w-xs"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
         />
