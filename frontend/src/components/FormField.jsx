@@ -4,11 +4,19 @@
 // a block label-above-input wrapper) — those class names are silently inert
 // in this app's daisyUI version, which is why spacing here used to rely on
 // unstyled default flow instead of a real layout. Plain flex classes below
-// instead. Focus color hooks into daisyUI's own --input-color variable
-// (consumed by its built-in outline/box-shadow) rather than layering a
-// second custom ring on top of it, which was doubling up visibly.
+// instead.
+//
+// Focus color hooks into daisyUI's own --input-color variable (consumed by
+// its built-in border color), but daisyUI *also* draws a second, separate
+// line on focus — a 2px outline offset 2px out from the border — as its own
+// built-in emphasis treatment. That's the actual "double line": one field,
+// two rings, by daisyUI's own design. `outline-none!` forces that second
+// line off (Tailwind v4's important suffix — needed because daisyUI's own
+// focus rule and a plain `outline-none` land at equal specificity, so the
+// later one only wins with `!important`), leaving just the single colored
+// border.
 const CONTROL_CLASS =
-  "w-full rounded-xl px-4 py-3 transition-colors duration-150 focus:[--input-color:var(--color-primary)]";
+  "w-full rounded-xl px-4 py-3 transition-colors duration-150 focus:[--input-color:var(--color-primary)] focus:outline-none!";
 
 function FieldLabel({ label, optional }) {
   if (!label) return null;

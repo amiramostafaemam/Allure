@@ -36,7 +36,7 @@ function ReviewForm({ createReview }) {
         </label>
         <select
           id="review-rating"
-          className="select select-sm w-24 focus:[--input-color:var(--color-primary)]"
+          className="select select-sm w-24 focus:[--input-color:var(--color-primary)] focus:outline-none!"
           value={rating}
           onChange={(e) => setRating(e.target.value)}
         >
@@ -48,7 +48,7 @@ function ReviewForm({ createReview }) {
         </select>
       </div>
       <textarea
-        className="textarea w-full focus:[--input-color:var(--color-primary)]"
+        className="textarea w-full focus:[--input-color:var(--color-primary)] focus:outline-none!"
         rows={3}
         placeholder="Share your experience with this product (optional)"
         value={comment}

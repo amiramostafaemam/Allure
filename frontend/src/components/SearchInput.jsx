@@ -22,7 +22,7 @@ export function SearchInput({ value, onChange, placeholder = "Search…", classN
   }, [debounced]);
 
   return (
-    <label className={`input flex items-center gap-2 focus-within:[--input-color:var(--color-primary)] ${className}`}>
+    <label className={`input flex items-center gap-2 focus-within:[--input-color:var(--color-primary)] focus-within:outline-none! ${className}`}>
       <SearchIcon className="size-4 text-base-content/50" aria-hidden />
       <input
         type="search"

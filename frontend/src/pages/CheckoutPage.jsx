@@ -179,7 +179,7 @@ function CheckoutPage() {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    className="input input-sm w-full rounded-lg uppercase transition-colors duration-150 focus:[--input-color:var(--color-primary)]"
+                    className="input input-sm w-full rounded-lg uppercase transition-colors duration-150 focus:[--input-color:var(--color-primary)] focus:outline-none!"
                     placeholder="Promo code"
                     value={promo.code}
                     onChange={(e) => promo.setCode(e.target.value)}
