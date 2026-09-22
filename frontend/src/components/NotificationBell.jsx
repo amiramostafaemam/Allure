@@ -13,6 +13,9 @@ function NotificationBell() {
         role="button"
         className="btn btn-ghost btn-square indicator"
         aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        onFocus={() => {
+          if (unreadCount > 0 && !markAllRead.isPending) markAllRead.mutate();
+        }}
       >
         {unreadCount > 0 ? (
           <span className="indicator-item badge badge-sm badge-primary min-w-2 px-1.5 font-sans text-xs tabular-nums">

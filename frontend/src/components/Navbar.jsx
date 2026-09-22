@@ -11,6 +11,7 @@ import {
 import { useCart } from "../store/cart";
 import { useMe } from "../hooks/useMe";
 import NotificationBell from "./NotificationBell";
+import ThemeToggle from "./ThemeToggle";
 
 // Ghost nav link, highlighted only while its route is actually active —
 // not a permanently-colored link regardless of where you are.
@@ -74,6 +75,8 @@ const Navbar = () => {
             <ShoppingCartIcon className="size-6 opacity-90" aria-hidden />
             <span className="hidden sm:inline">Cart</span>
           </NavLink>
+
+          <ThemeToggle />
 
           <Show when={"signed-out"}>
             <SignInButton mode="modal">
