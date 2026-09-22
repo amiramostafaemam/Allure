@@ -16,6 +16,40 @@ function Stars({ value, className = "size-4" }) {
   );
 }
 
+function StarRatingInput({ value, onChange }) {
+  const [hovered, setHovered] = useState(0);
+  const active = hovered || value;
+
+  return (
+    <div className="flex items-center gap-0.5" onMouseLeave={() => setHovered(0)}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          onMouseEnter={() => setHovered(n)}
+          onFocus={() => setHovered(n)}
+          onClick={() => onChange(n)}
+          className="rounded p-0.5 transition-transform hover:scale-110 focus:outline-none! focus:[--input-color:var(--color-primary)]"
+          aria-label={`${n} star${n > 1 ? "s" : ""}`}
+        >
+          <StarIcon className={`size-6 ${n <= active ? "fill-warning text-warning" : "text-base-300"}`} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ReviewerAvatar({ name, avatarUrl }) {
+  if (avatarUrl) {
+    return <img src={avatarUrl} alt="" className="size-8 shrink-0 rounded-full object-cover" />;
+  }
+  return (
+    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-primary">
+      {(name || "?").trim().charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
 function ReviewForm({ createReview }) {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -23,7 +57,7 @@ function ReviewForm({ createReview }) {
   function handleSubmit(e) {
     e.preventDefault();
     createReview.mutate(
-      { rating: Number(rating), comment: comment.trim() || undefined },
+      { rating, comment: comment.trim() || undefined },
       { onSuccess: () => setComment("") },
     );
   }
@@ -31,21 +65,8 @@ function ReviewForm({ createReview }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-box border border-base-300 bg-base-100 p-4">
       <div className="flex items-center gap-3">
-        <label className="text-sm font-medium text-base-content/80" htmlFor="review-rating">
-          Your rating
-        </label>
-        <select
-          id="review-rating"
-          className="select select-sm w-24 focus:[--input-color:var(--color-primary)] focus:outline-none!"
-          value={rating}
-          onChange={(e) => setRating(e.target.value)}
-        >
-          {[5, 4, 3, 2, 1].map((n) => (
-            <option key={n} value={n}>
-              {n} star{n > 1 ? "s" : ""}
-            </option>
-          ))}
-        </select>
+        <span className="text-sm font-medium text-base-content/80">Your rating</span>
+        <StarRatingInput value={rating} onChange={setRating} />
       </div>
       <textarea
         className="textarea w-full focus:[--input-color:var(--color-primary)] focus:outline-none!"
@@ -94,7 +115,10 @@ export function ProductReviews({ slug }) {
           {reviews.map((review) => (
             <li key={review.id} className="rounded-box border border-base-300 bg-base-100 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-medium text-base-content">{review.reviewerName || "Customer"}</p>
+                <div className="flex items-center gap-2">
+                  <ReviewerAvatar name={review.reviewerName} avatarUrl={review.reviewerAvatarUrl} />
+                  <p className="font-medium text-base-content">{review.reviewerName || "Customer"}</p>
+                </div>
                 <Stars value={review.rating} />
               </div>
               <p className="mt-1 text-xs text-base-content/50">{formatOrderWhen(review.createdAt)}</p>

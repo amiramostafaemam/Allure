@@ -205,6 +205,10 @@ function CheckoutPage() {
                 Have a promo code?
               </button>
             )}
+            <p className="mt-1.5 text-xs text-base-content/40">
+              Apply your code here — the payment page's own discount field is separate and won't
+              recognize it.
+            </p>
           </div>
 
           <div className="mt-4 space-y-1.5 border-t border-base-300 pt-4 text-sm">

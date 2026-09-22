@@ -166,28 +166,20 @@ export function AdminProductFormModal({
             ) : (
               <SelectField
                 label="Category"
-                required
+                placeholder="Select a category…"
                 value={form.category}
-                onChange={(e) => {
-                  if (e.target.value === "__new__") {
+                onChange={(value) => {
+                  if (value === "__new__") {
                     setCreatingCategory(true);
                     return;
                   }
-                  setForm((f) => ({ ...f, category: e.target.value }));
+                  setForm((f) => ({ ...f, category: value }));
                 }}
-              >
-                <option value="" disabled>
-                  Select a category…
-                </option>
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-                {onCreateCategory ? (
-                  <option value="__new__">+ Create new category…</option>
-                ) : null}
-              </SelectField>
+                options={[
+                  ...categories.map((c) => ({ value: c, label: c })),
+                  ...(onCreateCategory ? [{ value: "__new__", label: "+ Create new category…" }] : []),
+                ]}
+              />
             )}
 
             <TextField

@@ -50,6 +50,7 @@ export async function listReviews(req: Request, res: Response, next: NextFunctio
           comment: reviews.comment,
           createdAt: reviews.createdAt,
           reviewerName: users.displayName,
+          reviewerAvatarUrl: users.avatarUrl,
         })
         .from(reviews)
         .innerJoin(users, eq(reviews.userId, users.id))
@@ -128,7 +129,9 @@ export async function createReview(req: Request, res: Response, next: NextFuncti
       })
       .returning();
 
-    res.status(201).json({ review: { ...row, reviewerName: localUser.displayName } });
+    res.status(201).json({
+      review: { ...row, reviewerName: localUser.displayName, reviewerAvatarUrl: localUser.avatarUrl },
+    });
   } catch (err) {
     if (isUniqueViolation(err)) {
       res.status(409).json({ error: "You've already reviewed this product" });

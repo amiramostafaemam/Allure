@@ -75,7 +75,7 @@ function ProductPage() {
                   className="h-full w-full object-cover"
                 />
               ) : null}
-              <span className="badge absolute left-4 top-4 border-0 bg-base-100/90 text-xs font-medium text-base-content/80 shadow backdrop-blur">
+              <span className="badge absolute left-4 top-4 border-0 bg-primary/15 text-xs font-medium text-primary shadow backdrop-blur">
                 {product.category ?? "General"}
               </span>
             </figure>
@@ -103,7 +103,7 @@ function ProductPage() {
           <div className="divider my-0" />
 
           <div className="flex flex-wrap items-center gap-4">
-            <div className="join border border-base-300">
+            <div className="join overflow-hidden rounded-full border border-base-300">
               <button
                 type="button"
                 className="btn join-item gap-0 px-4"

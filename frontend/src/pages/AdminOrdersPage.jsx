@@ -6,6 +6,7 @@ import { AdminTableSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { SearchInput } from "../components/SearchInput";
 import { OrderStaffControls } from "../components/OrderStaffControls";
+import { SelectField } from "../components/FormField";
 import { formatOrderNumber, formatOrderWhen, formatPrice } from "../utils/format";
 import { statusBadgeClass } from "../utils/orderStatus";
 
@@ -41,18 +42,14 @@ function AdminOrdersPage() {
             placeholder="Search order # or customer…"
             className="w-64"
           />
-          <select
-            className="select"
+          <SelectField
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="">All statuses</option>
-            {ALL_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            onChange={setStatus}
+            options={[
+              { value: "", label: "All statuses" },
+              ...ALL_STATUSES.map((s) => ({ value: s, label: s })),
+            ]}
+          />
         </div>
       </div>
 

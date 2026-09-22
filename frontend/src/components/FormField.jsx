@@ -1,3 +1,6 @@
+import { useEffect, useRef, useState } from "react";
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
+
 // Shared form controls. daisyUI 5 dropped `form-control`/`label-text`/
 // `*-bordered` entirely (its `.input`/`.select`/`.textarea` are bordered by
 // default, and `.label` is now an inline row for prefix/suffix content, not
@@ -46,13 +49,80 @@ export function TextAreaField({ label, optional, className = "", ...textareaProp
   );
 }
 
-export function SelectField({ label, optional, className = "", children, ...selectProps }) {
+// A native <select>'s open dropdown list is rendered by the OS/browser
+// (most visibly on Windows Chromium), so it can never pick up the site's
+// styling and reads as a jarring, unstyled popup dropped on top of an
+// otherwise-styled trigger — the same class of problem as a native
+// <input type="date">. This draws the whole thing ourselves instead: a
+// styled trigger button plus our own absolutely-positioned option list.
+export function SelectField({
+  label,
+  optional,
+  value,
+  onChange,
+  options,
+  placeholder = "Select…",
+  disabled,
+  className = "",
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handlePointer(e) {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    }
+    function handleKey(e) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointer);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handlePointer);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [open]);
+
+  const selected = options.find((o) => o.value === value);
+
   return (
-    <label className="flex flex-col gap-1.5">
+    <div className="relative flex flex-col gap-1.5" ref={rootRef}>
       <FieldLabel label={label} optional={optional} />
-      <select className={`select ${CONTROL_CLASS} ${className}`} {...selectProps}>
-        {children}
-      </select>
-    </label>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((o) => !o)}
+        className={`input flex items-center justify-between gap-2 text-left disabled:opacity-50 ${CONTROL_CLASS} ${className}`}
+      >
+        <span className={`truncate ${selected ? "text-base-content" : "text-base-content/40"}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <ChevronDownIcon className="size-4 shrink-0 opacity-60" aria-hidden />
+      </button>
+
+      {open ? (
+        <ul className="absolute top-full z-20 mt-2 max-h-64 w-full overflow-y-auto rounded-box border border-base-300 bg-base-100 p-1 shadow-lg">
+          {options.map((opt) => (
+            <li key={opt.value}>
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+                disabled={opt.disabled}
+                className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-base-200 disabled:text-base-content/40 disabled:hover:bg-transparent ${
+                  opt.value === value ? "font-medium text-primary" : "text-base-content"
+                }`}
+              >
+                {opt.label}
+                {opt.value === value ? <CheckIcon className="size-4 shrink-0" aria-hidden /> : null}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }
