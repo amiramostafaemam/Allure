@@ -17,9 +17,11 @@ export function useNotifications() {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["notifications"] });
 
-  const markRead = useMutation({
-    mutationFn: (id) =>
-      apiFetch(`/api/notifications/${id}/read`, { getToken, method: "PATCH" }),
+  // Marks every notification in a grouped bell entry (one order, possibly
+  // several stacked chat messages) read in one call.
+  const markOrderRead = useMutation({
+    mutationFn: (orderId) =>
+      apiFetch(`/api/notifications/order/${orderId}/read`, { getToken, method: "PATCH" }),
     onSuccess: invalidate,
   });
 
@@ -33,7 +35,7 @@ export function useNotifications() {
     notifications: data?.notifications ?? [],
     unreadCount: data?.unreadCount ?? 0,
     isLoading,
-    markRead,
+    markOrderRead,
     markAllRead,
   };
 }

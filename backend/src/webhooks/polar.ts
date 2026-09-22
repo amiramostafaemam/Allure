@@ -65,6 +65,8 @@ async function fulfillCheckoutSession(
         totalPounds: session.totalPounds,
         polarCheckoutId: checkoutId ?? session.polarCheckoutId ?? null,
         shippingAddress: session.shippingAddress ?? null,
+        promoCode: session.promoCode ?? null,
+        discountPounds: session.discountPounds,
         ...(polarOrderId ? { polarOrderId } : {}),
       })
       .returning();
@@ -150,6 +152,7 @@ export async function polarWebhookHandler(req:Request,res:Response){
                     void sendOrderConfirmationEmail(env,{
                         to:fulfillment.customerEmail,
                         orderId:fulfillment.order.id,
+                        orderNumber:fulfillment.order.orderNumber,
                         totalPounds:fulfillment.order.totalPounds,
                         lines:fulfillment.lines,
                     });

@@ -43,3 +43,22 @@ export function isChatEligible(status: OrderStatus): boolean {
 // Orders in these statuses count as a "real" purchase — used both for
 // realized-revenue stats and to gate who can leave a product review.
 export const FULFILLED_STATUSES: OrderStatus[] = ["paid", "shipped", "delivered"];
+
+// Shared human copy for a status change — used by both the status-change
+// email and the in-app notification so the two never drift apart.
+export const STATUS_CHANGE_COPY: Partial<Record<OrderStatus, string>> = {
+  shipped: "Your order is on its way.",
+  delivered: "Your order has been delivered.",
+  cancelled: "Your order has been cancelled.",
+  refunded: "Your order has been refunded.",
+};
+
+export function orderStatusChangeMessage(status: OrderStatus): string {
+  return STATUS_CHANGE_COPY[status] ?? `Your order status changed to ${status}.`;
+}
+
+// Purely cosmetic offset so the first order reads as "#1001" instead of
+// "#1" — orderNumber itself is the raw identity-column value from Postgres.
+export function formatOrderNumber(orderNumber: number): string {
+  return String(1000 + orderNumber);
+}

@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import type { Env } from "./env";
 import type { CheckoutSessionLine, OrderStatus } from "../db/schema";
+import { formatOrderNumber, orderStatusChangeMessage } from "./orderStatus";
 
 // Resend is optional — skip sending (log only) rather than fail the caller,
 // same pattern as POLAR_ACCESS_TOKEN being optional elsewhere.
@@ -49,9 +50,10 @@ function formatPounds(pounds: number): string {
 
 export async function sendOrderConfirmationEmail(
   env: Env,
-  params: { to: string; orderId: string; totalPounds: number; lines: CheckoutSessionLine[] },
+  params: { to: string; orderId: string; orderNumber: number; totalPounds: number; lines: CheckoutSessionLine[] },
 ) {
-  const { to, orderId, totalPounds, lines } = params;
+  const { to, orderId, orderNumber, totalPounds, lines } = params;
+  const displayNumber = formatOrderNumber(orderNumber);
   const itemsHtml = lines
     .map((l) => `<li>${l.quantity} × item — ${formatPounds(l.unitPricePounds * l.quantity)}</li>`)
     .join("");
@@ -59,10 +61,10 @@ export async function sendOrderConfirmationEmail(
   await send(
     env,
     to,
-    `Order confirmed — #${orderId.slice(0, 8)}`,
+    `Order confirmed — #${displayNumber}`,
     layout(`
       <p>Thanks for your order! We've received your payment and are getting it ready.</p>
-      <p><strong>Order #${orderId.slice(0, 8)}</strong></p>
+      <p><strong>Order #${displayNumber}</strong></p>
       <ul>${itemsHtml}</ul>
       <p><strong>Total: ${formatPounds(totalPounds)}</strong></p>
       <p>Track it any time from your <a href="${env.FRONTEND_URL}/orders/${orderId}">order page</a>.</p>
@@ -70,24 +72,18 @@ export async function sendOrderConfirmationEmail(
   );
 }
 
-const STATUS_COPY: Partial<Record<OrderStatus, string>> = {
-  shipped: "Your order is on its way.",
-  delivered: "Your order has been delivered.",
-  cancelled: "Your order has been cancelled.",
-  refunded: "Your order has been refunded.",
-};
-
 export async function sendOrderStatusEmail(
   env: Env,
-  params: { to: string; orderId: string; status: OrderStatus },
+  params: { to: string; orderId: string; orderNumber: number; status: OrderStatus },
 ) {
-  const { to, orderId, status } = params;
-  const line = STATUS_COPY[status] ?? `Your order status changed to ${status}.`;
+  const { to, orderId, orderNumber, status } = params;
+  const displayNumber = formatOrderNumber(orderNumber);
+  const line = orderStatusChangeMessage(status);
 
   await send(
     env,
     to,
-    `Order update — #${orderId.slice(0, 8)} ${status}`,
+    `Order update — #${displayNumber} ${status}`,
     layout(`
       <p>${line}</p>
       <p>

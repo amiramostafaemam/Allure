@@ -5,7 +5,7 @@ import { useOrders } from "../hooks/useOrders";
 import { OrdersListSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
-import { formatOrderWhen, formatPrice } from "../utils/format";
+import { formatOrderNumber, formatOrderWhen, formatPrice } from "../utils/format";
 import { statusBadgeClass } from "../utils/orderStatus";
 
 function OrdersPage() {
@@ -75,7 +75,7 @@ function OrdersPage() {
 
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-base-content">
-                      Order #{order.id.slice(0, 8)}
+                      Order #{formatOrderNumber(order.orderNumber)}
                     </p>
                     <p className="truncate text-sm text-base-content/60">
                       {order.previewItems?.length

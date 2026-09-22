@@ -9,6 +9,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { checkoutSessions, products } from "../db/schema";
 import { polarCreateCheckout } from "../lib/polar";
 import { computeCheckoutTotal } from "../lib/pricing";
+import { applyPromoCode, findActivePromoCode } from "../lib/promoCodes";
 
 const env = getEnv();
 
@@ -22,17 +23,45 @@ const shippingAddressSchema = z.object({
   country: z.string().trim().min(1).max(100),
 });
 
+const cartItemsSchema = z
+  .array(
+    z.object({
+      productId: z.string(),
+      quantity: z.number().int().positive(),
+    }),
+  )
+  .min(1);
+
 const cartSchema = z.object({
-  items: z
-    .array(
-      z.object({
-        productId: z.string(),
-        quantity: z.number().int().positive(),
-      }),
-    )
-    .min(1),
+  items: cartItemsSchema,
   shippingAddress: shippingAddressSchema,
+  promoCode: z.string().trim().min(1).max(40).optional(),
 });
+
+const promoValidateSchema = z.object({
+  items: cartItemsSchema,
+  promoCode: z.string().trim().min(1).max(40),
+});
+
+// Shared by createCheckout and validatePromoCode — resolves cart items
+// against `products` and computes the subtotal. Never trusts client-sent
+// prices; only product ids + quantities come from the request.
+async function resolveCartSubtotal(items: z.infer<typeof cartItemsSchema>) {
+  const ids = items.map((i) => i.productId);
+
+  const prodRows = await db
+    .select()
+    .from(products)
+    .where(and(inArray(products.id, ids), eq(products.active, true)));
+
+  if (prodRows.length !== ids.length) {
+    return { ok: false as const, error: "Some products not found" };
+  }
+
+  const byId = new Map(prodRows.map((p) => [p.id, p]));
+  const { totalPounds: subtotalPounds, lines } = computeCheckoutTotal(items, byId);
+  return { ok: true as const, subtotalPounds, lines };
+}
 
 export async function createCheckout(
   req: Request,
@@ -66,21 +95,29 @@ export async function createCheckout(
       return;
     }
 
-    const ids = parsed.data.items.map((i) => i.productId);
-
-    const prodRows = await db
-      .select()
-      .from(products)
-      .where(and(inArray(products.id, ids), eq(products.active, true)));
-
-    if (prodRows.length !== ids.length) {
-      res.status(400).json({ error: "Some products not found" });
+    // totalPounds and unitPricePounds are whole Egyptian pounds (no piastres)
+    const resolved = await resolveCartSubtotal(parsed.data.items);
+    if (!resolved.ok) {
+      res.status(400).json({ error: resolved.error });
       return;
     }
+    const { subtotalPounds, lines } = resolved;
 
-    const byId = new Map(prodRows.map((p) => [p.id, p]));
-    // totalPounds and unitPricePounds are whole Egyptian pounds (no piastres)
-    const { totalPounds, lines } = computeCheckoutTotal(parsed.data.items, byId);
+    let totalPounds = subtotalPounds;
+    let discountPounds = 0;
+    let appliedPromoCode: string | null = null;
+
+    if (parsed.data.promoCode) {
+      const promo = await findActivePromoCode(parsed.data.promoCode);
+      if (!promo) {
+        res.status(400).json({ error: "Invalid or expired promo code" });
+        return;
+      }
+      const applied = applyPromoCode(subtotalPounds, promo.percentOff);
+      discountPounds = applied.discountPounds;
+      totalPounds = applied.totalPounds;
+      appliedPromoCode = promo.code;
+    }
 
     if (totalPounds < 50) {
       res.status(400).json({
@@ -98,6 +135,8 @@ export async function createCheckout(
         totalPounds,
         currency: "egp",
         shippingAddress: parsed.data.shippingAddress,
+        promoCode: appliedPromoCode,
+        discountPounds,
       })
       .returning();
 
@@ -129,6 +168,42 @@ export async function createCheckout(
       .where(eq(checkoutSessions.id, session.id));
 
     res.json({ checkoutUrl: checkout.url });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Preview-only: checks a code and returns what it would discount, without
+// creating a checkout session. createCheckout() independently re-validates
+// and recomputes at submit time — this response is never trusted as-is.
+export async function validatePromoCode(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { isAuthenticated } = getAuth(req);
+    if (!isAuthenticated) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const parsed = promoValidateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid request", details: parsed.error.flatten() });
+      return;
+    }
+
+    const resolved = await resolveCartSubtotal(parsed.data.items);
+    if (!resolved.ok) {
+      res.json({ valid: false, error: resolved.error });
+      return;
+    }
+
+    const promo = await findActivePromoCode(parsed.data.promoCode);
+    if (!promo) {
+      res.json({ valid: false, error: "Invalid or expired promo code" });
+      return;
+    }
+
+    const { discountPounds, totalPounds } = applyPromoCode(resolved.subtotalPounds, promo.percentOff);
+    res.json({ valid: true, code: promo.code, percentOff: promo.percentOff, discountPounds, totalPounds });
   } catch (err) {
     next(err);
   }

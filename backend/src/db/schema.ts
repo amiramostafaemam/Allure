@@ -98,6 +98,8 @@ export const checkoutSessions = pgTable("checkout_sessions", {
   totalPounds: integer("total_pounds").notNull(),
   currency: text("currency").notNull(),
   shippingAddress: jsonb("shipping_address").$type<ShippingAddress>(),
+  promoCode: text("promo_code"),
+  discountPounds: integer("discount_pounds").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 // casasecade means : "delete the checkout session if the user is deleted" delete children when parent is deleted. restrict means :"don't delete the parent if any child still associated with it" prevent deletion of parent if children exist.
@@ -116,6 +118,10 @@ export const orderItems = pgTable("order_items", {
 
 export const orders = pgTable("orders", {
   id: uuid("id").defaultRandom().primaryKey(),
+  // Short, human-friendly display number (e.g. "#1001" = 1000 + orderNumber)
+  // — the uuid `id` above stays the real primary key / foreign key
+  // everywhere (Stream channel ids, joins, etc.), this is display-only.
+  orderNumber: integer("order_number").generatedAlwaysAsIdentity().notNull().unique(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -124,6 +130,8 @@ export const orders = pgTable("orders", {
   polarOrderId: text("polar_order_id").unique(),
   totalPounds: integer("total_pounds").notNull().default(0),
   shippingAddress: jsonb("shipping_address").$type<ShippingAddress>(),
+  promoCode: text("promo_code"),
+  discountPounds: integer("discount_pounds").notNull().default(0),
   // Customer-initiated cancellation/refund request, cleared whenever the
   // order's status is next changed (approved or not).
   requestedStatus: text("requested_status").$type<OrderStatus>(),
@@ -144,6 +152,16 @@ export const orderStatusEvents = pgTable("order_status_events", {
   toStatus: text("to_status").$type<OrderStatus>().notNull(),
   note: text("note"),
   changedByUserId: uuid("changed_by_user_id").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Percentage-off codes applied at checkout (backend/src/controllers/checkoutController.ts).
+export const promoCodes = pgTable("promo_codes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  code: text("code").notNull().unique(), // stored uppercase, matched case-insensitively
+  percentOff: integer("percent_off").notNull(), // 1-100
+  active: boolean("active").notNull().default(true),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -178,9 +196,11 @@ export const orderStatusEventsRelations = relations(orderStatusEvents, ({ one })
   changedBy: one(users, { fields: [orderStatusEvents.changedByUserId], references: [users.id] }),
 }));
 
-// In-app "new chat message" alerts, populated by the Stream Chat webhook
-// (webhooks/stream.ts) on message.new: customer messages notify every
-// staff/admin, staff messages notify that order's customer.
+// In-app alerts. Populated by two sources: the Stream Chat webhook
+// (webhooks/stream.ts) on message.new (customer messages notify every
+// staff/admin, staff messages notify that order's customer), and manual
+// status changes (controllers/orderController.ts, updateOrderStatus)
+// notifying the customer directly.
 export const notifications = pgTable("notifications", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")

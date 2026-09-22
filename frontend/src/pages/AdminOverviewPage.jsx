@@ -9,7 +9,7 @@ import {
 import { useAdminStats } from "../hooks/useAdminStats";
 import { AdminOverviewSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
-import { formatOrderWhen, formatPrice } from "../utils/format";
+import { formatOrderNumber, formatOrderWhen, formatPrice } from "../utils/format";
 import { statusBadgeClass } from "../utils/orderStatus";
 
 function StatCard({ icon: Icon, label, value }) {
@@ -91,7 +91,7 @@ function AdminOverviewPage() {
                 {recentOrders.map((order) => (
                   <li key={order.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-base-content">#{order.id.slice(0, 8)}</p>
+                      <p className="font-medium text-base-content">#{formatOrderNumber(order.orderNumber)}</p>
                       <p className="text-xs text-base-content/50">{formatOrderWhen(order.createdAt)}</p>
                     </div>
                     <div className="flex items-center gap-2">

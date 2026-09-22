@@ -23,7 +23,7 @@ function AdminProductsPage() {
     deleteProduct,
   } = useAdminProducts({ q });
 
-  const { categories } = useAdminCategories();
+  const { categories, createCategory } = useAdminCategories();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -223,6 +223,9 @@ function AdminProductsPage() {
           error={formError}
           onClose={() => setModalOpen(false)}
           onSubmit={handleSubmit}
+          onCreateCategory={(name) =>
+            createCategory.mutateAsync(name).then((res) => res.category)
+          }
         />
       ) : null}
 

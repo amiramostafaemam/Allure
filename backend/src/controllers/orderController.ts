@@ -8,7 +8,7 @@ import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { getStreamChatServer, streamChatDisplayName, streamUserId } from '../lib/stream';
 import { getEnv } from '../lib/env';
 import { parsePagination } from '../lib/pagination';
-import { canTransition, isChatEligible, isOrderStatus, MANUAL_STATUSES, REQUESTABLE_STATUSES } from '../lib/orderStatus';
+import { canTransition, formatOrderNumber, isChatEligible, isOrderStatus, MANUAL_STATUSES, orderStatusChangeMessage, REQUESTABLE_STATUSES } from '../lib/orderStatus';
 import { sendOrderStatusEmail } from '../lib/email';
 import { z } from 'zod';
 
@@ -30,7 +30,12 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
         }
 
         const {limit,offset}=parsePagination(req);
-        const staffView=isStaff(localUser.role);
+        // "My orders" (customer-facing OrdersPage) always scopes to the
+        // caller, regardless of role — a staff account's own personal
+        // orders shouldn't be conflated with the staff management view.
+        // Only ?scope=staff (sent by AdminOrdersPage) opts into the
+        // everyone's-orders branch, and only if the caller actually is staff.
+        const staffView=req.query.scope==="staff" && isStaff(localUser.role);
 
         const rawStatus=typeof req.query.status==="string" ? req.query.status.trim() : "";
         const statusFilter=isOrderStatus(rawStatus) ? rawStatus : "";
@@ -200,7 +205,7 @@ export async function createStreamChannel(req:Request,res:Response,next:NextFunc
 
         // Stream channel IDs can't contain ":" (it rejects the request).
         const channelId=`order-${order.id}`;
-        const channel=streamChatServer.channel("messaging",channelId,{name:`Support for order #${order.id.slice(0,8)}`,
+        const channel=streamChatServer.channel("messaging",channelId,{name:`Support for order #${formatOrderNumber(order.orderNumber)}`,
         created_by_id:streamChatUserId});
 
         await channel.create();
@@ -271,7 +276,7 @@ export async function createVideoInvite(req: Request, res: Response, next: NextF
     // Stream channel IDs can't contain ":" (it rejects the request).
     const channelId = `order-${order.id}`;
     const channel = server.channel("messaging", channelId, {
-      name: `Support · order ${order.id.slice(0, 8)}`,
+      name: `Support · order #${formatOrderNumber(order.orderNumber)}`,
       created_by_id: customerSid,
     });
 
@@ -362,7 +367,17 @@ export async function updateOrderStatus(req: Request, res: Response, next: NextF
     const [customer] = await db.select({ email: users.email }).from(users).where(eq(users.id, order.userId)).limit(1);
     if (customer?.email) {
       // Non-blocking — a failed email must never fail the status change itself.
-      void sendOrderStatusEmail(env, { to: customer.email, orderId: order.id, status: toStatus });
+      void sendOrderStatusEmail(env, { to: customer.email, orderId: order.id, orderNumber: order.orderNumber, status: toStatus });
+    }
+
+    // Notify the customer in-app too, unless the acting staff member is
+    // themselves the order's owner (e.g. an admin managing their own order).
+    if (actingUser.id !== order.userId) {
+      await db.insert(notifications).values({
+        userId: order.userId,
+        orderId: order.id,
+        message: orderStatusChangeMessage(toStatus),
+      });
     }
 
     res.json({ order: updated });
@@ -422,7 +437,7 @@ export async function requestOrderAction(req: Request, res: Response, next: Next
         staffRows.map((s) => ({
           userId: s.id,
           orderId: order.id,
-          message: `Customer requested "${requestedStatus}" for order #${order.id.slice(0, 8)}`,
+          message: `Customer requested "${requestedStatus}" for order #${formatOrderNumber(order.orderNumber)}`,
         })),
       );
     }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canTransition, isChatEligible } from "./orderStatus";
+import { canTransition, formatOrderNumber, isChatEligible, orderStatusChangeMessage } from "./orderStatus";
 
 describe("canTransition", () => {
   it("allows the documented paid → shipped/cancelled/refunded transitions", () => {
@@ -43,5 +43,25 @@ describe("isChatEligible", () => {
     expect(isChatEligible("failed")).toBe(false);
     expect(isChatEligible("cancelled")).toBe(false);
     expect(isChatEligible("refunded")).toBe(false);
+  });
+});
+
+describe("formatOrderNumber", () => {
+  it("offsets the raw identity value by 1000", () => {
+    expect(formatOrderNumber(1)).toBe("1001");
+    expect(formatOrderNumber(42)).toBe("1042");
+  });
+});
+
+describe("orderStatusChangeMessage", () => {
+  it("returns known human copy for shipped/delivered/cancelled/refunded", () => {
+    expect(orderStatusChangeMessage("shipped")).toMatch(/on its way/i);
+    expect(orderStatusChangeMessage("delivered")).toMatch(/delivered/i);
+    expect(orderStatusChangeMessage("cancelled")).toMatch(/cancelled/i);
+    expect(orderStatusChangeMessage("refunded")).toMatch(/refunded/i);
+  });
+
+  it("falls back to a generic message for any other status", () => {
+    expect(orderStatusChangeMessage("paid")).toBe("Your order status changed to paid.");
   });
 });

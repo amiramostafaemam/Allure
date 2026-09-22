@@ -11,6 +11,13 @@ export function formatPrice(pounds, currency) {
   }).format(amount);
 }
 
+// Purely cosmetic offset so the first order reads as "#1001" instead of
+// "#1" — orderNumber itself is the raw identity-column value from Postgres.
+// Mirrors backend/src/lib/orderStatus.ts's formatOrderNumber.
+export function formatOrderNumber(orderNumber) {
+  return String(1000 + orderNumber);
+}
+
 export function formatOrderWhen(iso, opts = {}) {
   const { dateStyle = "medium" } = opts;
   if (!iso) return "";

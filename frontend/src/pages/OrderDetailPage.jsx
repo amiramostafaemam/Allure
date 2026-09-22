@@ -6,11 +6,13 @@ import { useOrderDetail } from "../hooks/useOrderDetail";
 import { useMe } from "../hooks/useMe";
 import { OrderChatPanel } from "../components/OrderChatPanel";
 import OrderTimeline from "../components/OrderTimeline";
+import { OrderStaffControls } from "../components/OrderStaffControls";
+import { TextAreaField } from "../components/FormField";
 import { OrderDetailSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
-import { formatOrderWhen, formatPrice } from "../utils/format";
-import { isChatEligible, requestableStatusOptions, statusBadgeClass } from "../utils/orderStatus";
+import { formatOrderNumber, formatOrderWhen, formatPrice } from "../utils/format";
+import { isChatEligible, nextStatusOptions, requestableStatusOptions, statusBadgeClass } from "../utils/orderStatus";
 
 const REQUEST_LABEL = { cancelled: "cancellation", refunded: "refund" };
 const REQUEST_ICON = { cancelled: BanIcon, refunded: RotateCcwIcon };
@@ -48,17 +50,13 @@ function OrderRequestPanel({ order, requestAction }) {
 
         {pendingStatus ? (
           <div className="space-y-3">
-            <label className="form-control">
-              <span className="label-text mb-1">
-                Note for our team (optional)
-              </span>
-              <textarea
-                className="textarea textarea-bordered w-full"
-                rows={2}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-              />
-            </label>
+            <TextAreaField
+              label="Note for our team"
+              optional
+              rows={2}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
             <div className="flex gap-2">
               <button
                 type="button"
@@ -123,9 +121,21 @@ function OrderDetailPage() {
     inviteError,
     inviteSent,
     requestAction,
+    updateStatus,
+    dismissRequest,
   } = useOrderDetail();
   const { role } = useMe();
   const isStaff = role === "support" || role === "admin";
+  const [staffActionError, setStaffActionError] = useState(false);
+
+  async function handleStaffStatusChange(status) {
+    setStaffActionError(false);
+    try {
+      await updateStatus.mutateAsync({ status });
+    } catch {
+      setStaffActionError(true);
+    }
+  }
 
   if (!isSignedIn) {
     return (
@@ -162,6 +172,28 @@ function OrderDetailPage() {
         Back to orders
       </Link>
 
+      {isStaff && (order.requestedStatus || nextStatusOptions(order.status).length > 0) ? (
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-dashed border-secondary/40 bg-secondary/5 px-5 py-4">
+          <div>
+            <h3 className="font-semibold text-base-content">Staff controls</h3>
+            <p className="text-sm text-base-content/65">
+              {order.requestedStatus
+                ? `Customer requested "${order.requestedStatus}".`
+                : "Change this order's status directly from here."}
+            </p>
+          </div>
+          <OrderStaffControls
+            order={order}
+            onChangeStatus={handleStaffStatusChange}
+            onDismissRequest={() => dismissRequest.mutate()}
+            statusPending={updateStatus.isPending}
+            dismissPending={dismissRequest.isPending}
+            error={staffActionError ? "Couldn't update status" : null}
+            size="md"
+          />
+        </div>
+      ) : null}
+
       <div className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-lg">
         <div className="flex flex-col gap-6 bg-base-200/50 px-5 py-6 sm:flex-row sm:items-start sm:justify-between sm:px-8 sm:py-8">
           <div>
@@ -169,7 +201,7 @@ function OrderDetailPage() {
               Order
             </p>
             <h1 className="mt-1 text-2xl font-bold text-base-content sm:text-3xl">
-              #{order.id.slice(0, 8)}
+              #{formatOrderNumber(order.orderNumber)}
             </h1>
             <p className="mt-1 text-sm text-base-content/60">
               Placed {formatOrderWhen(order.createdAt)}

@@ -5,35 +5,11 @@ import { useAdminOrders } from "../hooks/useAdminOrders";
 import { AdminTableSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { SearchInput } from "../components/SearchInput";
-import { formatOrderWhen, formatPrice } from "../utils/format";
-import { nextStatusOptions, statusBadgeClass } from "../utils/orderStatus";
+import { OrderStaffControls } from "../components/OrderStaffControls";
+import { formatOrderNumber, formatOrderWhen, formatPrice } from "../utils/format";
+import { statusBadgeClass } from "../utils/orderStatus";
 
 const ALL_STATUSES = ["pending", "paid", "failed", "shipped", "delivered", "cancelled", "refunded"];
-
-function StatusControl({ order, onChange, pending }) {
-  const options = nextStatusOptions(order.status);
-  if (options.length === 0) return null;
-
-  return (
-    <select
-      className="select select-bordered select-xs"
-      value=""
-      disabled={pending}
-      onChange={(e) => {
-        if (e.target.value) onChange(order.id, e.target.value);
-        e.target.value = "";
-      }}
-    >
-      <option value="">Change status…</option>
-      {options.map((status) => (
-        <option key={status} value={status}>
-          Mark {status}
-          {status === "refunded" ? " (bookkeeping only)" : ""}
-        </option>
-      ))}
-    </select>
-  );
-}
 
 function AdminOrdersPage() {
   const [q, setQ] = useState("");
@@ -106,7 +82,7 @@ function AdminOrdersPage() {
                 <tr key={order.id}>
                   <td>
                     <Link to={`/orders/${order.id}`} className="link-hover link-primary font-mono text-sm">
-                      #{order.id.slice(0, 8)}
+                      #{formatOrderNumber(order.orderNumber)}
                     </Link>
                   </td>
                   <td className="text-sm">
@@ -125,37 +101,15 @@ function AdminOrdersPage() {
                   </td>
                   <td className="text-sm text-base-content/60">{formatOrderWhen(order.createdAt)}</td>
                   <td>
-                    <div className="flex flex-col items-end gap-1">
-                      {order.requestedStatus ? (
-                        <div className="flex gap-1">
-                          <button
-                            type="button"
-                            className="btn btn-xs btn-primary"
-                            disabled={updateStatus.isPending}
-                            onClick={() => handleStatusChange(order.id, order.requestedStatus)}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-xs"
-                            disabled={dismissRequest.isPending}
-                            onClick={() => dismissRequest.mutate(order.id)}
-                          >
-                            Dismiss
-                          </button>
-                        </div>
-                      ) : (
-                        <StatusControl
-                          order={order}
-                          onChange={handleStatusChange}
-                          pending={updateStatus.isPending}
-                        />
-                      )}
-                      {errorForId === order.id ? (
-                        <p className="text-xs text-error">Couldn't update status</p>
-                      ) : null}
-                    </div>
+                    <OrderStaffControls
+                      order={order}
+                      onChangeStatus={(status) => handleStatusChange(order.id, status)}
+                      onDismissRequest={() => dismissRequest.mutate(order.id)}
+                      statusPending={updateStatus.isPending}
+                      dismissPending={dismissRequest.isPending}
+                      error={errorForId === order.id ? "Couldn't update status" : null}
+                      size="sm"
+                    />
                   </td>
                 </tr>
               ))}

@@ -10,10 +10,10 @@ export function useAdminOrders({ status = "", q = "" } = {}) {
     queryKey: ["admin-orders", status, q],
     queryFn: () => {
       const params = new URLSearchParams();
+      params.set("scope", "staff");
       if (status) params.set("status", status);
       if (q) params.set("q", q);
-      const qs = params.toString();
-      return apiFetch(qs ? `/api/orders?${qs}` : "/api/orders", { getToken });
+      return apiFetch(`/api/orders?${params.toString()}`, { getToken });
     },
   });
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { slugify } from "../utils/slugify";
+import { SelectField, TextAreaField, TextField } from "./FormField";
 
 function emptyForm() {
   return {
@@ -34,15 +35,37 @@ export function AdminProductFormModal({
   error,
   onClose,
   onSubmit,
+  onCreateCategory,
 }) {
   const [form, setForm] = useState(() => formFromProduct(product));
   const [slugTouched, setSlugTouched] = useState(Boolean(product));
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(product?.imageUrl ?? "");
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [categoryError, setCategoryError] = useState("");
+  const [categorySaving, setCategorySaving] = useState(false);
 
   function handleNameChange(e) {
     const name = e.target.value;
     setForm((f) => ({ ...f, name, slug: slugTouched ? f.slug : slugify(name) }));
+  }
+
+  async function handleCreateCategory() {
+    const name = newCategoryName.trim();
+    if (!name) return;
+    setCategorySaving(true);
+    setCategoryError("");
+    try {
+      const category = await onCreateCategory(name);
+      setForm((f) => ({ ...f, category: category.name }));
+      setCreatingCategory(false);
+      setNewCategoryName("");
+    } catch (err) {
+      setCategoryError(err.message || "Couldn't create category.");
+    } finally {
+      setCategorySaving(false);
+    }
   }
 
   function handleFileChange(e) {
@@ -85,41 +108,70 @@ export function AdminProductFormModal({
         </h3>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <label className="form-control">
-            <span className="label-text mb-1">Name</span>
-            <input
-              type="text"
-              required
-              className="input input-bordered w-full"
-              value={form.name}
-              onChange={handleNameChange}
-            />
-          </label>
+          <TextField
+            label="Name"
+            required
+            value={form.name}
+            onChange={handleNameChange}
+          />
 
-          <label className="form-control">
-            <span className="label-text mb-1">Slug</span>
-            <input
-              type="text"
-              required
-              className="input input-bordered w-full font-mono text-sm"
-              value={form.slug}
-              onChange={(e) => {
-                setSlugTouched(true);
-                setForm((f) => ({ ...f, slug: e.target.value }));
-              }}
-            />
-          </label>
+          <TextField
+            label="Slug"
+            required
+            className="font-mono text-sm"
+            value={form.slug}
+            onChange={(e) => {
+              setSlugTouched(true);
+              setForm((f) => ({ ...f, slug: e.target.value }));
+            }}
+          />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="form-control">
-              <span className="label-text mb-1">Category</span>
-              <select
+            {creatingCategory ? (
+              <div className="form-control">
+                <span className="label-text mb-1.5 text-sm font-medium text-base-content/80">
+                  New category
+                </span>
+                <div className="flex gap-2">
+                  <TextField
+                    autoFocus
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    className="flex-1"
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    disabled={categorySaving || !newCategoryName.trim()}
+                    onClick={handleCreateCategory}
+                  >
+                    {categorySaving ? "…" : "Add"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => {
+                      setCreatingCategory(false);
+                      setCategoryError("");
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {categoryError ? <p className="mt-1 text-xs text-error">{categoryError}</p> : null}
+              </div>
+            ) : (
+              <SelectField
+                label="Category"
                 required
-                className="select select-bordered w-full"
                 value={form.category}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, category: e.target.value }))
-                }
+                onChange={(e) => {
+                  if (e.target.value === "__new__") {
+                    setCreatingCategory(true);
+                    return;
+                  }
+                  setForm((f) => ({ ...f, category: e.target.value }));
+                }}
               >
                 <option value="" disabled>
                   Select a category…
@@ -129,36 +181,33 @@ export function AdminProductFormModal({
                     {c}
                   </option>
                 ))}
-              </select>
-            </label>
+                {onCreateCategory ? (
+                  <option value="__new__">+ Create new category…</option>
+                ) : null}
+              </SelectField>
+            )}
 
-            <label className="form-control">
-              <span className="label-text mb-1">Price (EGP)</span>
-              <input
-                type="number"
-                min="1"
-                step="1"
-                required
-                className="input input-bordered w-full"
-                value={form.pricePounds}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, pricePounds: e.target.value }))
-                }
-              />
-            </label>
-          </div>
-
-          <label className="form-control">
-            <span className="label-text mb-1">Description</span>
-            <textarea
-              className="textarea textarea-bordered w-full"
-              rows={3}
-              value={form.description}
+            <TextField
+              label="Price (EGP)"
+              type="number"
+              min="1"
+              step="1"
+              required
+              value={form.pricePounds}
               onChange={(e) =>
-                setForm((f) => ({ ...f, description: e.target.value }))
+                setForm((f) => ({ ...f, pricePounds: e.target.value }))
               }
             />
-          </label>
+          </div>
+
+          <TextAreaField
+            label="Description"
+            rows={3}
+            value={form.description}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, description: e.target.value }))
+            }
+          />
 
           <label className="form-control">
             <span className="label-text mb-1">Image</span>

@@ -38,6 +38,27 @@ export function useOrderDetail() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["order", id] }),
   });
 
+  const invalidateOrder = () => {
+    queryClient.invalidateQueries({ queryKey: ["order", id] });
+    queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+  };
+
+  const updateStatus = useMutation({
+    mutationFn: ({ status, note }) =>
+      apiFetch(`/api/admin/orders/${id}/status`, {
+        getToken,
+        method: "PATCH",
+        body: { status, ...(note ? { note } : {}) },
+      }),
+    onSuccess: invalidateOrder,
+  });
+
+  const dismissRequest = useMutation({
+    mutationFn: () => apiFetch(`/api/admin/orders/${id}/dismiss-request`, { getToken, method: "PATCH" }),
+    onSuccess: invalidateOrder,
+  });
+
   return {
     orderId: id,
     order: data?.order ?? null,
@@ -51,5 +72,7 @@ export function useOrderDetail() {
     inviteError: sendVideoInvite.isError,
     inviteSent,
     requestAction,
+    updateStatus,
+    dismissRequest,
   };
 }

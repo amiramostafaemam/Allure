@@ -1,23 +1,14 @@
-import { ArrowLeftIcon, MapPinIcon, ShoppingCartIcon, UserIcon } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeftIcon, MapPinIcon, ShoppingCartIcon, TagIcon, UserIcon, XIcon } from "lucide-react";
 import { Link } from "react-router";
 import useCartPage from "../hooks/useCartPage";
 import { useCheckout } from "../hooks/useCheckout";
+import { usePromoCode } from "../hooks/usePromoCode";
 import EmptyCart from "../components/EmptyCart";
 import { CartSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
+import { TextField } from "../components/FormField";
 import { formatPrice } from "../utils/format";
-
-function Field({ label, optional, ...inputProps }) {
-  return (
-    <label className="form-control">
-      <span className="label-text mb-1">
-        {label}
-        {optional ? <span className="text-base-content/40"> (optional)</span> : null}
-      </span>
-      <input className="input input-bordered w-full" {...inputProps} />
-    </label>
-  );
-}
 
 function SectionHeading({ icon: Icon, children }) {
   return (
@@ -31,6 +22,8 @@ function SectionHeading({ icon: Icon, children }) {
 function CheckoutPage() {
   const { items, lines, subtotal, productsLoading, productsError } = useCartPage();
   const { address, setField, submitOrder, submitting, error } = useCheckout();
+  const promo = usePromoCode(items);
+  const [promoInputOpen, setPromoInputOpen] = useState(false);
 
   if (items.length === 0) return <EmptyCart />;
   if (productsLoading) return <CartSkeleton lines={items.length} />;
@@ -40,9 +33,17 @@ function CheckoutPage() {
     );
   }
 
+  const currency = lines[0]?.product?.currency ?? "egp";
+  const total = promo.applied ? promo.applied.totalPounds : subtotal;
+
   function handleSubmit(e) {
     e.preventDefault();
-    submitOrder();
+    submitOrder(promo.applied?.code);
+  }
+
+  function handleApplyPromo(e) {
+    e.preventDefault();
+    promo.apply();
   }
 
   return (
@@ -66,13 +67,13 @@ function CheckoutPage() {
             <section className="space-y-4">
               <SectionHeading icon={UserIcon}>Contact</SectionHeading>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field
+                <TextField
                   label="Full name"
                   required
                   value={address.fullName}
                   onChange={(e) => setField("fullName", e.target.value)}
                 />
-                <Field
+                <TextField
                   label="Phone"
                   type="tel"
                   required
@@ -87,14 +88,14 @@ function CheckoutPage() {
             <section className="space-y-4">
               <SectionHeading icon={MapPinIcon}>Delivery address</SectionHeading>
 
-              <Field
+              <TextField
                 label="Address line 1"
                 required
                 value={address.line1}
                 onChange={(e) => setField("line1", e.target.value)}
               />
 
-              <Field
+              <TextField
                 label="Address line 2"
                 optional
                 value={address.line2}
@@ -102,13 +103,13 @@ function CheckoutPage() {
               />
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field
+                <TextField
                   label="City"
                   required
                   value={address.city}
                   onChange={(e) => setField("city", e.target.value)}
                 />
-                <Field
+                <TextField
                   label="Governorate"
                   required
                   value={address.governorate}
@@ -116,7 +117,7 @@ function CheckoutPage() {
                 />
               </div>
 
-              <Field
+              <TextField
                 label="Country"
                 required
                 value={address.country}
@@ -156,11 +157,71 @@ function CheckoutPage() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex justify-between border-t border-base-300 pt-4 text-sm">
-            <span className="text-base-content/70">Subtotal</span>
-            <span className="font-semibold text-base-content">
-              {formatPrice(subtotal, lines[0]?.product?.currency ?? "egp")}
-            </span>
+
+          <div className="mt-4 border-t border-base-300 pt-4">
+            {promo.applied ? (
+              <div className="flex items-center justify-between gap-2 rounded-lg bg-success/10 px-3 py-2 text-sm">
+                <span className="flex items-center gap-1.5 font-medium text-success">
+                  <TagIcon className="size-3.5" aria-hidden />
+                  {promo.applied.code} · {promo.applied.percentOff}% off
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-xs btn-square"
+                  onClick={promo.clear}
+                  aria-label="Remove promo code"
+                >
+                  <XIcon className="size-3.5" aria-hidden />
+                </button>
+              </div>
+            ) : promoInputOpen ? (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    className="input input-bordered input-sm w-full rounded-lg uppercase transition-all duration-150 outline-none focus:border-primary focus:ring-4 focus:ring-primary/15"
+                    placeholder="Promo code"
+                    value={promo.code}
+                    onChange={(e) => promo.setCode(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    disabled={promo.validating || !promo.code.trim()}
+                    onClick={handleApplyPromo}
+                  >
+                    {promo.validating ? "…" : "Apply"}
+                  </button>
+                </div>
+                {promo.error ? <p className="text-xs text-error">{promo.error}</p> : null}
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm gap-2 px-2 text-base-content/60"
+                onClick={() => setPromoInputOpen(true)}
+              >
+                <TagIcon className="size-3.5" aria-hidden />
+                Have a promo code?
+              </button>
+            )}
+          </div>
+
+          <div className="mt-4 space-y-1.5 border-t border-base-300 pt-4 text-sm">
+            <div className="flex justify-between">
+              <span className="text-base-content/70">Subtotal</span>
+              <span className="text-base-content">{formatPrice(subtotal, currency)}</span>
+            </div>
+            {promo.applied ? (
+              <div className="flex justify-between text-success">
+                <span>Discount</span>
+                <span>−{formatPrice(promo.applied.discountPounds, currency)}</span>
+              </div>
+            ) : null}
+            <div className="flex justify-between pt-1 text-base font-semibold text-base-content">
+              <span>Total</span>
+              <span>{formatPrice(total, currency)}</span>
+            </div>
           </div>
         </aside>
       </div>

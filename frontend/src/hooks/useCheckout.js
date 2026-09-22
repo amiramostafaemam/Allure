@@ -35,7 +35,7 @@ export function useCheckout() {
     setAddress((a) => ({ ...a, [field]: value }));
   }
 
-  async function submitOrder() {
+  async function submitOrder(promoCode) {
     setSubmitting(true);
     setError("");
 
@@ -45,6 +45,7 @@ export function useCheckout() {
         ...address,
         line2: address.line2.trim() || undefined,
       },
+      ...(promoCode ? { promoCode } : {}),
     };
 
     try {

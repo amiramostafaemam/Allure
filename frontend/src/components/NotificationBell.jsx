@@ -1,10 +1,10 @@
 import { Link } from "react-router";
 import { BellIcon, CheckCheckIcon, MessageCircleIcon } from "lucide-react";
 import { useNotifications } from "../hooks/useNotifications";
-import { formatOrderWhen } from "../utils/format";
+import { formatOrderNumber, formatOrderWhen } from "../utils/format";
 
 function NotificationBell() {
-  const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
+  const { notifications, unreadCount, markOrderRead, markAllRead } = useNotifications();
 
   return (
     <div className="dropdown dropdown-end">
@@ -48,11 +48,11 @@ function NotificationBell() {
         ) : (
           <ul className="max-h-96 space-y-1 overflow-y-auto">
             {notifications.map((n) => (
-              <li key={n.id}>
+              <li key={n.orderId}>
                 <Link
                   to={`/orders/${n.orderId}`}
                   onClick={() => {
-                    if (!n.read) markRead.mutate(n.id);
+                    if (!n.read) markOrderRead.mutate(n.orderId);
                   }}
                   className={`flex items-start gap-2 rounded-lg px-2 py-2 text-sm hover:bg-base-200 ${
                     n.read ? "text-base-content/60" : "font-medium text-base-content"
@@ -60,9 +60,17 @@ function NotificationBell() {
                 >
                   <MessageCircleIcon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
                   <span className="min-w-0 flex-1">
-                    <span className="line-clamp-2">{n.message}</span>
+                    <span className="line-clamp-2">
+                      {n.message}
+                      {n.count > 1 ? (
+                        <span className="ml-1 text-xs font-normal text-base-content/50">
+                          ({n.count} messages)
+                        </span>
+                      ) : null}
+                    </span>
                     <span className="mt-0.5 block text-xs font-normal text-base-content/50">
-                      Order #{n.orderId.slice(0, 8)} · {formatOrderWhen(n.createdAt)}
+                      Order #{n.orderNumber != null ? formatOrderNumber(n.orderNumber) : "—"} ·{" "}
+                      {formatOrderWhen(n.createdAt)}
                     </span>
                   </span>
                   {!n.read ? (

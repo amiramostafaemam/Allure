@@ -4,6 +4,7 @@ import { dismissOrderRequest, updateOrderStatus } from '../controllers/orderCont
 import { getAdminStats } from '../controllers/adminStatsController';
 import { listCustomers, updateCustomerRole } from '../controllers/adminUsersController';
 import { createCategory, deleteCategory, listCategories, renameCategory } from '../controllers/adminCategoriesController';
+import { createPromoCode, deletePromoCode, listPromoCodes, updatePromoCode } from '../controllers/adminPromoCodesController';
 import { validateUuidParam } from '../middleware/validateUuidParam';
 
 const adminRouter=Router();
@@ -28,6 +29,11 @@ adminRouter.get("/categories",listCategories);
 adminRouter.post("/categories",createCategory);
 adminRouter.patch("/categories/:id",validateUuidParam("id"),renameCategory);
 adminRouter.delete("/categories/:id",validateUuidParam("id"),deleteCategory);
+
+adminRouter.get("/promo-codes",listPromoCodes);
+adminRouter.post("/promo-codes",createPromoCode);
+adminRouter.patch("/promo-codes/:id",validateUuidParam("id"),updatePromoCode);
+adminRouter.delete("/promo-codes/:id",validateUuidParam("id"),deletePromoCode);
 
 
 export default adminRouter;

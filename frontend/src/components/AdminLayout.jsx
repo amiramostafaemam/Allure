@@ -4,6 +4,7 @@ import {
   PackageIcon,
   SettingsIcon,
   ShapesIcon,
+  TagIcon,
   UsersIcon,
 } from "lucide-react";
 import { useMe } from "../hooks/useMe";
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { to: "/admin/customers", label: "Customers", icon: UsersIcon },
   { to: "/admin/categories", label: "Categories", icon: ShapesIcon },
   { to: "/admin/products", label: "Products", icon: SettingsIcon },
+  { to: "/admin/promo-codes", label: "Promo codes", icon: TagIcon },
 ];
 
 function AdminLayout() {
