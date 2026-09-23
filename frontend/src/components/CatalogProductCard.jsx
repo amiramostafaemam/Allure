@@ -4,6 +4,7 @@ import { CheckIcon, PlusIcon } from "lucide-react";
 import { formatPrice } from "../utils/format.js";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl.js";
 import { useCart } from "../store/cart.js";
+import { WishlistButton } from "./WishlistButton.jsx";
 
 export function CatalogProductCard({ product }) {
   const addItem = useCart((s) => s.addItem);
@@ -43,6 +44,10 @@ export function CatalogProductCard({ product }) {
         <span className="badge badge-sm badge-primary absolute left-3 top-3 border-0 text-xs font-medium shadow">
           {product.category ?? "General"}
         </span>
+        <WishlistButton
+          productId={product.id}
+          className="absolute right-3 top-3 bg-base-100/90 shadow backdrop-blur"
+        />
       </Link>
       <div className="card-body grow gap-3 p-5 text-left">
         <Link

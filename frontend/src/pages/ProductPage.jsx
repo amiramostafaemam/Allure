@@ -14,6 +14,7 @@ import { CatalogProductCard } from "../components/CatalogProductCard";
 import { ProductReviews } from "../components/ProductReviews";
 import { ProductPageSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
+import { WishlistButton } from "../components/WishlistButton";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { formatPrice } from "../utils/format";
 
@@ -93,6 +94,10 @@ function ProductPage() {
               <span className="badge badge-primary absolute left-4 top-4 border-0 text-xs font-medium shadow">
                 {product.category ?? "General"}
               </span>
+              <WishlistButton
+                productId={product.id}
+                className="absolute right-4 top-4 bg-base-100/90 shadow backdrop-blur"
+              />
             </figure>
           </div>
         </div>

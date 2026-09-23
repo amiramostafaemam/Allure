@@ -88,6 +88,24 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   user: one(users, { fields: [reviews.userId], references: [users.id] }),
 }));
 
+export const wishlistItems = pgTable("wishlist_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  unique("wishlist_items_user_product_unique").on(table.userId, table.productId),
+]);
+
+export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
+  product: one(products, { fields: [wishlistItems.productId], references: [products.id] }),
+  user: one(users, { fields: [wishlistItems.userId], references: [users.id] }),
+}));
+
 export const checkoutSessions = pgTable("checkout_sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
@@ -174,6 +192,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const productsRelations = relations(products, ({ many }) => ({
   orderItems: many(orderItems),
   reviews: many(reviews),
+  wishlistItems: many(wishlistItems),
 }));
 
 // each order belongs to exactly one user; each order can have many line items

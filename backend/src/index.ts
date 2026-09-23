@@ -20,6 +20,7 @@ import { sentryClerkUserMiddleware } from './middleware/sentryClerkUser';
 import adminRouter from './routes/adminRouter';
 import orderRouter from './routes/orderRouter';
 import notificationRouter from './routes/notificationRouter';
+import wishlistRouter from './routes/wishlistRouter';
 
 const env = getEnv();
 const app = express();
@@ -84,6 +85,7 @@ app.use("/api/checkout",checkoutLimiter,checkoutRouter);
 app.use("/api/admin",adminRouter)
 app.use("/api/orders",orderRouter);
 app.use("/api/notifications",notificationRouter);
+app.use("/api/wishlist",wishlistRouter);
 
 
 

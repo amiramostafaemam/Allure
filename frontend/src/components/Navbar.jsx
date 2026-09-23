@@ -3,6 +3,7 @@ import { Show, SignInButton, UserButton } from "@clerk/react";
 import { Link, NavLink, useLocation } from "react-router";
 
 import {
+  HeartIcon,
   LogInIcon,
   MenuIcon,
   PackageIcon,
@@ -103,6 +104,11 @@ const Navbar = () => {
               <span>Orders</span>
             </NavLink>
 
+            <NavLink to="/wishlist" className={navLinkClass}>
+              <HeartIcon className="size-6 opacity-90" aria-hidden />
+              <span>Wishlist</span>
+            </NavLink>
+
             {role === "admin" ? (
               <NavLink to="/admin" className={navLinkClass}>
                 <SettingsIcon className="size-6" aria-hidden />
@@ -197,6 +203,13 @@ const Navbar = () => {
                 <NavLink to="/orders" className={mobileLinkClass}>
                   <PackageIcon className="size-5 opacity-90" aria-hidden />
                   Orders
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink to="/wishlist" className={mobileLinkClass}>
+                  <HeartIcon className="size-5 opacity-90" aria-hidden />
+                  Wishlist
                 </NavLink>
               </li>
 

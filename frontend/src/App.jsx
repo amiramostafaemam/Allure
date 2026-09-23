@@ -24,6 +24,7 @@ const AdminCustomersPage = lazy(() => import('./pages/AdminCustomersPage'))
 const AdminCategoriesPage = lazy(() => import('./pages/AdminCategoriesPage'))
 const AdminProductsPage = lazy(() => import('./pages/AdminProductsPage'))
 const AdminPromoCodesPage = lazy(() => import('./pages/AdminPromoCodesPage'))
+const WishlistPage = lazy(() => import('./pages/WishlistPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
 const FaqPage = lazy(() => import('./pages/FaqPage'))
@@ -46,6 +47,7 @@ function App() {
        <Route path='/product/:slug' element={<ProductPage/>}/>
        <Route path='/checkout/return' element={<CheckoutReturnPage/>}/>
        <Route path='/orders' element={<OrdersPage/>}/>
+       <Route path='/wishlist' element={<WishlistPage/>}/>
        <Route path='/orders/:id' element={<OrderDetailPage/>}/>
        <Route path='/orders/:id/call' element={<OrderCallPage/>}/>
        <Route path='/admin' element={<AdminLayout/>}>
