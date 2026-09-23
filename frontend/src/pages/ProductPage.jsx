@@ -119,41 +119,45 @@ function ProductPage() {
           <div className="divider my-0" />
 
           <div className="flex flex-col gap-3">
-            {/* Quantity + wishlist share a row — neither needs much room.
-                The primary CTA gets its own full-width row on mobile
-                instead of fighting both for space (that's what was
-                squeezing "Add to cart" onto two lines). */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="join overflow-hidden rounded-full border border-base-300">
-                <button
-                  type="button"
-                  className="btn join-item gap-0 px-4"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  aria-label="Decrease quantity"
-                >
-                  <MinusIcon className="size-4" aria-hidden />
-                </button>
-                <span
-                  className="join-item flex min-w-14 items-center justify-center bg-base-200 px-3 text-base font-semibold tabular-nums text-base-content"
-                  aria-live="polite"
-                >
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  className="btn join-item gap-0 px-4"
-                  onClick={() => setQuantity((q) => Math.min(99, q + 1))}
-                  disabled={quantity >= 99}
-                  aria-label="Increase quantity"
-                >
-                  <PlusIcon className="size-4" aria-hidden />
-                </button>
+            {/* Quantity + wishlist share a row — justify-between left them
+                as two small islands with a dead gap between them at most
+                widths. Splitting the row 2:1 and centering each control in
+                its own share reads as a deliberate layout instead. */}
+            <div className="flex items-stretch gap-4">
+              <div className="flex flex-2 items-center justify-center">
+                <div className="join overflow-hidden rounded-full border border-base-300">
+                  <button
+                    type="button"
+                    className="btn join-item gap-0 px-4"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    aria-label="Decrease quantity"
+                  >
+                    <MinusIcon className="size-4" aria-hidden />
+                  </button>
+                  <span
+                    className="join-item flex min-w-14 items-center justify-center bg-base-200 px-3 text-base font-semibold tabular-nums text-base-content"
+                    aria-live="polite"
+                  >
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn join-item gap-0 px-4"
+                    onClick={() => setQuantity((q) => Math.min(99, q + 1))}
+                    disabled={quantity >= 99}
+                    aria-label="Increase quantity"
+                  >
+                    <PlusIcon className="size-4" aria-hidden />
+                  </button>
+                </div>
               </div>
 
-              <WishlistButton
-                productId={product.id}
-                className="border border-base-300 shadow-sm"
-              />
+              <div className="flex flex-1 items-center justify-center">
+                <WishlistButton
+                  productId={product.id}
+                  className="border border-base-300 shadow-sm"
+                />
+              </div>
             </div>
 
             <button
