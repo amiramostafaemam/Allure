@@ -61,7 +61,7 @@ function AdminCustomersPage() {
                   <td>
                     <div className="flex flex-col items-end gap-1">
                       <select
-                        className="select select-xs focus:[--input-color:var(--color-primary)] focus:outline-none!"
+                        className="select select-xs min-w-28 focus:[--input-color:var(--color-primary)] focus:outline-none!"
                         value={customer.role}
                         disabled={isSelf || updateRole.isPending}
                         title={isSelf ? "You can't change your own role" : undefined}

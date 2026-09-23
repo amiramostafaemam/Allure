@@ -43,7 +43,7 @@ export function OrderStaffControls({
           if (options.length === 0) return null;
           return (
             <select
-              className={`select rounded-lg font-medium focus:[--input-color:var(--color-primary)] focus:outline-none! ${selectSize}`}
+              className={`select min-w-36 rounded-lg font-medium focus:[--input-color:var(--color-primary)] focus:outline-none! ${selectSize}`}
               value=""
               disabled={statusPending}
               onChange={(e) => {

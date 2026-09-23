@@ -41,3 +41,14 @@
   --depth: 0;
   --noise: 0;
 }
+
+/* For horizontally swipeable pill/tab rows (e.g. AdminLayout's mobile nav)
+   — the swipe gesture is the affordance, a visible native scrollbar under
+   a row of rounded pills just reads as clutter, not as a scroll hint. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

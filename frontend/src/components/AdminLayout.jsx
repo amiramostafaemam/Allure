@@ -73,7 +73,7 @@ function AdminLayout() {
     <div
       className={`grid grid-cols-1 gap-8 ${collapsed ? "lg:grid-cols-[52px_1fr]" : "lg:grid-cols-[176px_1fr]"}`}
     >
-      <nav className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
+      <nav className="no-scrollbar flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
         <button
           type="button"
           onClick={toggleCollapsed}
