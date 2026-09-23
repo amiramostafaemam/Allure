@@ -32,7 +32,7 @@ const Navbar = () => {
         <div className="flex-1">
           <Link to="/" className="btn btn-ghost px-2">
             <span
-              className="text-[2.1rem] leading-none text-primary drop-shadow-[0_0_10px_rgba(31,184,84,0.4)]"
+              className="text-3xl leading-none text-primary drop-shadow-[0_0_10px_rgba(31,184,84,0.4)] sm:text-[2.1rem]"
               style={{ fontFamily: "'Alex Brush', cursive" }}
             >
               Allure
@@ -40,7 +40,15 @@ const Navbar = () => {
           </Link>
         </div>
 
-        <nav className="flex items-center gap-1 md:gap-1.5">
+        {/* min-w-0 overrides a flex item's default "never shrink below my
+            content's width" floor — without it, this row (up to 7 icon
+            buttons at once for a signed-in admin) forces the whole sticky
+            navbar wider than a phone screen, and since nothing else on the
+            page overflows, mobile browsers respond by zooming the entire
+            page out to fit — every page looks "not responsive" even though
+            only this row is actually too wide. overflow-x-auto gives it
+            somewhere to go (a contained scroll) instead. */}
+        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto md:gap-1.5">
           <NavLink to="/" end className={navLinkClass}>
             <ShoppingBagIcon className="size-6 opacity-90" aria-hidden />
             <span className="hidden sm:inline">Shop</span>
