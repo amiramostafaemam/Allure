@@ -9,6 +9,7 @@ import {
 import { useAdminStats } from "../hooks/useAdminStats";
 import { AdminOverviewSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
+import { OrdersByStatusChart, RevenueChart, TopProductsChart } from "../components/admin/DashboardCharts";
 import { formatOrderNumber, formatOrderWhen, formatPrice } from "../utils/format";
 import { statusBadgeClass } from "../utils/orderStatus";
 
@@ -32,6 +33,7 @@ function AdminOverviewPage() {
     ordersByStatus,
     topProducts,
     recentOrders,
+    revenueByDay,
     isLoading,
     isError,
   } = useAdminStats();
@@ -55,58 +57,43 @@ function AdminOverviewPage() {
         <StatCard icon={UsersIcon} label="Customers" value={totalCustomers} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="card border border-base-300 bg-base-100">
-          <div className="card-body">
-            <h2 className="card-title text-base">Top products</h2>
-            {topProducts.length === 0 ? (
-              <p className="text-sm text-base-content/60">No sales yet.</p>
-            ) : (
-              <ul className="divide-y divide-base-300">
-                {topProducts.map((p) => (
-                  <li key={p.productId} className="flex items-center justify-between py-2 text-sm">
-                    <span className="text-base-content">{p.name}</span>
-                    <span className="font-semibold tabular-nums text-base-content/70">
-                      {p.totalQuantity} sold
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
+      <RevenueChart data={revenueByDay} />
 
-        <div className="card border border-base-300 bg-base-100">
-          <div className="card-body">
-            <div className="flex items-center justify-between">
-              <h2 className="card-title text-base">Recent orders</h2>
-              <Link to="/admin/orders" className="link-hover link-primary text-sm">
-                View all
-              </Link>
-            </div>
-            {recentOrders.length === 0 ? (
-              <p className="text-sm text-base-content/60">No orders yet.</p>
-            ) : (
-              <ul className="divide-y divide-base-300">
-                {recentOrders.map((order) => (
-                  <li key={order.id} className="flex items-center justify-between py-2 text-sm">
-                    <div>
-                      <p className="font-medium text-base-content">#{formatOrderNumber(order.orderNumber)}</p>
-                      <p className="text-xs text-base-content/50">{formatOrderWhen(order.createdAt)}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`badge badge-sm capitalize ${statusBadgeClass(order.status)}`}>
-                        {order.status}
-                      </span>
-                      <span className="font-semibold tabular-nums text-base-content">
-                        {formatPrice(order.totalPounds, "egp")}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <OrdersByStatusChart ordersByStatus={ordersByStatus} />
+        <TopProductsChart topProducts={topProducts} />
+      </div>
+
+      <div className="card border border-base-300 bg-base-100">
+        <div className="card-body">
+          <div className="flex items-center justify-between">
+            <h2 className="card-title text-base">Recent orders</h2>
+            <Link to="/admin/orders" className="link-hover link-primary text-sm">
+              View all
+            </Link>
           </div>
+          {recentOrders.length === 0 ? (
+            <p className="text-sm text-base-content/60">No orders yet.</p>
+          ) : (
+            <ul className="divide-y divide-base-300">
+              {recentOrders.map((order) => (
+                <li key={order.id} className="flex items-center justify-between py-2 text-sm">
+                  <div>
+                    <p className="font-medium text-base-content">#{formatOrderNumber(order.orderNumber)}</p>
+                    <p className="text-xs text-base-content/50">{formatOrderWhen(order.createdAt)}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`badge badge-sm capitalize ${statusBadgeClass(order.status)}`}>
+                      {order.status}
+                    </span>
+                    <span className="font-semibold tabular-nums text-base-content">
+                      {formatPrice(order.totalPounds, "egp")}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>

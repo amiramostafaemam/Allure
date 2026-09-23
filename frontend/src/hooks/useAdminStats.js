@@ -17,6 +17,7 @@ export function useAdminStats() {
     ordersByStatus: data?.ordersByStatus ?? {},
     topProducts: data?.topProducts ?? [],
     recentOrders: data?.recentOrders ?? [],
+    revenueByDay: data?.revenueByDay ?? [],
     isLoading,
     isError,
   };
