@@ -13,10 +13,20 @@ import { useMe } from "../hooks/useMe";
 import NotificationBell from "./NotificationBell";
 import ThemeToggle from "./ThemeToggle";
 
+// daisyUI's own --btn-p/--size defaults live in a deeper @layer than the
+// .btn-sm/.btn-md modifier classes do, so "btn-sm sm:btn-md" doesn't
+// reliably reset to the true default at sm: and up — it was quietly
+// shrinking the desktop navbar too. Setting the custom properties
+// directly as Tailwind utilities (max-sm: only, so nothing at all is
+// generated above that breakpoint) sidesteps that layer ordering
+// entirely — same fix already proven for the focus-ring issue elsewhere.
+const MOBILE_BTN_SIZE =
+  "max-sm:[--btn-p:.75rem]! max-sm:[--size:calc(var(--size-field,.25rem)*8)]!";
+
 // Ghost nav link, highlighted only while its route is actually active —
 // not a permanently-colored link regardless of where you are.
 function navLinkClass({ isActive }) {
-  return `btn btn-sm sm:btn-md btn-ghost gap-2 font-medium ${isActive ? "btn-active text-primary" : ""}`;
+  return `btn btn-ghost gap-2 font-medium ${MOBILE_BTN_SIZE} ${isActive ? "btn-active text-primary" : ""}`;
 }
 
 const Navbar = () => {
