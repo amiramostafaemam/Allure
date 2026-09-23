@@ -60,8 +60,12 @@ const Navbar = () => {
             is sized down on mobile (btn-sm, smaller icons/avatar) so it
             fits without scrolling; overflow-x-hidden is only a last-resort
             safety net so a rare still-too-narrow screen silently clips the
-            edge instead of the whole page zooming out again. */}
-        <nav className="flex min-w-0 items-center gap-0.5 overflow-x-hidden sm:gap-1 md:gap-1.5">
+            edge instead of the whole page zooming out again.
+            overflow-y-visible has to be explicit here too: setting only
+            overflow-x silently computes overflow-y to auto per the CSS
+            spec, which was clipping the top of the cart badge (it pokes
+            slightly above its icon by design via a -50% translate). */}
+        <nav className="flex min-w-0 items-center gap-0.5 overflow-x-hidden overflow-y-visible sm:gap-1 md:gap-1.5">
           <NavLink to="/" end className={navLinkClass}>
             <ShoppingBagIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
             <span className="hidden sm:inline">Shop</span>
