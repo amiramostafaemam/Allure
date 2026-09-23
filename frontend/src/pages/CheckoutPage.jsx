@@ -1,8 +1,19 @@
 import { useState } from "react";
-import { ArrowLeftIcon, MapPinIcon, ShoppingCartIcon, TagIcon, UserIcon, XIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  MapPinIcon,
+  PlusIcon,
+  ShoppingCartIcon,
+  TagIcon,
+  Trash2Icon,
+  UserIcon,
+  XIcon,
+} from "lucide-react";
 import { Link } from "react-router";
 import useCartPage from "../hooks/useCartPage";
 import { useCheckout } from "../hooks/useCheckout";
+import { useSavedAddresses } from "../hooks/useSavedAddresses";
 import { usePromoCode } from "../hooks/usePromoCode";
 import EmptyCart from "../components/EmptyCart";
 import { CartSkeleton } from "../components/LoadingSkeletons";
@@ -19,11 +30,82 @@ function SectionHeading({ icon: Icon, children }) {
   );
 }
 
+function SavedAddressPicker({ addresses, selectedId, onSelect, onDelete, deletingId }) {
+  return (
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      {addresses.map((addr) => {
+        const selected = addr.id === selectedId;
+        return (
+          <div
+            key={addr.id}
+            className={`relative rounded-xl border p-3 text-left transition-colors ${
+              selected ? "border-primary bg-primary/5" : "border-base-300 hover:border-primary/40"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => onSelect(addr)}
+              className="block w-full pr-6 text-left"
+            >
+              <span className="flex items-center gap-1.5 text-sm font-medium text-base-content">
+                {selected ? <CheckIcon className="size-3.5 shrink-0 text-primary" aria-hidden /> : null}
+                {addr.label || addr.fullName}
+              </span>
+              <span className="mt-0.5 block truncate text-xs text-base-content/60">
+                {addr.line1}, {addr.city}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onDelete(addr.id)}
+              disabled={deletingId === addr.id}
+              aria-label="Delete address"
+              className="btn btn-ghost btn-xs btn-square absolute right-2 top-2 text-error hover:bg-error/10"
+            >
+              <Trash2Icon className="size-3.5" aria-hidden />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function CheckoutPage() {
   const { items, lines, subtotal, productsLoading, productsError } = useCartPage();
-  const { address, setField, submitOrder, submitting, error } = useCheckout();
+  const { address, setField, fillFrom, submitOrder, submitting, error } = useCheckout();
+  const { addresses, createAddress, deleteAddress } = useSavedAddresses();
   const promo = usePromoCode(items);
   const [promoInputOpen, setPromoInputOpen] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [saveAddress, setSaveAddress] = useState(false);
+
+  // Pre-fill from the default saved address the first time the list shows
+  // up — adjusting state during render (not an effect) so this can't cause
+  // an extra cascading render, and it only fires once thanks to the guard.
+  const [autoFilled, setAutoFilled] = useState(false);
+  if (!autoFilled && addresses.length > 0) {
+    setAutoFilled(true);
+    setSelectedAddressId(addresses[0].id);
+    fillFrom(addresses[0]);
+  }
+
+  function selectAddress(addr) {
+    setSelectedAddressId(addr.id);
+    fillFrom(addr);
+  }
+
+  function startNewAddress() {
+    setSelectedAddressId(null);
+    fillFrom(null);
+  }
+
+  function handleDeleteAddress(id) {
+    deleteAddress.mutate(id);
+    if (selectedAddressId === id) {
+      setSelectedAddressId(null);
+    }
+  }
 
   if (items.length === 0) return <EmptyCart />;
   if (productsLoading) return <CartSkeleton lines={items.length} />;
@@ -38,6 +120,10 @@ function CheckoutPage() {
 
   function handleSubmit(e) {
     e.preventDefault();
+    // Best-effort — saving the address is a convenience, not something
+    // that should ever block or fail the actual checkout, so its result
+    // is never awaited or surfaced here.
+    if (saveAddress) createAddress.mutate(address);
     submitOrder(promo.applied?.code);
   }
 
@@ -88,6 +174,27 @@ function CheckoutPage() {
             <section className="space-y-4">
               <SectionHeading icon={MapPinIcon}>Delivery address</SectionHeading>
 
+              {addresses.length > 0 ? (
+                <div className="space-y-2">
+                  <SavedAddressPicker
+                    addresses={addresses}
+                    selectedId={selectedAddressId}
+                    onSelect={selectAddress}
+                    onDelete={handleDeleteAddress}
+                    deletingId={deleteAddress.isPending ? deleteAddress.variables : null}
+                  />
+                  <button
+                    type="button"
+                    onClick={startNewAddress}
+                    className="btn btn-ghost btn-sm gap-2 px-2 text-base-content/60"
+                  >
+                    <PlusIcon className="size-3.5" aria-hidden />
+                    Enter a new address
+                  </button>
+                  <div className="divider my-0" />
+                </div>
+              ) : null}
+
               <TextField
                 label="Address line 1"
                 required
@@ -123,6 +230,16 @@ function CheckoutPage() {
                 value={address.country}
                 onChange={(e) => setField("country", e.target.value)}
               />
+
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-base-content/70">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm checkbox-primary"
+                  checked={saveAddress}
+                  onChange={(e) => setSaveAddress(e.target.checked)}
+                />
+                Save this address for next time
+              </label>
             </section>
 
             {error ? <p className="text-sm text-error">{error}</p> : null}

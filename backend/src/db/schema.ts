@@ -106,6 +106,31 @@ export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
   user: one(users, { fields: [wishlistItems.userId], references: [users.id] }),
 }));
 
+// Same shape as ShippingAddress (orders.shippingAddress / checkoutSessions.
+// shippingAddress) but as real columns, not jsonb — these get edited and
+// listed individually, unlike the order/session copies which are only ever
+// written once at checkout time and read back verbatim.
+export const savedAddresses = pgTable("saved_addresses", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  label: text("label"),
+  fullName: text("full_name").notNull(),
+  phone: text("phone").notNull(),
+  line1: text("line1").notNull(),
+  line2: text("line2"),
+  city: text("city").notNull(),
+  governorate: text("governorate").notNull(),
+  country: text("country").notNull(),
+  isDefault: boolean("is_default").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const savedAddressesRelations = relations(savedAddresses, ({ one }) => ({
+  user: one(users, { fields: [savedAddresses.userId], references: [users.id] }),
+}));
+
 export const checkoutSessions = pgTable("checkout_sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")

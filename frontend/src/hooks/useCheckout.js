@@ -35,6 +35,25 @@ export function useCheckout() {
     setAddress((a) => ({ ...a, [field]: value }));
   }
 
+  // Fills the form from a saved address (or resets it to blank for "enter a
+  // new one"), stripping the id/label/isDefault fields that don't belong in
+  // the order's own shipping-address shape.
+  function fillFrom(saved) {
+    if (!saved) {
+      setAddress(EMPTY_ADDRESS);
+      return;
+    }
+    setAddress({
+      fullName: saved.fullName,
+      phone: saved.phone,
+      line1: saved.line1,
+      line2: saved.line2 ?? "",
+      city: saved.city,
+      governorate: saved.governorate,
+      country: saved.country,
+    });
+  }
+
   async function submitOrder(promoCode) {
     setSubmitting(true);
     setError("");
@@ -61,5 +80,5 @@ export function useCheckout() {
     }
   }
 
-  return { items, address, setField, submitOrder, submitting, error };
+  return { items, address, setField, fillFrom, submitOrder, submitting, error };
 }

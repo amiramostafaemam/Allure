@@ -21,6 +21,7 @@ import adminRouter from './routes/adminRouter';
 import orderRouter from './routes/orderRouter';
 import notificationRouter from './routes/notificationRouter';
 import wishlistRouter from './routes/wishlistRouter';
+import savedAddressesRouter from './routes/savedAddressesRouter';
 import { productMetaHtml } from './middleware/productMetaHtml';
 
 const env = getEnv();
@@ -87,6 +88,7 @@ app.use("/api/admin",adminRouter)
 app.use("/api/orders",orderRouter);
 app.use("/api/notifications",notificationRouter);
 app.use("/api/wishlist",wishlistRouter);
+app.use("/api/addresses",savedAddressesRouter);
 
 
 
