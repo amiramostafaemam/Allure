@@ -85,15 +85,24 @@ const Navbar = () => {
 
           <NavLink
             to="/cart"
-            className={({ isActive }) => `${navLinkClass({ isActive })} indicator`}
+            className={navLinkClass}
             aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
           >
-            {cartCount > 0 ? (
-              <span className="indicator-item badge badge-sm badge-primary min-w-2 px-1.5 font-sans text-xs tabular-nums">
-                {cartCount > 99 ? "99+" : cartCount}
-              </span>
-            ) : null}
-            <ShoppingCartIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
+            {/* The indicator badge anchors to its nearest "indicator"
+                ancestor's corner — putting that class on the whole button
+                (icon + "Cart" label) anchored the badge to the far corner
+                of the whole pill, where it could bleed into the next
+                button. Scoping "indicator" to just the icon keeps the
+                badge tight against the icon regardless of the button's
+                width. */}
+            <span className="indicator">
+              {cartCount > 0 ? (
+                <span className="indicator-item badge badge-sm badge-primary min-w-2 px-1.5 font-sans text-xs tabular-nums">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              ) : null}
+              <ShoppingCartIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
+            </span>
             <span className="hidden sm:inline">Cart</span>
           </NavLink>
 
