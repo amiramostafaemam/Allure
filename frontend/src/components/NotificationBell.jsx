@@ -25,9 +25,15 @@ function NotificationBell() {
         <BellIcon className="size-6 opacity-90" aria-hidden />
       </div>
 
+      {/* dropdown-end anchors the panel's right edge to the trigger and
+          extends left by its own fixed width (w-80) — on a phone-width
+          screen the trigger sits close enough to the edge that a 320px
+          panel runs off the left of the viewport entirely. Below sm:,
+          override to a fixed panel pinned to the viewport by its own
+          margins instead of the trigger's position. */}
       <div
         tabIndex={0}
-        className="dropdown-content menu z-10 mt-2 w-80 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+        className="dropdown-content menu z-10 mt-2 w-80 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg max-sm:fixed! max-sm:inset-x-4! max-sm:top-16! max-sm:mt-0! max-sm:w-auto!"
       >
         <div className="flex items-center justify-between px-2 py-1">
           <span className="text-sm font-semibold text-base-content">Notifications</span>
@@ -49,7 +55,7 @@ function NotificationBell() {
             No notifications yet.
           </p>
         ) : (
-          <ul className="max-h-96 space-y-1 overflow-y-auto">
+          <ul className="no-scrollbar max-h-96 space-y-1 overflow-y-auto">
             {notifications.map((n) => (
               <li key={n.orderId}>
                 <Link
