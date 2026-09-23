@@ -21,6 +21,7 @@ import adminRouter from './routes/adminRouter';
 import orderRouter from './routes/orderRouter';
 import notificationRouter from './routes/notificationRouter';
 import wishlistRouter from './routes/wishlistRouter';
+import { productMetaHtml } from './middleware/productMetaHtml';
 
 const env = getEnv();
 const app = express();
@@ -92,6 +93,7 @@ app.use("/api/wishlist",wishlistRouter);
 
 const publicDir=path.join(process.cwd(),"public");
 if(fs.existsSync(publicDir)){
+    app.get("/product/:slug", productMetaHtml(publicDir));
     app.use(express.static(publicDir));
     app.get(/.*/,(req,res,next)=>{
         if(req.method!=="GET" && req.method!=="HEAD"){
