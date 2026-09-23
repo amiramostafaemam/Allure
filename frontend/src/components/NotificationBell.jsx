@@ -11,7 +11,7 @@ function NotificationBell() {
       <div
         tabIndex={0}
         role="button"
-        className="btn btn-ghost btn-square indicator"
+        className="btn btn-sm sm:btn-md btn-ghost btn-square indicator"
         aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
         onFocus={() => {
           if (unreadCount > 0 && !markAllRead.isPending) markAllRead.mutate();
@@ -22,7 +22,7 @@ function NotificationBell() {
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         ) : null}
-        <BellIcon className="size-6 opacity-90" aria-hidden />
+        <BellIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
       </div>
 
       <div

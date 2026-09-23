@@ -8,14 +8,14 @@ function ThemeToggle() {
   return (
     <button
       type="button"
-      className="btn btn-ghost btn-square"
+      className="btn btn-sm sm:btn-md btn-ghost btn-square"
       aria-label={theme === "forest" ? "Switch to light mode" : "Switch to dark mode"}
       onClick={toggle}
     >
       {theme === "forest" ? (
-        <SunIcon className="size-5 opacity-90" aria-hidden />
+        <SunIcon className="size-4 opacity-90 sm:size-5" aria-hidden />
       ) : (
-        <MoonIcon className="size-5 opacity-90" aria-hidden />
+        <MoonIcon className="size-4 opacity-90 sm:size-5" aria-hidden />
       )}
     </button>
   );

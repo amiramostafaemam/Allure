@@ -16,7 +16,7 @@ import ThemeToggle from "./ThemeToggle";
 // Ghost nav link, highlighted only while its route is actually active —
 // not a permanently-colored link regardless of where you are.
 function navLinkClass({ isActive }) {
-  return `btn btn-ghost gap-2 font-medium ${isActive ? "btn-active text-primary" : ""}`;
+  return `btn btn-sm sm:btn-md btn-ghost gap-2 font-medium ${isActive ? "btn-active text-primary" : ""}`;
 }
 
 const Navbar = () => {
@@ -45,24 +45,27 @@ const Navbar = () => {
             buttons at once for a signed-in admin) forces the whole sticky
             navbar wider than a phone screen, and since nothing else on the
             page overflows, mobile browsers respond by zooming the entire
-            page out to fit — every page looks "not responsive" even though
-            only this row is actually too wide. overflow-x-auto gives it
-            somewhere to go (a contained scroll) instead. */}
-        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto md:gap-1.5">
+            page out to fit — every page looked "not responsive" even
+            though only this row was actually too wide. Every item below
+            is sized down on mobile (btn-sm, smaller icons/avatar) so it
+            fits without scrolling; overflow-x-hidden is only a last-resort
+            safety net so a rare still-too-narrow screen silently clips the
+            edge instead of the whole page zooming out again. */}
+        <nav className="flex min-w-0 items-center gap-0.5 overflow-x-hidden sm:gap-1 md:gap-1.5">
           <NavLink to="/" end className={navLinkClass}>
-            <ShoppingBagIcon className="size-6 opacity-90" aria-hidden />
+            <ShoppingBagIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
             <span className="hidden sm:inline">Shop</span>
           </NavLink>
 
           <Show when={"signed-in"}>
             <NavLink to="/orders" className={navLinkClass}>
-              <PackageIcon className="size-6 opacity-90" aria-hidden />
+              <PackageIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
               <span className="hidden sm:inline">Orders</span>
             </NavLink>
 
             {role === "admin" ? (
               <NavLink to="/admin" className={navLinkClass}>
-                <SettingsIcon className="size-6" aria-hidden />
+                <SettingsIcon className="size-5 sm:size-6" aria-hidden />
                 <span className="hidden sm:inline">Admin</span>
               </NavLink>
             ) : null}
@@ -80,7 +83,7 @@ const Navbar = () => {
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             ) : null}
-            <ShoppingCartIcon className="size-6 opacity-90" aria-hidden />
+            <ShoppingCartIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
             <span className="hidden sm:inline">Cart</span>
           </NavLink>
 
@@ -99,10 +102,10 @@ const Navbar = () => {
           </Show>
 
           <Show when={"signed-in"}>
-            <div className="flex items-center gap-2 border-l border-base-300 pl-3">
+            <div className="flex items-center gap-1.5 border-l border-base-300 pl-1.5 sm:gap-2 sm:pl-3">
               <UserButton
                 appearance={{
-                  elements: { avatarBox: "h-10 w-10 ring-2 ring-base-300" },
+                  elements: { avatarBox: "h-8 w-8 ring-2 ring-base-300 sm:h-10 sm:w-10" },
                 }}
               />
               {role === "support" || role === "admin" ? (
