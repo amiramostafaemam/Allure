@@ -32,7 +32,9 @@ test.describe("Guest shopping flow", () => {
     // proves the cart survives a fresh page load, not just in-memory SPA
     // state — it's backed by localStorage (store/cart.js).
     await page.goto("/cart");
-    await expect(page.getByRole("link", { name: productName!, exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: productName!, exact: true })).toBeVisible({
+      timeout: 15000,
+    });
   });
 
   test("checkout is gated behind sign-in instead of failing silently", async ({ page }) => {

@@ -88,7 +88,7 @@ npm run dev             # http://localhost:5173
 
 ### End-to-end tests
 
-A Playwright suite in [e2e/](e2e/) runs against a real instance of the app (no mocks — real Clerk, real Polar, real database) and covers the guest shopping flow: browsing, adding to cart, and the sign-in gate on checkout. See [e2e/README.md](e2e/README.md) for what it deliberately doesn't cover (completing a real purchase) and why.
+A Playwright suite in [e2e/](e2e/) runs against a real instance of the app (no mocks — real Clerk, real Polar, real database): the guest shopping flow (browsing, adding to cart, the sign-in gate on checkout), plus an authenticated flow that signs in and drives checkout-session creation through to the Polar redirect. See [e2e/README.md](e2e/README.md) for how to enable the authenticated spec and what it deliberately doesn't cover (completing a real purchase).
 
 ```bash
 cd e2e
