@@ -68,7 +68,7 @@ function AdminPromoCodesPage() {
 
       <form
         onSubmit={handleCreate}
-        className="mb-6 grid gap-3 rounded-box border border-base-300 bg-base-100 p-4 sm:grid-cols-[1fr_140px_180px_auto]"
+        className="mb-6 grid grid-cols-1 gap-3 rounded-box border border-base-300 bg-base-100 p-4 sm:grid-cols-[1fr_140px_180px_auto]"
       >
         <TextField
           label="Code"

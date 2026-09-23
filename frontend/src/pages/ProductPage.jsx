@@ -72,7 +72,7 @@ function ProductPage() {
         <span className="truncate text-base-content/70">{product.name}</span>
       </nav>
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14">
         <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="relative overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-xl">
             <div
@@ -161,7 +161,7 @@ function ProductPage() {
             </button>
           </div>
 
-          <div className="grid gap-4 rounded-2xl border border-base-300 bg-base-100 p-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 rounded-2xl border border-base-300 bg-base-100 p-5 sm:grid-cols-2">
             <div className="flex items-start gap-3">
               <ShieldCheckIcon
                 className="mt-0.5 size-5 shrink-0 text-primary"
@@ -201,7 +201,7 @@ function ProductPage() {
           <h2 className="mb-6 text-xl font-bold uppercase tracking-wide text-base-content">
             You might also like
           </h2>
-          <ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
             {relatedProducts.slice(0, 4).map((p) => (
               <li key={p.id}>
                 <CatalogProductCard product={p} />

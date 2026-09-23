@@ -1,6 +1,6 @@
 export function ProductPageSkeleton() {
   return (
-    <div className="grid gap-10 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
       <div className="skeleton aspect-square w-full rounded-box" />
       <div className="space-y-4">
         <div className="skeleton h-8 w-3/4" />
@@ -14,7 +14,7 @@ export function ProductPageSkeleton() {
 export function CartSkeleton({ lines = 3 }) {
   const n = Math.min(Math.max(lines, 1), 8);
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]">
       <ul className="space-y-4">
         {Array.from({ length: n }).map((_, i) => (
           <li
@@ -113,7 +113,7 @@ export function AdminProductsTableSkeleton() {
 export function AdminOverviewSkeleton() {
   return (
     <div className="space-y-8">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="card border border-base-300 bg-base-100 p-5">
             <div className="skeleton h-4 w-20" />
@@ -121,7 +121,7 @@ export function AdminOverviewSkeleton() {
           </div>
         ))}
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="skeleton h-64 w-full rounded-box" />
         <div className="skeleton h-64 w-full rounded-box" />
       </div>

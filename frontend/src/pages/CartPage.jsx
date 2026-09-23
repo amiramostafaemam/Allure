@@ -41,7 +41,7 @@ function CartPage() {
       ) : productsError ? (
         <PageError message="Could not load product details. Refresh the page or try again shortly." />
       ) : (
-        <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]">
           <ul className="space-y-4">
             {lines.map(({ line, product: p }) => (
               <li

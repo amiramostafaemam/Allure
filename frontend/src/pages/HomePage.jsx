@@ -68,7 +68,7 @@ function HomePage() {
         </div>
 
         {loadingList ? (
-          <ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <li key={i}>
                 <div className="skeleton h-96 w-full rounded-box" />
@@ -84,7 +84,7 @@ function HomePage() {
               : "No products in this category yet."}
           </div>
         ) : (
-          <ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {products.map((p) => (
               <li key={p.id}>
                 <CatalogProductCard product={p} />

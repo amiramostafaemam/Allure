@@ -58,8 +58,21 @@ function AdminLayout() {
     );
   }
 
+  // Without an explicit grid-cols-1 base, a bare "grid" with no column
+  // template sizes its single implicit column to fit its widest child's
+  // natural (max-content) width — here, the nav row below, whose buttons
+  // are all shrink-0 so they never compress. That silently forced this
+  // whole grid (and so the whole admin page) wider than a phone screen,
+  // which is a different flavor of the same "page renders wider than the
+  // viewport" bug already root-caused in the main Navbar: nothing else on
+  // the page overflows, so mobile browsers respond by zooming the entire
+  // page out to fit rather than just scrolling the one row. grid-cols-1
+  // gives the column a real minmax(0,1fr) track instead of unconstrained
+  // auto, so the nav's own overflow-x-auto can actually do its job.
   return (
-    <div className={`grid gap-8 ${collapsed ? "lg:grid-cols-[52px_1fr]" : "lg:grid-cols-[176px_1fr]"}`}>
+    <div
+      className={`grid grid-cols-1 gap-8 ${collapsed ? "lg:grid-cols-[52px_1fr]" : "lg:grid-cols-[176px_1fr]"}`}
+    >
       <nav className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
         <button
           type="button"

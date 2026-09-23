@@ -58,7 +58,7 @@ function CheckoutPage() {
         Shipping details
       </h1>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
         <form
           onSubmit={handleSubmit}
           className="card border border-base-300 bg-base-100 shadow-lg"
@@ -66,7 +66,7 @@ function CheckoutPage() {
           <div className="card-body space-y-6">
             <section className="space-y-4">
               <SectionHeading icon={UserIcon}>Contact</SectionHeading>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <TextField
                   label="Full name"
                   required
@@ -102,7 +102,7 @@ function CheckoutPage() {
                 onChange={(e) => setField("line2", e.target.value)}
               />
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <TextField
                   label="City"
                   required
