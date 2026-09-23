@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   ArrowLeftIcon,
   CheckIcon,
+  LogInIcon,
   MapPinIcon,
   PlusIcon,
   ShoppingCartIcon,
@@ -11,6 +12,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { Link } from "react-router";
+import { SignInButton, useAuth } from "@clerk/react";
 import useCartPage from "../hooks/useCartPage";
 import { useCheckout } from "../hooks/useCheckout";
 import { useSavedAddresses } from "../hooks/useSavedAddresses";
@@ -72,6 +74,7 @@ function SavedAddressPicker({ addresses, selectedId, onSelect, onDelete, deletin
 }
 
 function CheckoutPage() {
+  const { isSignedIn } = useAuth();
   const { items, lines, subtotal, productsLoading, productsError } = useCartPage();
   const { address, setField, fillFrom, submitOrder, submitting, error } = useCheckout();
   const { addresses, createAddress, deleteAddress } = useSavedAddresses();
@@ -108,6 +111,29 @@ function CheckoutPage() {
   }
 
   if (items.length === 0) return <EmptyCart />;
+
+  // Nothing previously stopped a signed-out visitor from filling out the
+  // whole shipping form — checkout only actually checks auth server-side,
+  // at submit time, and surfaced that as a bare "Unauthorized" string with
+  // no indication of what to do about it. The cart itself stays guest-
+  // friendly (still true above this point) since forcing sign-in earlier
+  // than necessary hurts conversion, but checkout genuinely needs an
+  // account, so say so up front instead of letting them fill in a form
+  // that was always going to fail.
+  if (!isSignedIn) {
+    return (
+      <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 py-16 text-center">
+        <p className="text-base-content/60">Sign in to continue to checkout.</p>
+        <SignInButton mode="modal">
+          <button type="button" className="btn btn-primary mt-6 gap-2 shadow-md">
+            <LogInIcon className="size-4" aria-hidden />
+            Sign in
+          </button>
+        </SignInButton>
+      </div>
+    );
+  }
+
   if (productsLoading) return <CartSkeleton lines={items.length} />;
   if (productsError) {
     return (
