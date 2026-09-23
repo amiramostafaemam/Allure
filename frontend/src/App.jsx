@@ -3,6 +3,7 @@ import { useAuth } from '@clerk/react'
 import PageLoader from "./components/PageLoader"
 import Layout from './components/Layout'
 import AdminLayout from './components/AdminLayout'
+import ScrollToTop from './components/ScrollToTop'
 import { Route, Routes } from 'react-router'
 
 import HomePage from './pages/HomePage'
@@ -39,6 +40,7 @@ function App() {
 
   return (
     <Layout>
+     <ScrollToTop/>
      <Suspense fallback={<PageLoader/>}>
       <Routes>
        <Route path='/' element={<HomePage/>}/>
