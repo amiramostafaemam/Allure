@@ -20,8 +20,11 @@ A full-stack e-commerce platform with authenticated checkout, an admin product d
 - **Orders** — order history and detail pages for customers, with friendly order numbers; staff/admin views for every order with inline status controls and grouped, real-time notifications.
 - **Admin dashboard** — create/edit/deactivate products with image upload to ImageKit, manage categories and promo codes, and change customer roles.
 - **Support chat & video calls** — once an order is paid, the customer and support staff get a dedicated Stream Chat channel; staff can drop a one-tap video call invite into it.
+- **Wishlist & saved addresses** — save products for later with optimistic-update heart toggles, and save shipping addresses for faster repeat checkout (first save becomes the default automatically).
 - **Auth** — Clerk-backed sign-in, with roles (`customer` / `support` / `admin`) synced into the local database via Clerk webhooks.
 - **Light/dark mode** — a theme toggle with the brand accent carried across both palettes, persisted per visitor.
+- **SEO & installable** — server-rendered Open Graph/Twitter previews per product (real title/description/photo, not the generic sitewide fallback), and a PWA manifest for "Add to Home Screen."
+- **Admin analytics** — a dashboard with a revenue trend, order-status mix, and top-products charts, alongside the product/category/customer/promo-code management screens.
 - **Observability** — Sentry error tracking and performance monitoring on both the API and the browser, with session replay input/text masking left on for privacy.
 
 ## Tech stack
@@ -82,6 +85,17 @@ npm run dev             # http://localhost:5173
 | `npm run build`                                  | Production build       |
 | `npm run lint`                                   | ESLint                 |
 | `npm test`                                       | Run the test suite (Vitest) |
+
+### End-to-end tests
+
+A Playwright suite in [e2e/](e2e/) runs against a real instance of the app (no mocks — real Clerk, real Polar, real database) and covers the guest shopping flow: browsing, adding to cart, and the sign-in gate on checkout. See [e2e/README.md](e2e/README.md) for what it deliberately doesn't cover (completing a real purchase) and why.
+
+```bash
+cd e2e
+npm install
+npx playwright install chromium   # first time only
+npm test
+```
 
 ### Docker
 
