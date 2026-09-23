@@ -2,10 +2,13 @@ import { SignInButton, useAuth } from "@clerk/react";
 import { HeartIcon } from "lucide-react";
 import { useWishlist } from "../hooks/useWishlist";
 
-// Reused both inside a <Link> (catalog card, over the product image) and
-// standalone (product page). The outer span stops the click from bubbling
-// regardless of whether the sign-in modal or the toggle fires below it, so
-// it never also triggers a parent link's navigation.
+// The outer span both stops the click from bubbling AND prevents its
+// default action — stopPropagation alone isn't enough when this sits
+// inside a <Link>: it blocks the Link's own onClick (the one that would
+// call preventDefault) from ever running, but does nothing to the click's
+// native default action, so the browser still follows the anchor's href.
+// Belt-and-suspenders even now that nothing renders this inside a <Link>
+// anymore, so it stays safe wherever it's reused next.
 export function WishlistButton({ productId, className = "" }) {
   const { isSignedIn } = useAuth();
   const { isWishlisted, addItem, removeItem } = useWishlist();
@@ -34,7 +37,12 @@ export function WishlistButton({ productId, className = "" }) {
   );
 
   return (
-    <span onClick={(e) => e.stopPropagation()}>
+    <span
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
       {isSignedIn ? button : <SignInButton mode="modal">{button}</SignInButton>}
     </span>
   );

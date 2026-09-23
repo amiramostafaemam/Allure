@@ -44,10 +44,6 @@ export function CatalogProductCard({ product }) {
         <span className="badge badge-sm badge-primary absolute left-3 top-3 border-0 text-xs font-medium shadow">
           {product.category ?? "General"}
         </span>
-        <WishlistButton
-          productId={product.id}
-          className="absolute right-3 top-3 bg-base-100/90 shadow backdrop-blur"
-        />
       </Link>
       <div className="card-body grow gap-3 p-5 text-left">
         <Link
@@ -63,19 +59,22 @@ export function CatalogProductCard({ product }) {
           <span className="text-lg font-bold tabular-nums text-base-content">
             {formatPrice(product.pricePounds, product.currency)}
           </span>
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={added}
-            className={`btn btn-sm gap-1 shadow transition-colors ${added ? "btn-neutral" : "btn-primary"}`}
-          >
-            {added ? (
-              <CheckIcon className="size-4" aria-hidden />
-            ) : (
-              <PlusIcon className="size-4" aria-hidden />
-            )}
-            {added ? "Added" : "Add"}
-          </button>
+          <div className="flex items-center gap-1">
+            <WishlistButton productId={product.id} />
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={added}
+              className={`btn btn-sm gap-1 shadow transition-colors ${added ? "btn-neutral" : "btn-primary"}`}
+            >
+              {added ? (
+                <CheckIcon className="size-4" aria-hidden />
+              ) : (
+                <PlusIcon className="size-4" aria-hidden />
+              )}
+              {added ? "Added" : "Add"}
+            </button>
+          </div>
         </div>
       </div>
     </article>

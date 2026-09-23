@@ -94,10 +94,6 @@ function ProductPage() {
               <span className="badge badge-primary absolute left-4 top-4 border-0 text-xs font-medium shadow">
                 {product.category ?? "General"}
               </span>
-              <WishlistButton
-                productId={product.id}
-                className="absolute right-4 top-4 bg-base-100/90 shadow backdrop-blur"
-              />
             </figure>
           </div>
         </div>
@@ -164,6 +160,11 @@ function ProductPage() {
               )}
               {added ? "Added to cart" : "Add to cart"}
             </button>
+
+            <WishlistButton
+              productId={product.id}
+              className="border border-base-300 shadow-sm"
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-4 rounded-2xl border border-base-300 bg-base-100 p-5 sm:grid-cols-2">
