@@ -2,6 +2,13 @@
 <html lang="en" data-theme="forest">
   <head>
     <meta charset="UTF-8" />
+    <!-- Default dark value — the inline script right below overwrites it to
+         #f6faf6 when the resolved theme is light, so the browser chrome/
+         status bar tint always matches whichever theme actually applied,
+         not just the OS's own light/dark preference (the in-app toggle can
+         diverge from that). Must stay ahead of the script in source order:
+         a script can only find elements the parser has already reached. -->
+    <meta name="theme-color" content="#1b1717" />
     <script>
       (function () {
         try {
@@ -10,10 +17,18 @@
             stored ||
             (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "forest");
           document.documentElement.setAttribute("data-theme", theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", theme === "light" ? "#f6faf6" : "#1b1717");
         } catch (e) {}
       })();
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Allure" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
