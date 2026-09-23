@@ -1,11 +1,24 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { PlusIcon } from "lucide-react";
+import { CheckIcon, PlusIcon } from "lucide-react";
 import { formatPrice } from "../utils/format.js";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl.js";
 import { useCart } from "../store/cart.js";
 
 export function CatalogProductCard({ product }) {
   const addItem = useCart((s) => s.addItem);
+  const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (!added) return;
+    const timer = setTimeout(() => setAdded(false), 1200);
+    return () => clearTimeout(timer);
+  }, [added]);
+
+  function handleAdd() {
+    addItem(product.id);
+    setAdded(true);
+  }
 
   return (
     <article className="card group h-full overflow-hidden border border-base-300 bg-base-100 shadow-md transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-xl">
@@ -47,11 +60,16 @@ export function CatalogProductCard({ product }) {
           </span>
           <button
             type="button"
-            onClick={() => addItem(product.id)}
-            className="btn btn-primary btn-sm gap-1 shadow"
+            onClick={handleAdd}
+            disabled={added}
+            className={`btn btn-sm gap-1 shadow transition-colors ${added ? "btn-neutral" : "btn-primary"}`}
           >
-            <PlusIcon className="size-4" aria-hidden />
-            Add
+            {added ? (
+              <CheckIcon className="size-4" aria-hidden />
+            ) : (
+              <PlusIcon className="size-4" aria-hidden />
+            )}
+            {added ? "Added" : "Add"}
           </button>
         </div>
       </div>

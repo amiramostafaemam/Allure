@@ -27,7 +27,7 @@ const cartItemsSchema = z
   .array(
     z.object({
       productId: z.string(),
-      quantity: z.number().int().positive(),
+      quantity: z.number().int().positive().max(99),
     }),
   )
   .min(1);

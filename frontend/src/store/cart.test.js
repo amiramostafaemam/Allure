@@ -29,4 +29,13 @@ describe("cart store", () => {
     useCart.getState().removeItem("p1");
     expect(useCart.getState().items).toEqual([{ productId: "p2", quantity: 1 }]);
   });
+
+  it("caps quantity at 99, whether via repeated addItem or setQty", () => {
+    useCart.getState().addItem("p1", 60);
+    useCart.getState().addItem("p1", 60);
+    expect(useCart.getState().items).toEqual([{ productId: "p1", quantity: 99 }]);
+
+    useCart.getState().setQty("p1", 500);
+    expect(useCart.getState().items).toEqual([{ productId: "p1", quantity: 99 }]);
+  });
 });

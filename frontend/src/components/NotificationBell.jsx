@@ -3,13 +3,6 @@ import { BellIcon, CheckCheckIcon, MessageCircleIcon } from "lucide-react";
 import { useNotifications } from "../hooks/useNotifications";
 import { formatOrderNumber, formatOrderWhen } from "../utils/format";
 
-// daisyUI's --btn-p/--size defaults live in a deeper @layer than the
-// .btn-sm/.btn-md modifier classes, so "btn-sm sm:btn-md" doesn't reliably
-// reset above sm: — setting the custom properties directly (max-sm: only)
-// sidesteps that layer ordering, same as Navbar's nav links.
-const MOBILE_BTN_SIZE =
-  "max-sm:[--btn-p:.75rem]! max-sm:[--size:calc(var(--size-field,.25rem)*8)]!";
-
 function NotificationBell() {
   const { notifications, unreadCount, markOrderRead, markAllRead } = useNotifications();
 
@@ -18,7 +11,7 @@ function NotificationBell() {
       <div
         tabIndex={0}
         role="button"
-        className={`btn btn-ghost btn-square indicator ${MOBILE_BTN_SIZE}`}
+        className="btn btn-ghost btn-square indicator"
         aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
         onFocus={() => {
           if (unreadCount > 0 && !markAllRead.isPending) markAllRead.mutate();
@@ -29,7 +22,7 @@ function NotificationBell() {
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         ) : null}
-        <BellIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
+        <BellIcon className="size-6 opacity-90" aria-hidden />
       </div>
 
       <div

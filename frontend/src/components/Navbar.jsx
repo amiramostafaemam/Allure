@@ -1,36 +1,72 @@
+import { useState } from "react";
 import { Show, SignInButton, UserButton } from "@clerk/react";
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useLocation } from "react-router";
 
 import {
   LogInIcon,
+  MenuIcon,
   PackageIcon,
   SettingsIcon,
   ShoppingBagIcon,
   ShoppingCartIcon,
+  XIcon,
 } from "lucide-react";
 import { useCart } from "../store/cart";
 import { useMe } from "../hooks/useMe";
 import NotificationBell from "./NotificationBell";
 import ThemeToggle from "./ThemeToggle";
 
-// daisyUI's own --btn-p/--size defaults live in a deeper @layer than the
-// .btn-sm/.btn-md modifier classes do, so "btn-sm sm:btn-md" doesn't
-// reliably reset to the true default at sm: and up — it was quietly
-// shrinking the desktop navbar too. Setting the custom properties
-// directly as Tailwind utilities (max-sm: only, so nothing at all is
-// generated above that breakpoint) sidesteps that layer ordering
-// entirely — same fix already proven for the focus-ring issue elsewhere.
-const MOBILE_BTN_SIZE =
-  "max-sm:[--btn-p:.75rem]! max-sm:[--size:calc(var(--size-field,.25rem)*8)]!";
-
 // Ghost nav link, highlighted only while its route is actually active —
 // not a permanently-colored link regardless of where you are.
 function navLinkClass({ isActive }) {
-  return `btn btn-ghost gap-2 font-medium ${MOBILE_BTN_SIZE} ${isActive ? "btn-active text-primary" : ""}`;
+  return `btn btn-ghost gap-2 font-medium ${isActive ? "btn-active text-primary" : ""}`;
+}
+
+function mobileLinkClass({ isActive }) {
+  return `flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium ${
+    isActive ? "bg-primary/10 text-primary" : "text-base-content/80 hover:bg-base-200"
+  }`;
+}
+
+function CartLink({ cartCount, className, children }) {
+  return (
+    <NavLink
+      to="/cart"
+      className={className}
+      aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
+    >
+      {/* The indicator badge anchors to its nearest "indicator" ancestor's
+          corner — scoping that class to just the icon (not the whole
+          button/row) keeps the badge tight against the cart icon no
+          matter how wide the surrounding element is. */}
+      <span className="indicator">
+        {cartCount > 0 ? (
+          <span className="indicator-item badge badge-sm badge-primary min-w-2 px-1.5 font-sans text-xs tabular-nums">
+            {cartCount > 99 ? "99+" : cartCount}
+          </span>
+        ) : null}
+        <ShoppingCartIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
+      </span>
+      {children}
+    </NavLink>
+  );
 }
 
 const Navbar = () => {
   const { role } = useMe();
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close the mobile menu on any navigation, not just a click inside it —
+  // covers the sign-in modal redirect, browser back/forward, etc. Adjusting
+  // state during render (React's documented pattern for "reset on prop
+  // change") instead of an effect, so this can't trigger an extra
+  // cascading render.
+  const [lastPathname, setLastPathname] = useState(location.pathname);
+  if (location.pathname !== lastPathname) {
+    setLastPathname(location.pathname);
+    setMobileOpen(false);
+  }
 
   const cartCount = useCart((s) =>
     s.items.reduce((n, line) => n + line.quantity, 0),
@@ -42,7 +78,7 @@ const Navbar = () => {
         <div className="flex-1">
           <Link to="/" className="btn btn-ghost px-2">
             <span
-              className="text-3xl leading-none text-primary drop-shadow-[0_0_10px_rgba(31,184,84,0.4)] sm:text-[2.1rem]"
+              className="text-[2.1rem] leading-none text-primary drop-shadow-[0_0_10px_rgba(31,184,84,0.4)]"
               style={{ fontFamily: "'Alex Brush', cursive" }}
             >
               Allure
@@ -50,65 +86,36 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* min-w-0 overrides a flex item's default "never shrink below my
-            content's width" floor — without it, this row (up to 7 icon
-            buttons at once for a signed-in admin) forces the whole sticky
-            navbar wider than a phone screen, and since nothing else on the
-            page overflows, mobile browsers respond by zooming the entire
-            page out to fit — every page looked "not responsive" even
-            though only this row was actually too wide. Every item below
-            is sized down on mobile (btn-sm, smaller icons/avatar) so it
-            fits without scrolling; overflow-x-hidden is only a last-resort
-            safety net so a rare still-too-narrow screen silently clips the
-            edge instead of the whole page zooming out again.
-            overflow-y-visible has to be explicit here too: setting only
-            overflow-x silently computes overflow-y to auto per the CSS
-            spec, which was clipping the top of the cart badge (it pokes
-            slightly above its icon by design via a -50% translate). */}
-        <nav className="flex min-w-0 items-center gap-0.5 overflow-x-hidden overflow-y-visible sm:gap-1 md:gap-1.5">
+        {/* Full row with labels — tablet/desktop only. Squeezing up to 7
+            icon buttons (signed-in admin) into a phone-width row kept
+            causing overflow bugs, including ones that leaked into this
+            desktop layout while being worked around — a hamburger menu
+            below is the standard fix, not another round of shrinking. */}
+        <nav className="hidden items-center gap-1 md:flex md:gap-1.5">
           <NavLink to="/" end className={navLinkClass}>
-            <ShoppingBagIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
-            <span className="hidden sm:inline">Shop</span>
+            <ShoppingBagIcon className="size-6 opacity-90" aria-hidden />
+            <span>Shop</span>
           </NavLink>
 
           <Show when={"signed-in"}>
             <NavLink to="/orders" className={navLinkClass}>
-              <PackageIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
-              <span className="hidden sm:inline">Orders</span>
+              <PackageIcon className="size-6 opacity-90" aria-hidden />
+              <span>Orders</span>
             </NavLink>
 
             {role === "admin" ? (
               <NavLink to="/admin" className={navLinkClass}>
-                <SettingsIcon className="size-5 sm:size-6" aria-hidden />
-                <span className="hidden sm:inline">Admin</span>
+                <SettingsIcon className="size-6" aria-hidden />
+                <span>Admin</span>
               </NavLink>
             ) : null}
 
             <NotificationBell />
           </Show>
 
-          <NavLink
-            to="/cart"
-            className={navLinkClass}
-            aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
-          >
-            {/* The indicator badge anchors to its nearest "indicator"
-                ancestor's corner — putting that class on the whole button
-                (icon + "Cart" label) anchored the badge to the far corner
-                of the whole pill, where it could bleed into the next
-                button. Scoping "indicator" to just the icon keeps the
-                badge tight against the icon regardless of the button's
-                width. */}
-            <span className="indicator">
-              {cartCount > 0 ? (
-                <span className="indicator-item badge badge-sm badge-primary min-w-2 px-1.5 font-sans text-xs tabular-nums">
-                  {cartCount > 99 ? "99+" : cartCount}
-                </span>
-              ) : null}
-              <ShoppingCartIcon className="size-5 opacity-90 sm:size-6" aria-hidden />
-            </span>
-            <span className="hidden sm:inline">Cart</span>
-          </NavLink>
+          <CartLink cartCount={cartCount} className={navLinkClass}>
+            <span>Cart</span>
+          </CartLink>
 
           <ThemeToggle />
 
@@ -125,10 +132,10 @@ const Navbar = () => {
           </Show>
 
           <Show when={"signed-in"}>
-            <div className="flex items-center gap-1.5 border-l border-base-300 pl-1.5 sm:gap-2 sm:pl-3">
+            <div className="flex items-center gap-2 border-l border-base-300 pl-3">
               <UserButton
                 appearance={{
-                  elements: { avatarBox: "h-8 w-8 ring-2 ring-base-300 sm:h-10 sm:w-10" },
+                  elements: { avatarBox: "h-10 w-10 ring-2 ring-base-300" },
                 }}
               />
               {role === "support" || role === "admin" ? (
@@ -139,7 +146,93 @@ const Navbar = () => {
             </div>
           </Show>
         </nav>
+
+        {/* Mobile: cart stays one tap away — it's the single most-used
+            control on a shopping site — everything else collapses behind
+            the hamburger instead of fighting for room in one row. */}
+        <div className="flex items-center gap-1 md:hidden">
+          <CartLink cartCount={cartCount} className="btn btn-ghost btn-square" />
+
+          <button
+            type="button"
+            className="btn btn-ghost btn-square"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen((o) => !o)}
+          >
+            {mobileOpen ? (
+              <XIcon className="size-5" aria-hidden />
+            ) : (
+              <MenuIcon className="size-5" aria-hidden />
+            )}
+          </button>
+        </div>
       </div>
+
+      {mobileOpen ? (
+        <nav className="border-t border-base-300 bg-base-100 px-4 py-3 md:hidden">
+          <ul className="flex flex-col gap-1">
+            <li>
+              <NavLink to="/" end className={mobileLinkClass}>
+                <ShoppingBagIcon className="size-5 opacity-90" aria-hidden />
+                Shop
+              </NavLink>
+            </li>
+
+            <Show when={"signed-in"}>
+              <li>
+                <NavLink to="/orders" className={mobileLinkClass}>
+                  <PackageIcon className="size-5 opacity-90" aria-hidden />
+                  Orders
+                </NavLink>
+              </li>
+
+              {role === "admin" ? (
+                <li>
+                  <NavLink to="/admin" className={mobileLinkClass}>
+                    <SettingsIcon className="size-5" aria-hidden />
+                    Admin
+                  </NavLink>
+                </li>
+              ) : null}
+            </Show>
+          </ul>
+
+          <div className="mt-3 flex items-center gap-2 border-t border-base-300 pt-3">
+            <Show when={"signed-in"}>
+              <NotificationBell />
+            </Show>
+            <ThemeToggle />
+          </div>
+
+          <div className="mt-3 border-t border-base-300 pt-3">
+            <Show when={"signed-out"}>
+              <SignInButton mode="modal">
+                <button
+                  type="button"
+                  className="btn btn-primary w-full gap-1.5 shadow-md"
+                >
+                  <LogInIcon className="size-4 drop-shadow-sm" aria-hidden />
+                  Sign in
+                </button>
+              </SignInButton>
+            </Show>
+
+            <Show when={"signed-in"}>
+              <div className="flex items-center gap-3">
+                <UserButton
+                  appearance={{
+                    elements: { avatarBox: "h-10 w-10 ring-2 ring-base-300" },
+                  }}
+                />
+                {role === "support" || role === "admin" ? (
+                  <span className="badge badge-primary badge-sm capitalize">{role}</span>
+                ) : null}
+              </div>
+            </Show>
+          </div>
+        </nav>
+      ) : null}
     </header>
   );
 };

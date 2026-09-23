@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import {
+  CheckIcon,
   ChevronRightIcon,
   HeadphonesIcon,
   MinusIcon,
@@ -25,6 +27,19 @@ function ProductPage() {
     setQuantity,
     addToCart,
   } = useProductPage();
+
+  const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (!added) return;
+    const timer = setTimeout(() => setAdded(false), 1200);
+    return () => clearTimeout(timer);
+  }, [added]);
+
+  function handleAddToCart() {
+    addToCart();
+    setAdded(true);
+  }
 
   if (isLoading) return <ProductPageSkeleton />;
 
@@ -131,11 +146,18 @@ function ProductPage() {
 
             <button
               type="button"
-              onClick={addToCart}
-              className="btn btn-primary flex-1 gap-2 shadow-md sm:flex-none sm:px-10"
+              onClick={handleAddToCart}
+              disabled={added}
+              className={`btn flex-1 gap-2 shadow-md transition-colors sm:flex-none sm:px-10 ${
+                added ? "btn-neutral" : "btn-primary"
+              }`}
             >
-              <ShoppingCartIcon className="size-5" aria-hidden />
-              Add to cart
+              {added ? (
+                <CheckIcon className="size-5" aria-hidden />
+              ) : (
+                <ShoppingCartIcon className="size-5" aria-hidden />
+              )}
+              {added ? "Added to cart" : "Add to cart"}
             </button>
           </div>
 
