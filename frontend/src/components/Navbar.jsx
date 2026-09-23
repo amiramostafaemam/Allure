@@ -147,11 +147,24 @@ const Navbar = () => {
           </Show>
         </nav>
 
-        {/* Mobile: cart stays one tap away — it's the single most-used
-            control on a shopping site — everything else collapses behind
-            the hamburger instead of fighting for room in one row. */}
+        {/* Mobile: cart, notifications and the account avatar stay one tap
+            away — the things people actually check often on a shopping
+            site — everything else (nav links, theme) collapses behind the
+            hamburger. Deliberately NOT adding the theme toggle here too:
+            that's exactly the kind of extra icon that caused the overflow
+            bugs this row already went through a few rounds of fixing, and
+            unlike notifications/account it isn't something checked daily. */}
         <div className="flex items-center gap-1 md:hidden">
           <CartLink cartCount={cartCount} className="btn btn-ghost btn-square" />
+
+          <Show when={"signed-in"}>
+            <NotificationBell />
+            <UserButton
+              appearance={{
+                elements: { avatarBox: "h-8 w-8 ring-2 ring-base-300" },
+              }}
+            />
+          </Show>
 
           <button
             type="button"
@@ -198,15 +211,13 @@ const Navbar = () => {
             </Show>
           </ul>
 
-          <div className="mt-3 flex items-center gap-2 border-t border-base-300 pt-3">
-            <Show when={"signed-in"}>
-              <NotificationBell />
-            </Show>
+          <div className="mt-3 flex items-center justify-between border-t border-base-300 pt-3">
+            <span className="text-sm font-medium text-base-content/70">Theme</span>
             <ThemeToggle />
           </div>
 
-          <div className="mt-3 border-t border-base-300 pt-3">
-            <Show when={"signed-out"}>
+          <Show when={"signed-out"}>
+            <div className="mt-3 border-t border-base-300 pt-3">
               <SignInButton mode="modal">
                 <button
                   type="button"
@@ -216,21 +227,16 @@ const Navbar = () => {
                   Sign in
                 </button>
               </SignInButton>
-            </Show>
+            </div>
+          </Show>
 
-            <Show when={"signed-in"}>
-              <div className="flex items-center gap-3">
-                <UserButton
-                  appearance={{
-                    elements: { avatarBox: "h-10 w-10 ring-2 ring-base-300" },
-                  }}
-                />
-                {role === "support" || role === "admin" ? (
-                  <span className="badge badge-primary badge-sm capitalize">{role}</span>
-                ) : null}
+          <Show when={"signed-in"}>
+            {role === "support" || role === "admin" ? (
+              <div className="mt-3 border-t border-base-300 pt-3">
+                <span className="badge badge-primary badge-sm capitalize">{role}</span>
               </div>
-            </Show>
-          </div>
+            ) : null}
+          </Show>
         </nav>
       ) : null}
     </header>
