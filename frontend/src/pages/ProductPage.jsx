@@ -30,6 +30,9 @@ function ProductPage() {
   } = useProductPage();
 
   const [added, setAdded] = useState(false);
+  const stockQuantity = product?.stockQuantity ?? null;
+  const outOfStock = stockQuantity !== null && stockQuantity <= 0;
+  const maxQty = stockQuantity !== null ? Math.min(99, stockQuantity) : 99;
 
   useEffect(() => {
     if (!added) return;
@@ -143,8 +146,8 @@ function ProductPage() {
                   <button
                     type="button"
                     className="btn join-item gap-0 px-4"
-                    onClick={() => setQuantity((q) => Math.min(99, q + 1))}
-                    disabled={quantity >= 99}
+                    onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
+                    disabled={outOfStock || quantity >= maxQty}
                     aria-label="Increase quantity"
                   >
                     <PlusIcon className="size-4" aria-hidden />
@@ -160,10 +163,18 @@ function ProductPage() {
               </div>
             </div>
 
+            {outOfStock ? (
+              <p className="text-sm font-medium text-error">Out of stock</p>
+            ) : stockQuantity !== null && stockQuantity <= 5 ? (
+              <p className="text-sm font-medium text-warning">
+                Only {stockQuantity} left in stock
+              </p>
+            ) : null}
+
             <button
               type="button"
               onClick={handleAddToCart}
-              disabled={added}
+              disabled={added || outOfStock}
               className={`btn w-full gap-2 shadow-md transition-colors sm:w-auto sm:self-start sm:px-10 ${
                 added ? "btn-neutral" : "btn-primary"
               }`}
@@ -173,7 +184,7 @@ function ProductPage() {
               ) : (
                 <ShoppingCartIcon className="size-5" aria-hidden />
               )}
-              {added ? "Added to cart" : "Add to cart"}
+              {added ? "Added to cart" : outOfStock ? "Out of stock" : "Add to cart"}
             </button>
           </div>
 

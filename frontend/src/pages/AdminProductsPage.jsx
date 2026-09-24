@@ -63,6 +63,7 @@ function AdminProductsPage() {
         category: values.category,
         description: values.description,
         pricePounds: values.pricePounds,
+        stockQuantity: values.stockQuantity,
         currency: "egp",
         active: values.active,
         imageUrl,
@@ -139,6 +140,7 @@ function AdminProductsPage() {
                 <th>Name</th>
                 <th>Category</th>
                 <th>Price</th>
+                <th>Stock</th>
                 <th>Active</th>
                 <th className="text-right">Actions</th>
               </tr>
@@ -171,6 +173,15 @@ function AdminProductsPage() {
                   <td>{product.category}</td>
                   <td className="tabular-nums">
                     {formatPrice(product.pricePounds, product.currency)}
+                  </td>
+                  <td className="tabular-nums">
+                    {product.stockQuantity == null ? (
+                      <span className="text-base-content/50">Unlimited</span>
+                    ) : product.stockQuantity === 0 ? (
+                      <span className="badge badge-error badge-sm border-0">Out of stock</span>
+                    ) : (
+                      product.stockQuantity
+                    )}
                   </td>
                   <td>
                     <input

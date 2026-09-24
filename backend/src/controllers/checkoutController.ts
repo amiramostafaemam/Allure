@@ -59,6 +59,21 @@ async function resolveCartSubtotal(items: z.infer<typeof cartItemsSchema>) {
   }
 
   const byId = new Map(prodRows.map((p) => [p.id, p]));
+
+  // null stockQuantity = untracked/unlimited, skip the check entirely
+  for (const item of items) {
+    const product = byId.get(item.productId)!;
+    if (product.stockQuantity !== null && item.quantity > product.stockQuantity) {
+      return {
+        ok: false as const,
+        error:
+          product.stockQuantity > 0
+            ? `Only ${product.stockQuantity} left of "${product.name}"`
+            : `"${product.name}" is out of stock`,
+      };
+    }
+  }
+
   const { totalPounds: subtotalPounds, lines } = computeCheckoutTotal(items, byId);
   return { ok: true as const, subtotalPounds, lines };
 }

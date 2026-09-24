@@ -10,6 +10,7 @@ function emptyForm() {
     category: "",
     description: "",
     pricePounds: "",
+    stockQuantity: "",
     active: true,
   };
 }
@@ -22,6 +23,7 @@ function formFromProduct(product) {
     category: product.category ?? "",
     description: product.description ?? "",
     pricePounds: String(product.pricePounds ?? ""),
+    stockQuantity: product.stockQuantity == null ? "" : String(product.stockQuantity),
     active: product.active,
   };
 }
@@ -91,6 +93,7 @@ export function AdminProductFormModal({
     onSubmit({
       ...form,
       pricePounds: Number(form.pricePounds),
+      stockQuantity: form.stockQuantity === "" ? null : Number(form.stockQuantity),
       imageFile,
     });
   }
@@ -191,6 +194,19 @@ export function AdminProductFormModal({
               value={form.pricePounds}
               onChange={(e) =>
                 setForm((f) => ({ ...f, pricePounds: e.target.value }))
+              }
+            />
+
+            <TextField
+              label="Stock"
+              optional
+              type="number"
+              min="0"
+              step="1"
+              placeholder="Leave blank for unlimited"
+              value={form.stockQuantity}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, stockQuantity: e.target.value }))
               }
             />
           </div>

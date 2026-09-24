@@ -48,6 +48,10 @@ export const products = pgTable("products", {
   description: text("description").notNull().default(""),
   pricePounds: integer("price_pounds").notNull(),
   currency: text("currency").notNull().default("egp"),
+  // null = untracked/unlimited stock (the default for every existing
+  // product) — only products an admin explicitly sets a number on are
+  // checked against at checkout and decremented on fulfillment.
+  stockQuantity: integer("stock_quantity"),
   imageUrl: text("image_url"),
   /** ImageKit `fileId` for deletes */
   imageKitFileId: text("image_kit_file_id"),

@@ -43,7 +43,10 @@ function CartPage() {
       ) : (
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]">
           <ul className="space-y-4">
-            {lines.map(({ line, product: p }) => (
+            {lines.map(({ line, product: p }) => {
+              const maxQty = p?.stockQuantity != null ? Math.min(99, p.stockQuantity) : 99;
+              const overStock = p?.stockQuantity != null && line.quantity > p.stockQuantity;
+              return (
               <li
                 key={line.productId}
                 className="card card-side border border-base-300 bg-base-100 shadow-sm"
@@ -112,10 +115,10 @@ function CartPage() {
                           onClick={() =>
                             setQty(
                               line.productId,
-                              Math.min(99, line.quantity + 1),
+                              Math.min(maxQty, line.quantity + 1),
                             )
                           }
-                          disabled={line.quantity >= 99}
+                          disabled={line.quantity >= maxQty}
                           aria-label="Increase quantity"
                         >
                           <PlusIcon className="size-4" aria-hidden />
@@ -131,6 +134,11 @@ function CartPage() {
                         <Trash2Icon className="size-4" aria-hidden />
                       </button>
                     </div>
+                    {overStock ? (
+                      <p className="mt-1.5 text-xs font-medium text-error">
+                        Only {p.stockQuantity} left — reduce quantity to check out
+                      </p>
+                    ) : null}
                   </div>
                   <div className="text-right font-semibold text-base-content">
                     {p
@@ -139,7 +147,8 @@ function CartPage() {
                   </div>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
 
           <aside className="card border border-base-300 bg-base-100 p-6 shadow-md">

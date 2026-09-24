@@ -21,6 +21,8 @@ const productCreate=z.object({
     description:z.string().default(""),
     pricePounds:z.number().int().positive(),
     currency:z.string().min(1).default("egp"),
+    // null/omitted = untracked, unlimited stock
+    stockQuantity:z.number().int().min(0).max(1_000_000).nullable().optional(),
     imageUrl:z.union([z.string().url(),z.literal("")]).optional().nullable(),
     imageKitFileId:z.union([z.string().min(1),z.literal(""),z.null()]).optional(),
     active:z.boolean().default(true),
@@ -37,6 +39,7 @@ function buildProductUpdateSet(body: z.infer<typeof productPatch>) {
   if (body.description !== undefined) data.description = body.description;
   if (body.pricePounds !== undefined) data.pricePounds = body.pricePounds;
   if (body.currency !== undefined) data.currency = body.currency;
+  if (body.stockQuantity !== undefined) data.stockQuantity = body.stockQuantity;
   if (body.imageUrl !== undefined) data.imageUrl = body.imageUrl === "" ? null : body.imageUrl;
   if (body.imageKitFileId !== undefined) {
     data.imageKitFileId = body.imageKitFileId === "" ? null : body.imageKitFileId;

@@ -1,7 +1,7 @@
 import type { Request,Response} from "express";
 import { getEnv } from "../lib/env";
-import {checkoutSessions, orders, orderItems, users} from "../db/schema";
-import {eq} from "drizzle-orm";
+import {checkoutSessions, orders, orderItems, users, products} from "../db/schema";
+import {and, eq, isNotNull, sql} from "drizzle-orm";
 import {db} from "../db/index";
 import {Webhook} from "standardwebhooks"
 import { sendOrderConfirmationEmail } from "../lib/email";
@@ -80,6 +80,21 @@ async function fulfillCheckoutSession(
           unitPricePounds: line.unitPricePounds,
         })),
       );
+
+      // A single UPDATE referencing the column's current value is atomic per
+      // row in Postgres even without an explicit row lock, so concurrent
+      // fulfillments can't oversell each other. Only touches rows where
+      // stock is actually tracked (isNotNull) — untracked products stay
+      // unlimited. Clamped at 0 as a defensive floor: createCheckout already
+      // rejects an order that exceeds available stock, but stock can still
+      // legitimately drop between checkout-session creation and payment
+      // (another order fulfilling first), so this must never go negative.
+      for (const line of session.lines) {
+        await tx
+          .update(products)
+          .set({ stockQuantity: sql`greatest(${products.stockQuantity} - ${line.quantity}, 0)` })
+          .where(and(eq(products.id, line.productId), isNotNull(products.stockQuantity)));
+      }
     }
 
     await tx.delete(checkoutSessions).where(eq(checkoutSessions.id, sessionId));

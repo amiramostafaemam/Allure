@@ -9,6 +9,7 @@ import { WishlistButton } from "./WishlistButton.jsx";
 export function CatalogProductCard({ product }) {
   const addItem = useCart((s) => s.addItem);
   const [added, setAdded] = useState(false);
+  const outOfStock = product.stockQuantity != null && product.stockQuantity <= 0;
 
   useEffect(() => {
     if (!added) return;
@@ -44,6 +45,11 @@ export function CatalogProductCard({ product }) {
         <span className="badge badge-sm badge-primary absolute left-3 top-3 border-0 text-xs font-medium shadow">
           {product.category ?? "General"}
         </span>
+        {outOfStock ? (
+          <span className="badge badge-sm badge-neutral absolute right-3 top-3 border-0 text-xs font-medium shadow">
+            Out of stock
+          </span>
+        ) : null}
       </Link>
       <div className="card-body grow gap-3 p-5 text-left">
         <Link
@@ -64,7 +70,7 @@ export function CatalogProductCard({ product }) {
             <button
               type="button"
               onClick={handleAdd}
-              disabled={added}
+              disabled={added || outOfStock}
               className={`btn btn-sm gap-1 shadow transition-colors ${added ? "btn-neutral" : "btn-primary"}`}
             >
               {added ? (
@@ -72,7 +78,7 @@ export function CatalogProductCard({ product }) {
               ) : (
                 <PlusIcon className="size-4" aria-hidden />
               )}
-              {added ? "Added" : "Add"}
+              {added ? "Added" : outOfStock ? "Out of stock" : "Add"}
             </button>
           </div>
         </div>
