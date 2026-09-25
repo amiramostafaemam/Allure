@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { slugify } from "../utils/slugify";
 import { SelectField, TextAreaField, TextField } from "./FormField";
@@ -47,6 +48,27 @@ export function AdminProductFormModal({
   const [newCategoryName, setNewCategoryName] = useState("");
   const [categoryError, setCategoryError] = useState("");
   const [categorySaving, setCategorySaving] = useState(false);
+  const [variantsEnabled, setVariantsEnabled] = useState(Boolean(product?.variantName));
+  const [variantName, setVariantName] = useState(product?.variantName ?? "");
+  const [variantRows, setVariantRows] = useState(() =>
+    (product?.variants ?? []).map((v) => ({
+      id: v.id,
+      label: v.label,
+      stockQuantity: v.stockQuantity == null ? "" : String(v.stockQuantity),
+    })),
+  );
+
+  function addVariantRow() {
+    setVariantRows((rows) => [...rows, { label: "", stockQuantity: "" }]);
+  }
+
+  function updateVariantRow(index, patch) {
+    setVariantRows((rows) => rows.map((r, i) => (i === index ? { ...r, ...patch } : r)));
+  }
+
+  function removeVariantRow(index) {
+    setVariantRows((rows) => rows.filter((_, i) => i !== index));
+  }
 
   function handleNameChange(e) {
     const name = e.target.value;
@@ -95,6 +117,15 @@ export function AdminProductFormModal({
       pricePounds: Number(form.pricePounds),
       stockQuantity: form.stockQuantity === "" ? null : Number(form.stockQuantity),
       imageFile,
+      variantsEnabled,
+      variantName: variantName.trim(),
+      variantRows: variantRows
+        .filter((r) => r.label.trim())
+        .map((r) => ({
+          ...(r.id ? { id: r.id } : {}),
+          label: r.label.trim(),
+          stockQuantity: r.stockQuantity === "" ? null : Number(r.stockQuantity),
+        })),
     });
   }
 
@@ -219,6 +250,80 @@ export function AdminProductFormModal({
               setForm((f) => ({ ...f, description: e.target.value }))
             }
           />
+
+          <div className="flex flex-col gap-3 rounded-xl border border-base-300 p-4">
+            <label className="flex cursor-pointer items-center gap-3">
+              <input
+                type="checkbox"
+                className="toggle toggle-primary toggle-sm"
+                checked={variantsEnabled}
+                onChange={(e) => {
+                  const enabled = e.target.checked;
+                  setVariantsEnabled(enabled);
+                  if (enabled && variantRows.length === 0) {
+                    setVariantRows([{ label: "", stockQuantity: "" }]);
+                  }
+                }}
+              />
+              <span className="text-sm font-medium text-base-content/80">
+                This product has options (size, color, …)
+              </span>
+            </label>
+
+            {variantsEnabled ? (
+              <div className="flex flex-col gap-3 pl-1">
+                <TextField
+                  label="Option name"
+                  placeholder="e.g. Size, Color"
+                  required
+                  value={variantName}
+                  onChange={(e) => setVariantName(e.target.value)}
+                />
+
+                <div className="flex flex-col gap-2">
+                  {variantRows.map((row, i) => (
+                    <div key={row.id ?? `new-${i}`} className="flex items-end gap-2">
+                      <TextField
+                        label={i === 0 ? "Label" : undefined}
+                        placeholder="e.g. Black"
+                        value={row.label}
+                        onChange={(e) => updateVariantRow(i, { label: e.target.value })}
+                        className="flex-1"
+                      />
+                      <TextField
+                        label={i === 0 ? "Stock" : undefined}
+                        optional
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Unlimited"
+                        value={row.stockQuantity}
+                        onChange={(e) => updateVariantRow(i, { stockQuantity: e.target.value })}
+                        className="w-28"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVariantRow(i)}
+                        className="btn btn-ghost btn-square btn-sm text-error hover:bg-error/10"
+                        aria-label="Remove option"
+                      >
+                        <Trash2Icon className="size-4" aria-hidden />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addVariantRow}
+                  className="btn btn-ghost btn-sm w-fit gap-2 text-base-content/60"
+                >
+                  <PlusIcon className="size-3.5" aria-hidden />
+                  Add option
+                </button>
+              </div>
+            ) : null}
+          </div>
 
           <label className="flex flex-col gap-1.5">
             <span className="text-sm font-medium text-base-content/80">Image</span>

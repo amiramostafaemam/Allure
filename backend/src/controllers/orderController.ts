@@ -80,8 +80,9 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
 
        if(orderIds.length>0){
             const orderItemsRows=await db.select({
-                orderId:orderItems.orderId,quantity:orderItems.quantity,       
+                orderId:orderItems.orderId,quantity:orderItems.quantity,
                 name:products.name,
+                variantLabel:orderItems.variantLabel,
                 slug:products.slug,imageUrl:products.imageUrl})
                 .from(orderItems)
                 .innerJoin(products,eq(orderItems.productId,products.id))
@@ -93,6 +94,7 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
                 list.push({
                     name:orderItemRow.name,
                     quantity:orderItemRow.quantity,
+                    variantLabel:orderItemRow.variantLabel,
                     slug:orderItemRow.slug,
                     imageUrl:orderItemRow.imageUrl
                 });
@@ -144,6 +146,7 @@ export async function getOrder(req:Request,res:Response,next:NextFunction){
         const orderItemsRows=await db.select({
             orderId:orderItems.id,quantity:orderItems.quantity,
             unitPricePounds:orderItems.unitPricePounds,
+            variantLabel:orderItems.variantLabel,
             product:products
         }).from(orderItems)
         .innerJoin(products,eq(orderItems.productId,products.id))

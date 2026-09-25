@@ -26,11 +26,18 @@ function ProductPage() {
     isError,
     quantity,
     setQuantity,
+    selectedVariantId,
+    setSelectedVariantId,
+    selectedVariant,
     addToCart,
   } = useProductPage();
 
   const [added, setAdded] = useState(false);
-  const stockQuantity = product?.stockQuantity ?? null;
+  const hasVariants = Boolean(product?.variantName);
+  const variants = product?.variants ?? [];
+  // A variant product's own stockQuantity isn't the source of truth once it
+  // has variants — stock lives on the selected option instead.
+  const stockQuantity = hasVariants ? (selectedVariant?.stockQuantity ?? null) : (product?.stockQuantity ?? null);
   const outOfStock = stockQuantity !== null && stockQuantity <= 0;
   const maxQty = stockQuantity !== null ? Math.min(99, stockQuantity) : 99;
 
@@ -118,6 +125,36 @@ function ProductPage() {
           <p className="leading-relaxed text-base-content/70">
             {product.description}
           </p>
+
+          {hasVariants ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium text-base-content/80">
+                {product.variantName}
+                {selectedVariant ? (
+                  <span className="text-base-content/50"> — {selectedVariant.label}</span>
+                ) : null}
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {variants.map((v) => {
+                  const variantOut = v.stockQuantity != null && v.stockQuantity <= 0;
+                  const isSelected = v.id === selectedVariantId;
+                  return (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setSelectedVariantId(v.id)}
+                      disabled={variantOut}
+                      className={`btn btn-sm ${
+                        isSelected ? "btn-primary" : "btn-ghost border border-base-300"
+                      } ${variantOut ? "line-through opacity-50" : ""}`}
+                    >
+                      {v.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
 
           <div className="divider my-0" />
 

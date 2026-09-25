@@ -246,6 +246,9 @@ function OrderDetailPage() {
                     className="link-hover link-primary font-medium"
                   >
                     {row.product.name}
+                    {row.variantLabel ? (
+                      <span className="text-base-content/50"> — {row.variantLabel}</span>
+                    ) : null}
                   </Link>
                 ) : (
                   <span className="font-medium">Unknown product</span>

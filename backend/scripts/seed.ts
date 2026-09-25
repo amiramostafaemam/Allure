@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import { categories, products } from "../src/db/schema.js";
+import { categories, productVariants, products } from "../src/db/schema.js";
 import { slugify } from "../src/lib/slugify.js";
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -188,6 +188,110 @@ const CATALOG = [
     imageUrl:
       "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&q=80",
   },
+  // Apparel/lifestyle categories, added alongside the tech catalog above to
+  // demonstrate product variants (size/color) on goods where they're a
+  // natural fit. Each shares its price/photo across variants — only stock
+  // is tracked per option (see productVariants in schema.ts).
+  {
+    slug: "heritage-oxford-shirt",
+    name: "Heritage Oxford Shirt",
+    category: "Apparel",
+    description:
+      "100% combed cotton oxford, mother-of-pearl buttons, button-down collar, tailored fit. Pre-shrunk and colorfast — holds up wash after wash.",
+    pricePounds: 850,
+    imageUrl:
+      "https://images.unsplash.com/photo-1602810316693-3667c854239a?w=800&q=80",
+    variantName: "Size",
+    variants: [
+      { label: "S", stockQuantity: 12 },
+      { label: "M", stockQuantity: 18 },
+      { label: "L", stockQuantity: 15 },
+      { label: "XL", stockQuantity: 6 },
+    ],
+  },
+  {
+    slug: "indigo-trucker-jacket",
+    name: "Indigo Trucker Jacket",
+    category: "Apparel",
+    description:
+      "12oz rigid denim, contrast corduroy collar, antique brass hardware, chest and hand pockets. Breaks in, never breaks down.",
+    pricePounds: 1400,
+    imageUrl:
+      "https://images.unsplash.com/photo-1708523842501-1619478cea1f?w=800&q=80",
+    variantName: "Size",
+    variants: [
+      { label: "S", stockQuantity: 8 },
+      { label: "M", stockQuantity: 10 },
+      { label: "L", stockQuantity: 4 },
+    ],
+  },
+  {
+    slug: "wayfarer-leather-boots",
+    name: "Wayfarer Leather Boots",
+    category: "Footwear",
+    description:
+      "Full-grain leather upper, Goodyear-welt construction, resoleable, waxed laces. Built to be resoled for decades, not replaced in one.",
+    pricePounds: 2200,
+    imageUrl:
+      "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=800&q=80",
+    variantName: "Size",
+    variants: [
+      { label: "40", stockQuantity: 5 },
+      { label: "41", stockQuantity: 7 },
+      { label: "42", stockQuantity: 9 },
+      { label: "43", stockQuantity: 6 },
+      { label: "44", stockQuantity: 3 },
+    ],
+  },
+  {
+    slug: "meridian-chrono-watch",
+    name: "Meridian Chrono Watch",
+    category: "Watches",
+    description:
+      "38mm stainless case, sapphire crystal, Japanese quartz movement, 5 ATM water resistance. Interchangeable strap system.",
+    pricePounds: 1800,
+    imageUrl:
+      "https://images.unsplash.com/photo-1707467884808-220ddf0a1704?w=800&q=80",
+    variantName: "Band Color",
+    variants: [
+      { label: "Black", stockQuantity: 10 },
+      { label: "Silver", stockQuantity: 10 },
+      { label: "Tan", stockQuantity: 5 },
+    ],
+  },
+  {
+    slug: "noir-eau-de-parfum",
+    name: "Noir Eau de Parfum",
+    category: "Fragrance",
+    description:
+      "Notes of bergamot, black pepper, and vetiver. 18h wear, 20% fragrance concentration, refillable glass bottle.",
+    pricePounds: 1200,
+    imageUrl:
+      "https://images.unsplash.com/photo-1543422655-ac1c6ca993ed?w=800&q=80",
+    variantName: "Size",
+    variants: [
+      { label: "30ml", stockQuantity: 14 },
+      { label: "50ml", stockQuantity: 20 },
+      { label: "100ml", stockQuantity: 8 },
+    ],
+  },
+  {
+    slug: "velvet-matte-lipstick",
+    name: "Velvet Matte Lipstick",
+    category: "Beauty",
+    description:
+      "Long-wear matte finish, vitamin E and jojoba oil core, transfer-resistant, buildable pigment. Cruelty-free, paraben-free formula.",
+    pricePounds: 380,
+    imageUrl:
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&q=80",
+    variantName: "Shade",
+    variants: [
+      { label: "Rose", stockQuantity: 25 },
+      { label: "Crimson", stockQuantity: 20 },
+      { label: "Nude", stockQuantity: 30 },
+      { label: "Berry", stockQuantity: 4 },
+    ],
+  },
 ];
 
 async function main() {
@@ -200,35 +304,55 @@ async function main() {
       .onConflictDoUpdate({ target: categories.name, set: { slug: slugify(name) } });
   }
 
-  const rows = CATALOG.map((p) => ({
-    slug: p.slug,
-    name: p.name,
-    category: p.category,
-    description: p.description,
-    pricePounds: p.pricePounds,
-    currency: "egp",
-    imageUrl: p.imageUrl,
-    active: true,
-  }));
+  let variantCount = 0;
 
-  for (const row of rows) {
-    await db
+  for (const p of CATALOG) {
+    const [row] = await db
       .insert(products)
-      .values(row)
+      .values({
+        slug: p.slug,
+        name: p.name,
+        category: p.category,
+        description: p.description,
+        pricePounds: p.pricePounds,
+        currency: "egp",
+        imageUrl: p.imageUrl,
+        active: true,
+        variantName: p.variantName ?? null,
+      })
       .onConflictDoUpdate({
         target: products.slug,
         set: {
-          name: row.name,
-          category: row.category,
-          description: row.description,
-          pricePounds: row.pricePounds,
-          currency: row.currency,
-          imageUrl: row.imageUrl,
-          active: row.active,
+          name: p.name,
+          category: p.category,
+          description: p.description,
+          pricePounds: p.pricePounds,
+          currency: "egp",
+          imageUrl: p.imageUrl,
+          active: true,
+          variantName: p.variantName ?? null,
         },
-      });
+      })
+      .returning();
+
+    if (p.variants?.length) {
+      for (let i = 0; i < p.variants.length; i++) {
+        const v = p.variants[i];
+        await db
+          .insert(productVariants)
+          .values({ productId: row.id, label: v.label, stockQuantity: v.stockQuantity, sortOrder: i })
+          .onConflictDoUpdate({
+            target: [productVariants.productId, productVariants.label],
+            set: { stockQuantity: v.stockQuantity, sortOrder: i },
+          });
+        variantCount++;
+      }
+    }
   }
-  console.log(`Seed complete (${categoryNames.length} categories, ${CATALOG.length} products upserted).`);
+
+  console.log(
+    `Seed complete (${categoryNames.length} categories, ${CATALOG.length} products, ${variantCount} variants upserted).`,
+  );
   await pool.end();
 }
 

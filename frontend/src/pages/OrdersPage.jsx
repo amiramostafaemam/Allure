@@ -80,7 +80,7 @@ function OrdersPage() {
                     <p className="truncate text-sm text-base-content/60">
                       {order.previewItems?.length
                         ? order.previewItems
-                            .map((i) => `${i.name} ×${i.quantity}`)
+                            .map((i) => `${i.name}${i.variantLabel ? ` (${i.variantLabel})` : ""} ×${i.quantity}`)
                             .join(", ")
                         : "No items"}
                     </p>

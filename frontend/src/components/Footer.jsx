@@ -14,9 +14,9 @@ export default function Footer() {
               Allure
             </div>
             <p className="mt-3 text-sm leading-relaxed text-base-content/65">
-              Curated hardware and workspace tools. Paid orders include priority
-              support, chat with our team and join a video call when we share a
-              link.
+              Curated everyday essentials — tech, apparel, and the goods that
+              make daily life better. Paid orders include priority support,
+              chat with our team and join a video call when we share a link.
             </p>
           </div>
 

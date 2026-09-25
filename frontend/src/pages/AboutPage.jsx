@@ -5,10 +5,10 @@ function AboutPage() {
   return (
     <StaticPageLayout title="About Allure" icon={InfoIcon}>
       <p>
-        Allure curates hardware and workspace tools — audio, wearables,
-        desk setups, cameras, travel gear, and the accessories that tie a
-        setup together. We pick products we'd actually use, not just list
-        whatever's trending.
+        Allure curates everyday essentials — audio, wearables, desk setups,
+        cameras, travel gear, apparel, watches, fragrance, and the goods
+        that make daily life better. We pick products we'd actually use,
+        not just list whatever's trending.
       </p>
       <p>
         Every paid order comes with priority support: a private chat thread

@@ -5,8 +5,8 @@ import { isAdmin } from '../lib/roles';
 import ImageKit from '@imagekit/nodejs';
 import { getEnv } from '../lib/env';
 import { db } from '../db';
-import { categories, orderItems, products } from '../db/schema';
-import { count, desc, eq, ilike } from 'drizzle-orm';
+import { categories, orderItems, productVariants, products } from '../db/schema';
+import { asc, count, desc, eq, ilike, inArray } from 'drizzle-orm';
 import {z} from 'zod';
 import { deleteImageKitAsset } from '../lib/imagekit';
 import { parsePagination } from '../lib/pagination';
@@ -96,7 +96,22 @@ export async function listAdminProducts(req:Request,res:Response,next:NextFuncti
             db.select({c:count()}).from(products).where(whereClause),
         ]);
 
-        res.json({products:rows,total:Number(totalRow?.c ?? 0),limit,offset});
+        const productIds=rows.map((r)=>r.id);
+        const variantsByProduct=new Map<string,(typeof productVariants.$inferSelect)[]>();
+        if(productIds.length>0){
+            const variantRows=await db.select().from(productVariants)
+                .where(inArray(productVariants.productId,productIds))
+                .orderBy(asc(productVariants.sortOrder));
+            for(const v of variantRows){
+                const list=variantsByProduct.get(v.productId) ?? [];
+                list.push(v);
+                variantsByProduct.set(v.productId,list);
+            }
+        }
+
+        const productsPayload=rows.map((r)=>({...r,variants:variantsByProduct.get(r.id) ?? []}));
+
+        res.json({products:productsPayload,total:Number(totalRow?.c ?? 0),limit,offset});
 
     }catch(err){
         next(err);

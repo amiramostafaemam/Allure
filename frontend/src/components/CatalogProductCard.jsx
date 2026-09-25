@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { CheckIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, PlusIcon, SlidersHorizontalIcon } from "lucide-react";
 import { formatPrice } from "../utils/format.js";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl.js";
 import { useCart } from "../store/cart.js";
@@ -9,7 +9,13 @@ import { WishlistButton } from "./WishlistButton.jsx";
 export function CatalogProductCard({ product }) {
   const addItem = useCart((s) => s.addItem);
   const [added, setAdded] = useState(false);
-  const outOfStock = product.stockQuantity != null && product.stockQuantity <= 0;
+  const hasVariants = Boolean(product.variantName);
+  const variants = product.variants ?? [];
+  // A variant product's own stockQuantity isn't the source of truth once it
+  // has variants — "out of stock" means every option is, not the product row.
+  const outOfStock = hasVariants
+    ? variants.length > 0 && variants.every((v) => v.stockQuantity != null && v.stockQuantity <= 0)
+    : product.stockQuantity != null && product.stockQuantity <= 0;
 
   useEffect(() => {
     if (!added) return;
@@ -67,19 +73,32 @@ export function CatalogProductCard({ product }) {
           </span>
           <div className="flex items-center gap-1">
             <WishlistButton productId={product.id} />
-            <button
-              type="button"
-              onClick={handleAdd}
-              disabled={added || outOfStock}
-              className={`btn btn-sm gap-1 shadow transition-colors ${added ? "btn-neutral" : "btn-primary"}`}
-            >
-              {added ? (
-                <CheckIcon className="size-4" aria-hidden />
-              ) : (
-                <PlusIcon className="size-4" aria-hidden />
-              )}
-              {added ? "Added" : outOfStock ? "Out of stock" : "Add"}
-            </button>
+            {hasVariants ? (
+              // A variant must be chosen before it can be added — send them
+              // to the product page's picker instead of quick-adding.
+              <Link
+                to={`/product/${product.slug}`}
+                aria-disabled={outOfStock}
+                className={`btn btn-sm gap-1 shadow transition-colors ${outOfStock ? "btn-disabled" : "btn-primary"}`}
+              >
+                <SlidersHorizontalIcon className="size-4" aria-hidden />
+                {outOfStock ? "Out of stock" : "Select options"}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={handleAdd}
+                disabled={added || outOfStock}
+                className={`btn btn-sm gap-1 shadow transition-colors ${added ? "btn-neutral" : "btn-primary"}`}
+              >
+                {added ? (
+                  <CheckIcon className="size-4" aria-hidden />
+                ) : (
+                  <PlusIcon className="size-4" aria-hidden />
+                )}
+                {added ? "Added" : outOfStock ? "Out of stock" : "Add"}
+              </button>
+            )}
           </div>
         </div>
       </div>

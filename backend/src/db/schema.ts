@@ -18,6 +18,10 @@ export type CheckoutSessionLine = {
   productId: string;
   quantity: number;
   unitPricePounds: number;
+  variantId?: string;
+  /** Snapshot of the variant's label at purchase time — survives the variant
+   *  later being renamed or deleted, same reasoning as unitPricePounds. */
+  variantLabel?: string;
 };
 export type ShippingAddress = {
   fullName: string;
@@ -50,8 +54,13 @@ export const products = pgTable("products", {
   currency: text("currency").notNull().default("egp"),
   // null = untracked/unlimited stock (the default for every existing
   // product) — only products an admin explicitly sets a number on are
-  // checked against at checkout and decremented on fulfillment.
+  // checked against at checkout and decremented on fulfillment. Ignored
+  // once a product has variant rows — stock then lives per-variant instead.
   stockQuantity: integer("stock_quantity"),
+  // The axis name shown in the picker (e.g. "Size", "Color") — null means
+  // this product has no variants at all (the default for every existing
+  // product). Set together with at least one productVariants row.
+  variantName: text("variant_name"),
   imageUrl: text("image_url"),
   /** ImageKit `fileId` for deletes */
   imageKitFileId: text("image_kit_file_id"),
@@ -60,6 +69,28 @@ export const products = pgTable("products", {
 }, (table) => [
   index("products_category_idx").on(table.category),
 ]);
+
+// One option value under a product's variantName axis (e.g. "Black" under
+// "Color", or "M" under "Size"). Deliberately simple: a single axis per
+// product, shared price/photo with the parent product — only stock is
+// tracked per variant. A product with no rows here has no variants at all.
+export const productVariants = pgTable("product_variants", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  productId: uuid("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
+  label: text("label").notNull(),
+  // Same null-means-unlimited convention as products.stockQuantity.
+  stockQuantity: integer("stock_quantity"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+  unique("product_variants_product_label_unique").on(table.productId, table.label),
+]);
+
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+  product: one(products, { fields: [productVariants.productId], references: [products.id] }),
+}));
 
 // Managed list of valid category names. Not a FK from `products` (that would
 // need backfilling every existing free-text value) — kept in sync instead by
@@ -159,6 +190,11 @@ export const orderItems = pgTable("order_items", {
   productId: uuid("product_id")
     .notNull()
     .references(() => products.id, { onDelete: "restrict" }),
+  // Nullable FK for admin traceability, but variantLabel (a snapshot, same
+  // pattern as unitPricePounds) is what order history actually displays —
+  // it stays correct even if the variant is later renamed or deleted.
+  variantId: uuid("variant_id").references(() => productVariants.id, { onDelete: "set null" }),
+  variantLabel: text("variant_label"),
   quantity: integer("quantity").notNull(),
   unitPricePounds: integer("unit_price_Pounds").notNull(),
 });
@@ -222,6 +258,7 @@ export const productsRelations = relations(products, ({ many }) => ({
   orderItems: many(orderItems),
   reviews: many(reviews),
   wishlistItems: many(wishlistItems),
+  variants: many(productVariants),
 }));
 
 // each order belongs to exactly one user; each order can have many line items

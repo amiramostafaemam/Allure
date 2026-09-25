@@ -1,6 +1,11 @@
 import type { CheckoutSessionLine } from "../db/schema";
 
-export type CartLine = { productId: string; quantity: number };
+export type CartLine = {
+  productId: string;
+  quantity: number;
+  variantId?: string;
+  variantLabel?: string;
+};
 export type PriceableProduct = { id: string; pricePounds: number };
 
 export function computeCheckoutTotal(
@@ -20,6 +25,8 @@ export function computeCheckoutTotal(
       productId: product.id,
       quantity: item.quantity,
       unitPricePounds: product.pricePounds,
+      ...(item.variantId ? { variantId: item.variantId } : {}),
+      ...(item.variantLabel ? { variantLabel: item.variantLabel } : {}),
     });
   }
 

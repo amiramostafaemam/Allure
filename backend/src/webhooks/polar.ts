@@ -1,6 +1,6 @@
 import type { Request,Response} from "express";
 import { getEnv } from "../lib/env";
-import {checkoutSessions, orders, orderItems, users, products} from "../db/schema";
+import {checkoutSessions, orders, orderItems, users, products, productVariants} from "../db/schema";
 import {and, eq, isNotNull, sql} from "drizzle-orm";
 import {db} from "../db/index";
 import {Webhook} from "standardwebhooks"
@@ -76,6 +76,8 @@ async function fulfillCheckoutSession(
         session.lines.map((line) => ({
           orderId: order.id,
           productId: line.productId,
+          variantId: line.variantId ?? null,
+          variantLabel: line.variantLabel ?? null,
           quantity: line.quantity,
           unitPricePounds: line.unitPricePounds,
         })),
@@ -84,16 +86,26 @@ async function fulfillCheckoutSession(
       // A single UPDATE referencing the column's current value is atomic per
       // row in Postgres even without an explicit row lock, so concurrent
       // fulfillments can't oversell each other. Only touches rows where
-      // stock is actually tracked (isNotNull) — untracked products stay
+      // stock is actually tracked (isNotNull) — untracked rows stay
       // unlimited. Clamped at 0 as a defensive floor: createCheckout already
       // rejects an order that exceeds available stock, but stock can still
       // legitimately drop between checkout-session creation and payment
       // (another order fulfilling first), so this must never go negative.
+      // A line with a variantId decrements that variant's own stock, not
+      // the parent product's (which isn't tracked once a product has
+      // variants at all).
       for (const line of session.lines) {
-        await tx
-          .update(products)
-          .set({ stockQuantity: sql`greatest(${products.stockQuantity} - ${line.quantity}, 0)` })
-          .where(and(eq(products.id, line.productId), isNotNull(products.stockQuantity)));
+        if (line.variantId) {
+          await tx
+            .update(productVariants)
+            .set({ stockQuantity: sql`greatest(${productVariants.stockQuantity} - ${line.quantity}, 0)` })
+            .where(and(eq(productVariants.id, line.variantId), isNotNull(productVariants.stockQuantity)));
+        } else {
+          await tx
+            .update(products)
+            .set({ stockQuantity: sql`greatest(${products.stockQuantity} - ${line.quantity}, 0)` })
+            .where(and(eq(products.id, line.productId), isNotNull(products.stockQuantity)));
+        }
       }
     }
 

@@ -21,6 +21,7 @@ function AdminProductsPage() {
     createProduct,
     updateProduct,
     deleteProduct,
+    saveVariants,
   } = useAdminProducts({ q });
 
   const { categories, createCategory } = useAdminCategories();
@@ -70,11 +71,24 @@ function AdminProductsPage() {
         imageKitFileId,
       };
 
+      let productId = editingProduct?.id;
       if (editingProduct) {
         await updateProduct.mutateAsync({ id: editingProduct.id, ...body });
       } else {
-        await createProduct.mutateAsync(body);
+        const { product } = await createProduct.mutateAsync(body);
+        productId = product.id;
       }
+
+      // Only touch variants when there's something to save or clear — skips
+      // an extra request for the common case of a product with no options.
+      if (values.variantsEnabled || editingProduct?.variantName) {
+        await saveVariants.mutateAsync({
+          productId,
+          variantName: values.variantsEnabled ? values.variantName : null,
+          variants: values.variantsEnabled ? values.variantRows : [],
+        });
+      }
+
       setModalOpen(false);
     } catch (err) {
       setFormError(err.message || "Something went wrong. Please try again.");
@@ -146,7 +160,11 @@ function AdminProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {products.map((product) => {
+                const variants = product.variants ?? [];
+                const allVariantsOut =
+                  product.variantName && variants.length > 0 && variants.every((v) => v.stockQuantity != null && v.stockQuantity <= 0);
+                return (
                 <tr key={product.id}>
                   <td>
                     <div className="mx-auto size-14 overflow-hidden rounded-xl bg-base-300 sm:size-18">
@@ -175,7 +193,16 @@ function AdminProductsPage() {
                     {formatPrice(product.pricePounds, product.currency)}
                   </td>
                   <td className="tabular-nums">
-                    {product.stockQuantity == null ? (
+                    {product.variantName ? (
+                      allVariantsOut ? (
+                        <span className="badge badge-error badge-sm border-0">Out of stock</span>
+                      ) : (
+                        <span className="text-base-content/70">
+                          {variants.length} {product.variantName.toLowerCase()}
+                          {variants.length === 1 ? "" : "s"}
+                        </span>
+                      )
+                    ) : product.stockQuantity == null ? (
                       <span className="text-base-content/50">Unlimited</span>
                     ) : product.stockQuantity === 0 ? (
                       <span className="badge badge-error badge-sm border-0">Out of stock</span>
@@ -220,7 +247,8 @@ function AdminProductsPage() {
                     ) : null}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

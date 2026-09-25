@@ -37,6 +37,16 @@ export function useAdminProducts({ q = "" } = {}) {
     onSuccess: invalidate,
   });
 
+  const saveVariants = useMutation({
+    mutationFn: ({ productId, variantName, variants }) =>
+      apiFetch(`/api/admin/products/${productId}/variants`, {
+        getToken,
+        method: "PUT",
+        body: { variantName, variants },
+      }),
+    onSuccess: invalidate,
+  });
+
   return {
     products: data?.products ?? [],
     isLoading,
@@ -44,5 +54,6 @@ export function useAdminProducts({ q = "" } = {}) {
     createProduct,
     updateProduct,
     deleteProduct,
+    saveVariants,
   };
 }

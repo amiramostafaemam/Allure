@@ -15,7 +15,8 @@ A full-stack e-commerce platform with authenticated checkout, an admin product d
 
 ## Features
 
-- **Catalog & cart** — browsable product catalog with category filters, a persisted cart (Zustand), and per-product pages with customer reviews.
+- **Catalog & cart** — browsable product catalog spanning tech and lifestyle categories (Apparel, Footwear, Watches, Fragrance, Beauty, and more), with category filters, a persisted cart (Zustand), and per-product pages with customer reviews.
+- **Product variants** — products can offer a single option axis (size, color, …), each with its own stock; the cart keys lines by product *and* variant, and checkout enforces the selected option's stock server-side, independent of anything the UI does.
 - **Checkout** — server-priced checkout sessions via [Polar](https://polar.sh), with idempotent, signature-verified webhook fulfillment, percentage-based promo codes, and optional per-product stock tracking (checked at checkout, decremented atomically on fulfillment).
 - **Orders** — order history and detail pages for customers, with friendly order numbers; staff/admin views for every order with inline status controls and grouped, real-time notifications.
 - **Admin dashboard** — create/edit/deactivate products with image upload to ImageKit, manage categories and promo codes, and change customer roles.

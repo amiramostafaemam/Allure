@@ -43,12 +43,15 @@ function CartPage() {
       ) : (
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]">
           <ul className="space-y-4">
-            {lines.map(({ line, product: p }) => {
-              const maxQty = p?.stockQuantity != null ? Math.min(99, p.stockQuantity) : 99;
-              const overStock = p?.stockQuantity != null && line.quantity > p.stockQuantity;
+            {lines.map(({ line, product: p, variant }) => {
+              // Once a product has variants, stock lives per-variant — the
+              // product's own stockQuantity is no longer the source of truth.
+              const stockQuantity = line.variantId ? (variant?.stockQuantity ?? null) : (p?.stockQuantity ?? null);
+              const maxQty = stockQuantity != null ? Math.min(99, stockQuantity) : 99;
+              const overStock = stockQuantity != null && line.quantity > stockQuantity;
               return (
               <li
-                key={line.productId}
+                key={`${line.productId}-${line.variantId ?? "base"}`}
                 className="card card-side border border-base-300 bg-base-100 shadow-sm"
               >
                 <figure className="p-4">
@@ -84,6 +87,7 @@ function CartPage() {
                     {p ? (
                       <p className="text-sm text-base-content/60">
                         {formatPrice(p.pricePounds, p.currency)} each
+                        {variant ? ` · ${p.variantName ?? "Option"}: ${variant.label}` : null}
                       </p>
                     ) : null}
                     <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -93,7 +97,7 @@ function CartPage() {
                           type="button"
                           className="btn btn-sm join-item gap-0 px-2.5"
                           onClick={() =>
-                            setQty(line.productId, line.quantity - 1)
+                            setQty(line.productId, line.quantity - 1, line.variantId)
                           }
                           aria-label={
                             line.quantity <= 1
@@ -116,6 +120,7 @@ function CartPage() {
                             setQty(
                               line.productId,
                               Math.min(maxQty, line.quantity + 1),
+                              line.variantId,
                             )
                           }
                           disabled={line.quantity >= maxQty}
@@ -126,7 +131,7 @@ function CartPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeItem(line.productId)}
+                        onClick={() => removeItem(line.productId, line.variantId)}
                         className="btn btn-ghost btn-square btn-sm text-error hover:bg-error/10"
                         aria-label="Remove from cart"
                         title="Remove from cart"
@@ -136,7 +141,7 @@ function CartPage() {
                     </div>
                     {overStock ? (
                       <p className="mt-1.5 text-xs font-medium text-error">
-                        Only {p.stockQuantity} left — reduce quantity to check out
+                        Only {stockQuantity} left — reduce quantity to check out
                       </p>
                     ) : null}
                   </div>

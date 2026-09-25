@@ -22,7 +22,11 @@ export function usePromoCode(items) {
         getToken,
         method: "POST",
         body: {
-          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          items: items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            ...(i.variantId ? { variantId: i.variantId } : {}),
+          })),
           promoCode: trimmed,
         },
       });

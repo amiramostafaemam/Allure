@@ -19,10 +19,13 @@ export default function useCartPage() {
 
   const products = data?.products ?? [];
   const byId = new Map(products.map((p) => [p.id, p]));
-  const lines = items.map((line) => ({
-    line,
-    product: byId.get(line.productId) ?? null,
-  }));
+  const lines = items.map((line) => {
+    const product = byId.get(line.productId) ?? null;
+    const variant = line.variantId
+      ? (product?.variants ?? []).find((v) => v.id === line.variantId) ?? null
+      : null;
+    return { line, product, variant };
+  });
 
   const subtotal = lines.reduce((sum, { line, product: p }) => {
     if (!p) return sum;

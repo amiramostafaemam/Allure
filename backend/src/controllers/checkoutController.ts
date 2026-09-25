@@ -6,7 +6,7 @@ import { getAuth } from "@clerk/express";
 import { getLocalUser } from "../lib/users";
 import { db } from "../db";
 import { and, eq, inArray } from "drizzle-orm";
-import { checkoutSessions, products } from "../db/schema";
+import { checkoutSessions, productVariants, products } from "../db/schema";
 import { polarCreateCheckout } from "../lib/polar";
 import { computeCheckoutTotal } from "../lib/pricing";
 import { applyPromoCode, findActivePromoCode } from "../lib/promoCodes";
@@ -28,6 +28,7 @@ const cartItemsSchema = z
     z.object({
       productId: z.string(),
       quantity: z.number().int().positive().max(99),
+      variantId: z.string().uuid().optional(),
     }),
   )
   .min(1);
@@ -44,10 +45,13 @@ const promoValidateSchema = z.object({
 });
 
 // Shared by createCheckout and validatePromoCode — resolves cart items
-// against `products` and computes the subtotal. Never trusts client-sent
-// prices; only product ids + quantities come from the request.
+// against `products` (and, per line, `productVariants`) and computes the
+// subtotal. Never trusts client-sent prices; only product/variant ids and
+// quantities come from the request. `ids` is de-duped before the count
+// check below — a cart can legitimately list the same productId twice with
+// two different variantIds (e.g. a shirt in both size M and L).
 async function resolveCartSubtotal(items: z.infer<typeof cartItemsSchema>) {
-  const ids = items.map((i) => i.productId);
+  const ids = [...new Set(items.map((i) => i.productId))];
 
   const prodRows = await db
     .select()
@@ -60,9 +64,42 @@ async function resolveCartSubtotal(items: z.infer<typeof cartItemsSchema>) {
 
   const byId = new Map(prodRows.map((p) => [p.id, p]));
 
-  // null stockQuantity = untracked/unlimited, skip the check entirely
+  const variantIds = [...new Set(items.map((i) => i.variantId).filter((v): v is string => Boolean(v)))];
+  const variantRows = variantIds.length
+    ? await db.select().from(productVariants).where(inArray(productVariants.id, variantIds))
+    : [];
+  const variantById = new Map(variantRows.map((v) => [v.id, v]));
+
+  const resolvedItems: (typeof items[number] & { variantLabel?: string })[] = [];
+
   for (const item of items) {
     const product = byId.get(item.productId)!;
+
+    if (item.variantId) {
+      const variant = variantById.get(item.variantId);
+      if (!variant || variant.productId !== item.productId) {
+        return { ok: false as const, error: `Invalid option for "${product.name}"` };
+      }
+      if (variant.stockQuantity !== null && item.quantity > variant.stockQuantity) {
+        return {
+          ok: false as const,
+          error:
+            variant.stockQuantity > 0
+              ? `Only ${variant.stockQuantity} left of "${product.name}" (${variant.label})`
+              : `"${product.name}" (${variant.label}) is out of stock`,
+        };
+      }
+      resolvedItems.push({ ...item, variantLabel: variant.label });
+      continue;
+    }
+
+    // A product with variants must be purchased as one — no "any option"
+    // fallback that would leave its own stock uncounted.
+    if (product.variantName) {
+      return { ok: false as const, error: `Choose a ${product.variantName.toLowerCase()} for "${product.name}"` };
+    }
+
+    // null stockQuantity = untracked/unlimited, skip the check entirely
     if (product.stockQuantity !== null && item.quantity > product.stockQuantity) {
       return {
         ok: false as const,
@@ -72,9 +109,10 @@ async function resolveCartSubtotal(items: z.infer<typeof cartItemsSchema>) {
             : `"${product.name}" is out of stock`,
       };
     }
+    resolvedItems.push(item);
   }
 
-  const { totalPounds: subtotalPounds, lines } = computeCheckoutTotal(items, byId);
+  const { totalPounds: subtotalPounds, lines } = computeCheckoutTotal(resolvedItems, byId);
   return { ok: true as const, subtotalPounds, lines };
 }
 
