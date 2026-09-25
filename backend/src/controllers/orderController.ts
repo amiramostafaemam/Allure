@@ -3,8 +3,8 @@ import type {Request,Response,NextFunction} from 'express';
 import { getLocalUser } from '../lib/users';
 import { isStaff } from '../lib/roles';
 import { db } from '../db';
-import { notifications, orderItems, orders, orderStatusEvents, products, users } from '../db/schema';
-import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { notifications, orderItems, orders, orderStatusEvents, productVariants, products, users } from '../db/schema';
+import { and, asc, desc, eq, ilike, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import { getStreamChatServer, streamChatDisplayName, streamUserId } from '../lib/stream';
 import { getEnv } from '../lib/env';
 import { parsePagination } from '../lib/pagination';
@@ -363,6 +363,34 @@ export async function updateOrderStatus(req: Request, res: Response, next: NextF
         note: note ?? null,
         changedByUserId: actingUser.id,
       });
+
+      // Every order reaching this point was fulfilled once (fulfillCheckoutSession
+      // always decrements tracked stock on creation), and cancelled/refunded are
+      // both terminal — canTransition() only allows reaching them from paid/
+      // shipped/delivered, never from each other — so this runs at most once per
+      // order. Symmetric with the decrement in webhooks/polar.ts: a variant line
+      // restores its own stock, a plain line restores the product's, and
+      // untracked (null) rows are left alone either way.
+      if (toStatus === "cancelled" || toStatus === "refunded") {
+        const items = await tx
+          .select({ productId: orderItems.productId, variantId: orderItems.variantId, quantity: orderItems.quantity })
+          .from(orderItems)
+          .where(eq(orderItems.orderId, order.id));
+
+        for (const item of items) {
+          if (item.variantId) {
+            await tx
+              .update(productVariants)
+              .set({ stockQuantity: sql`${productVariants.stockQuantity} + ${item.quantity}` })
+              .where(and(eq(productVariants.id, item.variantId), isNotNull(productVariants.stockQuantity)));
+          } else {
+            await tx
+              .update(products)
+              .set({ stockQuantity: sql`${products.stockQuantity} + ${item.quantity}` })
+              .where(and(eq(products.id, item.productId), isNotNull(products.stockQuantity)));
+          }
+        }
+      }
 
       return rows;
     });
