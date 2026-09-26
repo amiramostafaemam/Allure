@@ -5,13 +5,7 @@ import { categories, products } from "../db/schema";
 import { asc, count, eq } from "drizzle-orm";
 import { slugify } from "../lib/slugify";
 import { isUniqueViolation } from "../lib/dbErrors";
-import { getEnv } from "../lib/env";
-import { resolveBilingualField } from "../lib/translate";
 
-const env = getEnv();
-
-// Typed in either language — resolved into {name, nameAr} before it's
-// stored, same pattern as product name/description.
 const nameSchema = z.object({
   name: z.string().trim().min(1).max(100),
 });
@@ -47,14 +41,11 @@ export async function createCategory(req: Request, res: Response, next: NextFunc
       return;
     }
 
-    const resolved = await resolveBilingualField(env, parsed.data.name, { fallbackToSourceIfBlocked: true });
-
     const [row] = await db
       .insert(categories)
       .values({
-        name: resolved.en,
-        nameAr: resolved.ar,
-        slug: slugify(resolved.en),
+        name: parsed.data.name,
+        slug: slugify(parsed.data.name),
       })
       .returning();
 
@@ -88,24 +79,20 @@ export async function renameCategory(req: Request, res: Response, next: NextFunc
       return;
     }
 
-    const resolved = await resolveBilingualField(env, parsed.data.name, { fallbackToSourceIfBlocked: true });
-    const newName = resolved.en;
-    const newNameAr = resolved.ar;
+    const newName = parsed.data.name;
 
-    if (existing.name === newName && existing.nameAr === newNameAr) {
+    if (existing.name === newName) {
       res.json({ category: existing });
       return;
     }
 
+    // English-only — nameAr isn't touched here, so any existing translation
+    // (set manually before this endpoint went English-only) is preserved.
     const [updated] = await db.transaction(async (tx) => {
-      // Only bulk-update products when the English name (the actual FK-ish
-      // value products.category stores) is the part that changed.
-      if (newName !== existing.name) {
-        await tx.update(products).set({ category: newName }).where(eq(products.category, existing.name));
-      }
+      await tx.update(products).set({ category: newName }).where(eq(products.category, existing.name));
       return tx
         .update(categories)
-        .set({ name: newName, nameAr: newNameAr, slug: slugify(newName) })
+        .set({ name: newName, slug: slugify(newName) })
         .where(eq(categories.id, id))
         .returning();
     });

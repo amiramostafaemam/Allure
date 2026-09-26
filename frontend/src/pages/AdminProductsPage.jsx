@@ -59,10 +59,6 @@ function AdminProductsPage() {
       }
 
       const body = {
-        // Present only when the admin actually edited them — omitted keys
-        // are dropped entirely by JSON.stringify, which is what lets the
-        // backend's partial update skip re-translating untouched text (see
-        // AdminProductFormModal's handleSubmit for where this is decided).
         name: values.name,
         description: values.description,
         slug: values.slug,
@@ -89,7 +85,6 @@ function AdminProductsPage() {
         await saveVariants.mutateAsync({
           productId,
           variantName: values.variantsEnabled ? values.variantName : null,
-          variantNameAr: values.variantsEnabled ? values.variantNameAr : null,
           variants: values.variantsEnabled ? values.variantRows : [],
         });
       }

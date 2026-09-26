@@ -4,30 +4,17 @@ import { db } from "../db";
 import { productVariants, products } from "../db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { isUniqueViolation } from "../lib/dbErrors";
-import { getEnv } from "../lib/env";
-import { resolveBilingualField } from "../lib/translate";
-
-const env = getEnv();
 
 const variantRowSchema = z.object({
   // Present when editing an existing row, absent for a newly-added one.
   id: z.string().uuid().optional(),
-  // Typed in either language — resolved into {label, labelAr} before it's
-  // stored, same as product name/description. This endpoint always resends
-  // every row on every save (not a per-field patch), so labelAr doubles as
-  // a "this pair is already resolved, don't re-translate" signal: present
-  // (including null) means label/labelAr are the final values verbatim;
-  // absent means label is fresh input that needs resolving.
   label: z.string().trim().min(1).max(60),
-  labelAr: z.string().trim().max(60).nullable().optional(),
   // null/omitted = untracked, unlimited stock for this variant
   stockQuantity: z.number().int().min(0).max(1_000_000).nullable().optional(),
 });
 
 const replaceVariantsSchema = z.object({
   variantName: z.string().trim().min(1).max(40).nullable(),
-  // Same already-resolved-pair convention as variantRowSchema.labelAr.
-  variantNameAr: z.string().trim().max(40).nullable().optional(),
   variants: z.array(variantRowSchema).max(20),
 });
 
@@ -44,13 +31,13 @@ export async function replaceProductVariants(req: Request, res: Response, next: 
     }
 
     const productId = req.params.productId as string;
-    const [product] = await db.select({ id: products.id }).from(products).where(eq(products.id, productId)).limit(1);
+    const [product] = await db.select({ id: products.id, variantNameAr: products.variantNameAr }).from(products).where(eq(products.id, productId)).limit(1);
     if (!product) {
       res.status(404).json({ error: "Product not found" });
       return;
     }
 
-    const { variantName, variantNameAr, variants } = parsed.data;
+    const { variantName, variants } = parsed.data;
 
     if (!variantName || variants.length === 0) {
       await db.transaction(async (tx) => {
@@ -61,28 +48,20 @@ export async function replaceProductVariants(req: Request, res: Response, next: 
       return;
     }
 
-    const [variantNameResolved, ...labelsResolved] = await Promise.all([
-      variantNameAr !== undefined
-        ? Promise.resolve({ en: variantName, ar: variantNameAr || null })
-        : resolveBilingualField(env, variantName, { fallbackToSourceIfBlocked: true }),
-      ...variants.map((v) =>
-        v.labelAr !== undefined
-          ? Promise.resolve({ en: v.label, ar: v.labelAr || null })
-          : resolveBilingualField(env, v.label, { fallbackToSourceIfBlocked: true }),
-      ),
-    ]);
-
-    const labels = labelsResolved.map((r) => r.en.toLowerCase());
+    const labels = variants.map((v) => v.label.trim().toLowerCase());
     if (new Set(labels).size !== labels.length) {
       res.status(400).json({ error: "Variant labels must be unique" });
       return;
     }
 
     const result = await db.transaction(async (tx) => {
-      await tx
-        .update(products)
-        .set({ variantName: variantNameResolved.en, variantNameAr: variantNameResolved.ar })
-        .where(eq(products.id, productId));
+      // English-only edits — variantNameAr/labelAr aren't accepted from the
+      // client anymore, so any existing translation (set manually before
+      // this endpoint went English-only) is preserved rather than cleared:
+      // the products update only touches variantName, and each existing
+      // row's own labelAr comes along in its own update by simply not
+      // being part of the SET clause.
+      await tx.update(products).set({ variantName }).where(eq(products.id, productId));
 
       const existing = await tx
         .select({ id: productVariants.id })
@@ -100,18 +79,17 @@ export async function replaceProductVariants(req: Request, res: Response, next: 
       for (let i = 0; i < variants.length; i++) {
         const v = variants[i];
         const stockQuantity = v.stockQuantity ?? null;
-        const { en: label, ar: labelAr } = labelsResolved[i];
         if (v.id && existingIds.has(v.id)) {
           const [updated] = await tx
             .update(productVariants)
-            .set({ label, labelAr, stockQuantity, sortOrder: i })
+            .set({ label: v.label, stockQuantity, sortOrder: i })
             .where(eq(productVariants.id, v.id))
             .returning();
           rows.push(updated);
         } else {
           const [inserted] = await tx
             .insert(productVariants)
-            .values({ productId, label, labelAr, stockQuantity, sortOrder: i })
+            .values({ productId, label: v.label, labelAr: null, stockQuantity, sortOrder: i })
             .returning();
           rows.push(inserted);
         }
@@ -119,7 +97,7 @@ export async function replaceProductVariants(req: Request, res: Response, next: 
       return rows;
     });
 
-    res.json({ variantName: variantNameResolved.en, variantNameAr: variantNameResolved.ar, variants: result });
+    res.json({ variantName, variantNameAr: product.variantNameAr, variants: result });
   } catch (err) {
     if (isUniqueViolation(err)) {
       res.status(409).json({ error: "Variant labels must be unique" });

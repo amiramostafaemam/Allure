@@ -3,8 +3,6 @@ import { PlusIcon, Trash2Icon } from "lucide-react";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { slugify } from "../utils/slugify";
 import { SelectField, TextAreaField, TextField } from "./FormField";
-import { useLocale } from "../store/locale";
-import { localizedText } from "../utils/localized";
 
 function emptyForm() {
   return {
@@ -18,36 +16,17 @@ function emptyForm() {
   };
 }
 
-// Prefills each bilingual field with whatever the CURRENT site language
-// prefers (falling back to English), so editing while browsing in Arabic
-// shows the Arabic text and vice versa — same utility every other localized
-// display in the app already uses.
-function formFromProduct(product, locale) {
+function formFromProduct(product) {
   if (!product) return emptyForm();
   return {
-    name: localizedText(product, "name", locale),
+    name: product.name,
     slug: product.slug,
     category: product.category ?? "",
-    description: localizedText(product, "description", locale),
+    description: product.description ?? "",
     pricePounds: String(product.pricePounds ?? ""),
     stockQuantity: product.stockQuantity == null ? "" : String(product.stockQuantity),
     active: product.active,
   };
-}
-
-function variantRowsFromProduct(product, locale) {
-  return (product?.variants ?? []).map((v) => {
-    const label = localizedText(v, "label", locale);
-    return {
-      id: v.id,
-      label,
-      stockQuantity: v.stockQuantity == null ? "" : String(v.stockQuantity),
-      // Captured once, used only to detect whether this row's label was
-      // actually touched before submit — see handleSubmit.
-      _initialLabel: label,
-      _labelAr: v.labelAr ?? null,
-    };
-  });
 }
 
 // Mounted only while open (see AdminProductsPage), so this initial state is
@@ -61,12 +40,7 @@ export function AdminProductFormModal({
   onSubmit,
   onCreateCategory,
 }) {
-  const locale = useLocale((s) => s.locale);
-  const [form, setForm] = useState(() => formFromProduct(product, locale));
-  // A snapshot of what the form opened with — name/description are only
-  // sent to the backend when they differ from this, which is what lets an
-  // unrelated edit (price, stock, …) skip re-translating untouched text.
-  const [initialForm] = useState(() => formFromProduct(product, locale));
+  const [form, setForm] = useState(() => formFromProduct(product));
   const [slugTouched, setSlugTouched] = useState(Boolean(product));
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(product?.imageUrl ?? "");
@@ -75,12 +49,17 @@ export function AdminProductFormModal({
   const [categoryError, setCategoryError] = useState("");
   const [categorySaving, setCategorySaving] = useState(false);
   const [variantsEnabled, setVariantsEnabled] = useState(Boolean(product?.variantName));
-  const initialVariantName = localizedText(product, "variantName", locale);
-  const [variantName, setVariantName] = useState(initialVariantName);
-  const [variantRows, setVariantRows] = useState(() => variantRowsFromProduct(product, locale));
+  const [variantName, setVariantName] = useState(product?.variantName ?? "");
+  const [variantRows, setVariantRows] = useState(() =>
+    (product?.variants ?? []).map((v) => ({
+      id: v.id,
+      label: v.label,
+      stockQuantity: v.stockQuantity == null ? "" : String(v.stockQuantity),
+    })),
+  );
 
   function addVariantRow() {
-    setVariantRows((rows) => [...rows, { label: "", stockQuantity: "", _initialLabel: "", _labelAr: null }]);
+    setVariantRows((rows) => [...rows, { label: "", stockQuantity: "" }]);
   }
 
   function updateVariantRow(index, patch) {
@@ -133,36 +112,20 @@ export function AdminProductFormModal({
 
   function handleSubmit(e) {
     e.preventDefault();
-    const trimmedVariantName = variantName.trim();
     onSubmit({
-      slug: form.slug,
-      category: form.category,
+      ...form,
       pricePounds: Number(form.pricePounds),
       stockQuantity: form.stockQuantity === "" ? null : Number(form.stockQuantity),
-      active: form.active,
       imageFile,
-      // Present only when actually edited — see initialForm above.
-      ...(form.name !== initialForm.name ? { name: form.name } : {}),
-      ...(form.description !== initialForm.description ? { description: form.description } : {}),
       variantsEnabled,
-      variantName: trimmedVariantName,
-      // variantNameAr doubles as an "already resolved, don't re-translate"
-      // signal on this endpoint (which always resends the whole variant
-      // set) — see adminProductVariantsController.ts.
-      ...(trimmedVariantName === initialVariantName
-        ? { variantNameAr: product?.variantNameAr ?? null }
-        : {}),
+      variantName: variantName.trim(),
       variantRows: variantRows
         .filter((r) => r.label.trim())
-        .map((r) => {
-          const label = r.label.trim();
-          return {
-            ...(r.id ? { id: r.id } : {}),
-            label,
-            ...(label === r._initialLabel ? { labelAr: r._labelAr } : {}),
-            stockQuantity: r.stockQuantity === "" ? null : Number(r.stockQuantity),
-          };
-        }),
+        .map((r) => ({
+          ...(r.id ? { id: r.id } : {}),
+          label: r.label.trim(),
+          stockQuantity: r.stockQuantity === "" ? null : Number(r.stockQuantity),
+        })),
     });
   }
 
@@ -182,8 +145,6 @@ export function AdminProductFormModal({
           <TextField
             label="Name"
             required
-            dir="auto"
-            placeholder="In Arabic or English — the other language fills in automatically"
             value={form.name}
             onChange={handleNameChange}
           />
@@ -208,7 +169,6 @@ export function AdminProductFormModal({
                 <div className="flex flex-wrap gap-2">
                   <TextField
                     autoFocus
-                    dir="auto"
                     placeholder="Category name"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
@@ -285,9 +245,7 @@ export function AdminProductFormModal({
           <TextAreaField
             label="Description"
             optional
-            dir="auto"
             rows={3}
-            placeholder="In Arabic or English — the other language fills in automatically"
             value={form.description}
             onChange={(e) =>
               setForm((f) => ({ ...f, description: e.target.value }))
@@ -304,7 +262,7 @@ export function AdminProductFormModal({
                   const enabled = e.target.checked;
                   setVariantsEnabled(enabled);
                   if (enabled && variantRows.length === 0) {
-                    setVariantRows([{ label: "", stockQuantity: "", _initialLabel: "", _labelAr: null }]);
+                    setVariantRows([{ label: "", stockQuantity: "" }]);
                   }
                 }}
               />
@@ -317,8 +275,7 @@ export function AdminProductFormModal({
               <div className="flex flex-col gap-3 pl-1">
                 <TextField
                   label="Option name"
-                  placeholder="e.g. Size, Color — any language"
-                  dir="auto"
+                  placeholder="e.g. Size, Color"
                   required
                   value={variantName}
                   onChange={(e) => setVariantName(e.target.value)}
@@ -330,7 +287,6 @@ export function AdminProductFormModal({
                       <TextField
                         label={i === 0 ? "Label" : undefined}
                         placeholder="e.g. Black"
-                        dir="auto"
                         value={row.label}
                         onChange={(e) => updateVariantRow(i, { label: e.target.value })}
                         className="flex-1"

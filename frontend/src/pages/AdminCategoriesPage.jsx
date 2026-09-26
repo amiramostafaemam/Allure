@@ -4,22 +4,15 @@ import { useAdminCategories } from "../hooks/useAdminCategories";
 import { AdminTableSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { TextField } from "../components/FormField";
-import { useLocale } from "../store/locale";
-import { localizedText } from "../utils/localized";
 
 function AdminCategoriesPage() {
   const { categories, isLoading, isError, createCategory, renameCategory, deleteCategory } =
     useAdminCategories();
-  const locale = useLocale((s) => s.locale);
 
   const [newName, setNewName] = useState("");
   const [createError, setCreateError] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState("");
-  // The value editing started from — if the admin saves without changing
-  // it, skip the API call entirely rather than paying for a no-op
-  // translation (renameCategory only re-translates when "name" is sent).
-  const [editBaseline, setEditBaseline] = useState("");
   const [rowError, setRowError] = useState(null);
 
   async function handleCreate(e) {
@@ -36,10 +29,8 @@ function AdminCategoriesPage() {
   }
 
   function startEdit(category) {
-    const current = localizedText(category, "name", locale);
     setEditingId(category.id);
-    setEditValue(current);
-    setEditBaseline(current);
+    setEditValue(category.name);
     setRowError(null);
   }
 
@@ -48,9 +39,7 @@ function AdminCategoriesPage() {
     if (!name) return;
     setRowError(null);
     try {
-      if (name !== editBaseline) {
-        await renameCategory.mutateAsync({ id, name });
-      }
+      await renameCategory.mutateAsync({ id, name });
       setEditingId(null);
     } catch (err) {
       setRowError({ id, message: err.message || "Couldn't rename category." });
@@ -78,8 +67,7 @@ function AdminCategoriesPage() {
 
       <form onSubmit={handleCreate} className="mb-6 flex flex-wrap items-start gap-3">
         <TextField
-          placeholder="New category name (any language)"
-          dir="auto"
+          placeholder="New category name"
           className="max-w-xs"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
@@ -114,15 +102,12 @@ function AdminCategoriesPage() {
                       <input
                         type="text"
                         autoFocus
-                        dir="auto"
                         className="input input-sm focus:[--input-color:var(--color-primary)] focus:outline-none!"
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
                       />
                     ) : (
-                      <span className="font-medium text-base-content" dir="auto">
-                        {localizedText(category, "name", locale)}
-                      </span>
+                      <span className="font-medium text-base-content">{category.name}</span>
                     )}
                   </td>
                   <td className="tabular-nums">{category.productCount}</td>
