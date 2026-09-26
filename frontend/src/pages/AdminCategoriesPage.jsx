@@ -4,16 +4,22 @@ import { useAdminCategories } from "../hooks/useAdminCategories";
 import { AdminTableSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { TextField } from "../components/FormField";
+import { useLocale } from "../store/locale";
+import { localizedText } from "../utils/localized";
 
 function AdminCategoriesPage() {
   const { categories, isLoading, isError, createCategory, renameCategory, deleteCategory } =
     useAdminCategories();
+  const locale = useLocale((s) => s.locale);
 
   const [newName, setNewName] = useState("");
   const [createError, setCreateError] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState("");
-  const [editValueAr, setEditValueAr] = useState("");
+  // The value editing started from — if the admin saves without changing
+  // it, skip the API call entirely rather than paying for a no-op
+  // translation (renameCategory only re-translates when "name" is sent).
+  const [editBaseline, setEditBaseline] = useState("");
   const [rowError, setRowError] = useState(null);
 
   async function handleCreate(e) {
@@ -30,9 +36,10 @@ function AdminCategoriesPage() {
   }
 
   function startEdit(category) {
+    const current = localizedText(category, "name", locale);
     setEditingId(category.id);
-    setEditValue(category.name);
-    setEditValueAr(category.nameAr ?? "");
+    setEditValue(current);
+    setEditBaseline(current);
     setRowError(null);
   }
 
@@ -41,7 +48,9 @@ function AdminCategoriesPage() {
     if (!name) return;
     setRowError(null);
     try {
-      await renameCategory.mutateAsync({ id, name, nameAr: editValueAr.trim() || null });
+      if (name !== editBaseline) {
+        await renameCategory.mutateAsync({ id, name });
+      }
       setEditingId(null);
     } catch (err) {
       setRowError({ id, message: err.message || "Couldn't rename category." });
@@ -69,7 +78,8 @@ function AdminCategoriesPage() {
 
       <form onSubmit={handleCreate} className="mb-6 flex flex-wrap items-start gap-3">
         <TextField
-          placeholder="New category name"
+          placeholder="New category name (any language)"
+          dir="auto"
           className="max-w-xs"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
@@ -90,7 +100,6 @@ function AdminCategoriesPage() {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Name (Arabic)</th>
               <th>Products</th>
               <th className="text-right">Actions</th>
             </tr>
@@ -105,27 +114,14 @@ function AdminCategoriesPage() {
                       <input
                         type="text"
                         autoFocus
+                        dir="auto"
                         className="input input-sm focus:[--input-color:var(--color-primary)] focus:outline-none!"
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
                       />
                     ) : (
-                      <span className="font-medium text-base-content">{category.name}</span>
-                    )}
-                  </td>
-                  <td>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        dir="rtl"
-                        placeholder="اسم القسم بالعربي"
-                        className="input input-sm focus:[--input-color:var(--color-primary)] focus:outline-none!"
-                        value={editValueAr}
-                        onChange={(e) => setEditValueAr(e.target.value)}
-                      />
-                    ) : (
-                      <span className="text-base-content/70" dir="rtl">
-                        {category.nameAr || <span className="text-base-content/30">—</span>}
+                      <span className="font-medium text-base-content" dir="auto">
+                        {localizedText(category, "name", locale)}
                       </span>
                     )}
                   </td>

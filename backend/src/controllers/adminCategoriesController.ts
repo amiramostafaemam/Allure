@@ -5,12 +5,15 @@ import { categories, products } from "../db/schema";
 import { asc, count, eq } from "drizzle-orm";
 import { slugify } from "../lib/slugify";
 import { isUniqueViolation } from "../lib/dbErrors";
+import { getEnv } from "../lib/env";
+import { resolveBilingualField } from "../lib/translate";
 
+const env = getEnv();
+
+// Typed in either language — resolved into {name, nameAr} before it's
+// stored, same pattern as product name/description.
 const nameSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  // Optional Arabic translation — null/omitted means untranslated, falls
-  // back to the English name wherever it's displayed.
-  nameAr: z.string().trim().max(100).nullable().optional(),
 });
 const categoryPatchSchema = nameSchema.partial();
 
@@ -44,12 +47,14 @@ export async function createCategory(req: Request, res: Response, next: NextFunc
       return;
     }
 
+    const resolved = await resolveBilingualField(env, parsed.data.name, { fallbackToSourceIfBlocked: true });
+
     const [row] = await db
       .insert(categories)
       .values({
-        name: parsed.data.name,
-        nameAr: parsed.data.nameAr || null,
-        slug: slugify(parsed.data.name),
+        name: resolved.en,
+        nameAr: resolved.ar,
+        slug: slugify(resolved.en),
       })
       .returning();
 
@@ -70,7 +75,7 @@ export async function renameCategory(req: Request, res: Response, next: NextFunc
       res.status(400).json({ error: "Invalid category", details: parsed.error.flatten() });
       return;
     }
-    if (parsed.data.name === undefined && parsed.data.nameAr === undefined) {
+    if (parsed.data.name === undefined) {
       res.status(400).json({ error: "No fields to update" });
       return;
     }
@@ -83,8 +88,9 @@ export async function renameCategory(req: Request, res: Response, next: NextFunc
       return;
     }
 
-    const newName = parsed.data.name ?? existing.name;
-    const newNameAr = parsed.data.nameAr !== undefined ? (parsed.data.nameAr || null) : existing.nameAr;
+    const resolved = await resolveBilingualField(env, parsed.data.name, { fallbackToSourceIfBlocked: true });
+    const newName = resolved.en;
+    const newNameAr = resolved.ar;
 
     if (existing.name === newName && existing.nameAr === newNameAr) {
       res.json({ category: existing });

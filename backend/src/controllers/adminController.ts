@@ -11,18 +11,19 @@ import {z} from 'zod';
 import { deleteImageKitAsset } from '../lib/imagekit';
 import { parsePagination } from '../lib/pagination';
 import { isUniqueViolation } from '../lib/dbErrors';
+import { resolveBilingualField } from '../lib/translate';
 
 const env=getEnv();
 
 const productCreate=z.object({
     slug:z.string().min(1),
-    name:z.string().min(1),
-    // Optional Arabic translation — null/omitted means untranslated, and
-    // every reader falls back to the English field.
-    nameAr:z.string().trim().max(200).nullable().optional(),
+    // Admin types this in EITHER language — resolveBilingualField detects
+    // which and auto-translates the other side before it's ever stored, so
+    // the client only ever sends one value per field, not an English/Arabic
+    // pair.
+    name:z.string().min(1).max(200),
     category:z.string().min(1),
-    description:z.string().default(""),
-    descriptionAr:z.string().trim().max(4000).nullable().optional(),
+    description:z.string().max(4000).default(""),
     pricePounds:z.number().int().positive(),
     currency:z.string().min(1).default("egp"),
     // null/omitted = untracked, unlimited stock
@@ -35,14 +36,13 @@ const productCreate=z.object({
 
 const productPatch=productCreate.partial();
 
+// name/description are resolved into their {en, ar} pair separately (async,
+// see updateAdminProduct) since translation needs a network call — this
+// stays a sync helper for every other field.
 function buildProductUpdateSet(body: z.infer<typeof productPatch>) {
   const data: Partial<typeof products.$inferInsert> = {};
   if (body.slug !== undefined) data.slug = body.slug;
-  if (body.name !== undefined) data.name = body.name;
-  if (body.nameAr !== undefined) data.nameAr = body.nameAr === "" ? null : body.nameAr;
   if (body.category !== undefined) data.category = body.category;
-  if (body.description !== undefined) data.description = body.description;
-  if (body.descriptionAr !== undefined) data.descriptionAr = body.descriptionAr === "" ? null : body.descriptionAr;
   if (body.pricePounds !== undefined) data.pricePounds = body.pricePounds;
   if (body.currency !== undefined) data.currency = body.currency;
   if (body.stockQuantity !== undefined) data.stockQuantity = body.stockQuantity;
@@ -143,12 +143,19 @@ export async function createAdminProduct(req:Request,res:Response,next:NextFunct
             return;
         }
 
-        const {imageUrl,imageKitFileId,nameAr,descriptionAr,...rest}=parsed.data;
+        const {imageUrl,imageKitFileId,name,description,...rest}=parsed.data;
+
+        const [nameResolved,descriptionResolved]=await Promise.all([
+            resolveBilingualField(env,name,{fallbackToSourceIfBlocked:true}),
+            resolveBilingualField(env,description,{fallbackToSourceIfBlocked:true}),
+        ]);
 
         const [row]=await db.insert(products).values({
             ...rest,
-            nameAr:nameAr || null,
-            descriptionAr:descriptionAr || null,
+            name:nameResolved.en,
+            nameAr:nameResolved.ar,
+            description:descriptionResolved.en,
+            descriptionAr:descriptionResolved.ar,
             imageUrl:imageUrl || null,
             imageKitFileId:imageKitFileId || null
         }).returning();
@@ -179,6 +186,17 @@ export async function updateAdminProduct(req:Request,res:Response,next:NextFunct
         }
 
         const data=buildProductUpdateSet(parsed.data)
+
+        if(parsed.data.name!==undefined){
+            const resolved=await resolveBilingualField(env,parsed.data.name,{fallbackToSourceIfBlocked:true});
+            data.name=resolved.en;
+            data.nameAr=resolved.ar;
+        }
+        if(parsed.data.description!==undefined){
+            const resolved=await resolveBilingualField(env,parsed.data.description,{fallbackToSourceIfBlocked:true});
+            data.description=resolved.en;
+            data.descriptionAr=resolved.ar;
+        }
 
         if(Object.keys(data).length===0){
             res.status(400).json({error:"No fields to update"});

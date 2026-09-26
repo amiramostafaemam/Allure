@@ -27,6 +27,12 @@ const envSchema = z.object({
 
     RESEND_API_KEY: z.string().optional(),
     RESEND_FROM_EMAIL: z.string().default("Allure <onboarding@resend.dev>"),
+
+    // Optional — powers admin-form auto-translation (see lib/translate.ts).
+    // Skips translation (falls back to leaving the other language blank)
+    // rather than failing the request when unset, same convention as
+    // RESEND_API_KEY above.
+    ANTHROPIC_API_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

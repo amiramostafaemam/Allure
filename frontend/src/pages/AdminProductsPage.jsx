@@ -59,12 +59,14 @@ function AdminProductsPage() {
       }
 
       const body = {
+        // Present only when the admin actually edited them — omitted keys
+        // are dropped entirely by JSON.stringify, which is what lets the
+        // backend's partial update skip re-translating untouched text (see
+        // AdminProductFormModal's handleSubmit for where this is decided).
         name: values.name,
-        nameAr: values.nameAr.trim() || null,
+        description: values.description,
         slug: values.slug,
         category: values.category,
-        description: values.description,
-        descriptionAr: values.descriptionAr.trim() || null,
         pricePounds: values.pricePounds,
         stockQuantity: values.stockQuantity,
         currency: "egp",
