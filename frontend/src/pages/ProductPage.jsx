@@ -127,7 +127,13 @@ function ProductPage() {
             </span>
           </div>
 
-          <p className="leading-relaxed text-base-content/70">
+          {/* dir="auto": an untranslated product still falls back to its
+              English description while the page is RTL — without this,
+              the browser's bidi algorithm misplaces trailing punctuation
+              (e.g. a sentence-ending period jumping to the wrong end of a
+              wrapped line). Letting the browser detect direction per the
+              text's own first strong character fixes both cases. */}
+          <p className="leading-relaxed text-base-content/70" dir="auto">
             {localizedText(product, "description", locale)}
           </p>
 

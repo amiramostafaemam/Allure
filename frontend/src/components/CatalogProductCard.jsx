@@ -69,7 +69,11 @@ export function CatalogProductCard({ product }) {
         >
           {localizedText(product, "name", locale)}
         </Link>
-        <p className="line-clamp-3 text-sm leading-relaxed text-base-content/70">
+        {/* dir="auto": see ProductPage.jsx — an untranslated description
+            falls back to English inside this RTL card and needs the
+            browser to detect its own direction, or trailing punctuation
+            renders on the wrong side. */}
+        <p className="line-clamp-3 text-sm leading-relaxed text-base-content/70" dir="auto">
           {localizedText(product, "description", locale)}
         </p>
         <div className="card-actions mt-auto items-center justify-between border-t border-base-200 pt-4">
