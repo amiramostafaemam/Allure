@@ -12,7 +12,7 @@ export function HomeHero({ categories, loadingCategories }) {
       />
 
       <div className="relative grid grid-cols-1 gap-8 p-8 md:grid-cols-2 md:items-center md:p-12 lg:p-14">
-        <div className="text-left">
+        <div className="text-start">
           <h1 className="text-3xl font-bold tracking-tight text-base-content md:text-4xl lg:text-5xl">
             {t("home.heroTitle")}{" "}
             <span className="text-primary">{t("home.heroTitleAccent")}</span>

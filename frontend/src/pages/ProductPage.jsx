@@ -69,7 +69,7 @@ function ProductPage() {
   }
 
   return (
-    <div className="text-left">
+    <div className="text-start">
       <nav
         aria-label="Breadcrumb"
         className="mb-6 flex items-center gap-1.5 text-sm text-base-content/50"

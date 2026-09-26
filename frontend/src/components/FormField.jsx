@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 
 // Shared form controls. daisyUI 5 dropped `form-control`/`label-text`/
@@ -22,11 +23,12 @@ const CONTROL_CLASS =
   "w-full rounded-xl px-4 py-3 transition-colors duration-150 focus:[--input-color:var(--color-primary)] focus:outline-none!";
 
 function FieldLabel({ label, optional }) {
+  const { t } = useTranslation();
   if (!label) return null;
   return (
     <span className="text-sm font-medium text-base-content/80">
       {label}
-      {optional ? <span className="text-base-content/40"> (optional)</span> : null}
+      {optional ? <span className="text-base-content/40"> ({t("common.optional")})</span> : null}
     </span>
   );
 }
@@ -93,7 +95,7 @@ export function SelectField({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        className={`input flex items-center justify-between gap-2 text-left disabled:opacity-50 ${CONTROL_CLASS} ${className}`}
+        className={`input flex items-center justify-between gap-2 text-start disabled:opacity-50 ${CONTROL_CLASS} ${className}`}
       >
         <span className={`truncate ${selected ? "text-base-content" : "text-base-content/40"}`}>
           {selected ? selected.label : placeholder}
@@ -112,7 +114,7 @@ export function SelectField({
                   setOpen(false);
                 }}
                 disabled={opt.disabled}
-                className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-base-200 disabled:text-base-content/40 disabled:hover:bg-transparent ${
+                className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-start text-sm transition-colors hover:bg-base-200 disabled:text-base-content/40 disabled:hover:bg-transparent ${
                   opt.value === value ? "font-medium text-primary" : "text-base-content"
                 }`}
               >

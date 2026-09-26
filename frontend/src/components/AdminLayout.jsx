@@ -105,7 +105,7 @@ function AdminLayout() {
         ))}
       </nav>
 
-      <div className="text-left">
+      <div className="text-start">
         <Outlet />
       </div>
     </div>

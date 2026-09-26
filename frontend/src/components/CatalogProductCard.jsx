@@ -62,7 +62,7 @@ export function CatalogProductCard({ product }) {
           </span>
         ) : null}
       </Link>
-      <div className="card-body grow gap-3 p-5 text-left">
+      <div className="card-body grow gap-3 p-5 text-start">
         <Link
           to={`/product/${product.slug}`}
           className="card-title line-clamp-2 text-lg transition group-hover:text-primary"

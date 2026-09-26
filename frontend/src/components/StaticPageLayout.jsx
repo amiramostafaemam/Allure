@@ -1,6 +1,6 @@
 function StaticPageLayout({ title, icon: Icon, children }) {
   return (
-    <div className="mx-auto max-w-3xl text-left">
+    <div className="mx-auto max-w-3xl text-start">
       <h1 className="mb-8 flex items-center gap-2 text-3xl font-bold text-base-content">
         {Icon ? <Icon className="size-8 text-primary" aria-hidden /> : null}
         {title}

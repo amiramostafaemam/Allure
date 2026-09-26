@@ -121,7 +121,7 @@ function AdminProductsPage() {
   }
 
   return (
-    <div className="text-left">
+    <div className="text-start">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1 className="flex items-center gap-2 text-3xl font-bold text-base-content">
           <BoxIcon className="size-8 text-primary" aria-hidden />

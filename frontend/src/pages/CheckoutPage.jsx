@@ -44,14 +44,14 @@ function SavedAddressPicker({ addresses, selectedId, onSelect, onDelete, deletin
         return (
           <div
             key={addr.id}
-            className={`relative rounded-xl border p-3 text-left transition-colors ${
+            className={`relative rounded-xl border p-3 text-start transition-colors ${
               selected ? "border-primary bg-primary/5" : "border-base-300 hover:border-primary/40"
             }`}
           >
             <button
               type="button"
               onClick={() => onSelect(addr)}
-              className="block w-full pr-6 text-left"
+              className="block w-full pr-6 text-start"
             >
               <span className="flex items-center gap-1.5 text-sm font-medium text-base-content">
                 {selected ? <CheckIcon className="size-3.5 shrink-0 text-primary" aria-hidden /> : null}
@@ -165,7 +165,7 @@ function CheckoutPage() {
   }
 
   return (
-    <div className="text-left">
+    <div className="text-start">
       <Link to="/cart" className="btn btn-ghost btn-sm gap-2 px-2 text-base-content/70">
         <ArrowLeftIcon className="size-4 rtl:rotate-180" aria-hidden />
         {t("checkout.backToCart")}

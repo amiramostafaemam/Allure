@@ -172,7 +172,7 @@ function OrderDetailPage() {
   }
 
   return (
-    <div className="space-y-8 text-left">
+    <div className="space-y-8 text-start">
       <Link
         to="/orders"
         className="btn btn-ghost btn-sm gap-2 px-2 text-base-content/70"

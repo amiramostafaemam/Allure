@@ -162,7 +162,7 @@ export function AdminTableSkeleton({ columns = 5, rows = 6 }) {
 
 export function OrderDetailSkeleton() {
   return (
-    <div className="space-y-8 text-left">
+    <div className="space-y-8 text-start">
       <div className="skeleton h-9 w-40" />
       <div className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-lg">
         <div className="bg-base-200/50 px-5 py-6 sm:px-8 sm:py-8">

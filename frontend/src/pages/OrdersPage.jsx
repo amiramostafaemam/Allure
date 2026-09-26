@@ -17,7 +17,7 @@ function OrdersPage() {
   const { orders, isLoading, isError, isSignedIn } = useOrders();
 
   return (
-    <div className="text-left">
+    <div className="text-start">
       <h1 className="mb-8 flex items-center gap-2 text-3xl font-bold text-base-content">
         <PackageIcon className="size-8 text-primary" aria-hidden />
         {t("orders.title")}

@@ -87,7 +87,7 @@ export function DatePickerField({ label, optional, value, onChange, placeholder 
       <button
         type="button"
         onClick={() => (open ? setOpen(false) : openPicker())}
-        className="input flex w-full items-center justify-between gap-2 rounded-xl px-4 py-3 text-left transition-colors duration-150 focus:[--input-color:var(--color-primary)] focus:outline-none!"
+        className="input flex w-full items-center justify-between gap-2 rounded-xl px-4 py-3 text-start transition-colors duration-150 focus:[--input-color:var(--color-primary)] focus:outline-none!"
       >
         <span className={selected ? "text-base-content" : "text-base-content/40"}>
           {selected ? toDateKey(selected) : placeholder}

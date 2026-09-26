@@ -11,7 +11,7 @@ function WishlistPage() {
   const { items, isLoading } = useWishlist();
 
   return (
-    <div className="text-left">
+    <div className="text-start">
       <h1 className="mb-8 flex items-center gap-2 text-3xl font-bold text-base-content">
         <HeartIcon className="size-8 text-primary" aria-hidden />
         {t("wishlist.title")}
