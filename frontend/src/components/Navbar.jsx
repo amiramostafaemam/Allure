@@ -17,7 +17,6 @@ import { useCart } from "../store/cart";
 import { useMe } from "../hooks/useMe";
 import NotificationBell from "./NotificationBell";
 import ThemeToggle from "./ThemeToggle";
-import LanguageToggle from "./LanguageToggle";
 
 // Ghost nav link, highlighted only while its route is actually active —
 // not a permanently-colored link regardless of where you are.
@@ -128,7 +127,6 @@ const Navbar = () => {
           </CartLink>
 
           <ThemeToggle />
-          <LanguageToggle />
 
           <Show when={"signed-out"}>
             <SignInButton mode="modal">
@@ -232,11 +230,6 @@ const Navbar = () => {
           <div className="mt-3 flex items-center justify-between border-t border-base-300 pt-3">
             <span className="text-sm font-medium text-base-content/70">{t("nav.theme")}</span>
             <ThemeToggle />
-          </div>
-
-          <div className="mt-3 flex items-center justify-between border-t border-base-300 pt-3">
-            <span className="text-sm font-medium text-base-content/70">{t("nav.language")}</span>
-            <LanguageToggle />
           </div>
 
           <Show when={"signed-out"}>

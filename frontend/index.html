@@ -21,16 +21,6 @@
           if (meta) meta.setAttribute("content", theme === "light" ? "#f6faf6" : "#1b1717");
         } catch (e) {}
       })();
-      // Same reasoning as the theme script above: stamp lang/dir on <html>
-      // before React mounts, so an Arabic visitor never sees a flash of
-      // left-to-right layout that then jumps to RTL.
-      (function () {
-        try {
-          var locale = localStorage.getItem("allure-locale") === "ar" ? "ar" : "en";
-          document.documentElement.setAttribute("lang", locale);
-          document.documentElement.setAttribute("dir", locale === "ar" ? "rtl" : "ltr");
-        } catch (e) {}
-      })();
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
