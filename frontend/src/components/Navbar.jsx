@@ -96,7 +96,7 @@ const Navbar = () => {
             causing overflow bugs, including ones that leaked into this
             desktop layout while being worked around — a hamburger menu
             below is the standard fix, not another round of shrinking. */}
-        <nav className="hidden items-center gap-1 md:flex md:gap-1.5">
+        <nav className="hidden items-center gap-2 md:flex md:gap-2.5">
           <NavLink to="/" end className={navLinkClass}>
             <ShoppingBagIcon className="size-6 opacity-90" aria-hidden />
             <span>{t("nav.shop")}</span>
@@ -143,7 +143,7 @@ const Navbar = () => {
           </Show>
 
           <Show when={"signed-in"}>
-            <div className="flex items-center gap-2 border-l border-base-300 pl-3">
+            <div className="flex items-center gap-2 border-s border-base-300 ps-3">
               <UserButton
                 appearance={{
                   elements: { avatarBox: "h-10 w-10 ring-2 ring-base-300" },

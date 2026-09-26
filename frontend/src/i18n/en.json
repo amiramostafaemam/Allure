@@ -47,6 +47,7 @@
     "categories": "Categories",
     "curatedGroups": "Curated groups",
     "secureCheckout": "Secure checkout · Priority support on paid orders",
+    "browseByCategory": "Browse by category",
     "catalog": "Catalog",
     "trust": {
       "fulfillment": { "title": "Fulfillment", "desc": "Structured catalog & inventory-ready model" },
@@ -117,6 +118,7 @@
     "addressLine2": "Address line 2",
     "city": "City",
     "governorate": "Governorate",
+    "selectGovernorate": "Select a governorate…",
     "country": "Country",
     "saveAddress": "Save this address for next time",
     "deleteAddress": "Delete address",

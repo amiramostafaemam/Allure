@@ -47,6 +47,7 @@
     "categories": "الأقسام",
     "curatedGroups": "مجموعات مُنتقاة",
     "secureCheckout": "دفع آمن · دعم ذو أولوية للطلبات المدفوعة",
+    "browseByCategory": "تصفح حسب القسم",
     "catalog": "الكتالوج",
     "trust": {
       "fulfillment": { "title": "التنفيذ", "desc": "كتالوج منظم وجاهز لإدارة المخزون" },
@@ -117,6 +118,7 @@
     "addressLine2": "العنوان - السطر الثاني",
     "city": "المدينة",
     "governorate": "المحافظة",
+    "selectGovernorate": "اختر المحافظة…",
     "country": "الدولة",
     "saveAddress": "احفظ هذا العنوان للمرة القادمة",
     "deleteAddress": "حذف العنوان",

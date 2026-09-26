@@ -21,15 +21,28 @@ import { usePromoCode } from "../hooks/usePromoCode";
 import EmptyCart from "../components/EmptyCart";
 import { CartSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
-import { TextField } from "../components/FormField";
+import { SelectField, TextField } from "../components/FormField";
 import { formatPrice } from "../utils/format";
 import { useLocale } from "../store/locale";
 import { localizedText } from "../utils/localized";
 
+// A fixed, well-known list — unlike city/address lines, Egypt's governorates
+// don't need free text, so this reads as a real form field instead of a
+// plain input inviting typos/inconsistent spellings.
+const EGYPT_GOVERNORATES = [
+  "Cairo", "Giza", "Alexandria", "Qalyubia", "Port Said", "Suez", "Dakahlia",
+  "Sharqia", "Gharbia", "Monufia", "Beheira", "Kafr El Sheikh", "Damietta",
+  "Ismailia", "Faiyum", "Beni Suef", "Minya", "Asyut", "Sohag", "Qena",
+  "Luxor", "Aswan", "Red Sea", "New Valley", "Matrouh", "North Sinai",
+  "South Sinai",
+];
+
 function SectionHeading({ icon: Icon, children }) {
   return (
-    <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">
-      <Icon className="size-4" aria-hidden />
+    <h2 className="flex items-center gap-2.5 text-sm font-semibold uppercase tracking-wide text-base-content/70">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Icon className="size-4" aria-hidden />
+      </span>
       {children}
     </h2>
   );
@@ -248,11 +261,12 @@ function CheckoutPage() {
                   value={address.city}
                   onChange={(e) => setField("city", e.target.value)}
                 />
-                <TextField
+                <SelectField
                   label={t("checkout.governorate")}
-                  required
+                  placeholder={t("checkout.selectGovernorate")}
                   value={address.governorate}
-                  onChange={(e) => setField("governorate", e.target.value)}
+                  onChange={(value) => setField("governorate", value)}
+                  options={EGYPT_GOVERNORATES.map((g) => ({ value: g, label: g }))}
                 />
               </div>
 

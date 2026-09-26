@@ -167,9 +167,14 @@ function ProductPage() {
             </div>
           ) : null}
 
-          <div className="divider my-0" />
-
           <div className="flex flex-col gap-3">
+            {/* The divider used to be its own sibling at the outer gap-6
+                rhythm, which put a full gap-6 on BOTH sides of it (48px of
+                dead air around a hairline) — folding it into this tighter
+                gap-3 group instead keeps one clean section break without
+                doubling the space. */}
+            <div className="divider my-0" />
+
             {/* Quantity + wishlist share a row — justify-between left them
                 as two small islands with a dead gap between them at most
                 widths. Splitting the row 2:1 and centering each control in

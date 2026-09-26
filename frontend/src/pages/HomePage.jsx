@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { CatalogProductCard } from "../components/CatalogProductCard";
+import { CategoryShowcase } from "../components/CategoryShowcase";
 import { HomeHero } from "../components/HomeHero";
 import PageError from "../components/PageError";
 import { SearchInput } from "../components/SearchInput";
@@ -24,15 +25,26 @@ function HomePage() {
     setCategory,
   } = useHomeCatalog();
 
+  function selectCategoryAndScroll(name) {
+    setCategory(name);
+    document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
+  }
+
   return (
     <div className="space-y-12">
       <HomeHero categories={categories} loadingCategories={loadingCategories} />
 
       <TrustStrip />
 
+      <CategoryShowcase
+        categories={categories}
+        loadingCategories={loadingCategories}
+        onSelect={selectCategoryAndScroll}
+      />
+
       {/* CATELOG */}
       <section id="catalog" className="scroll-mt-24">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-base-content md:text-2xl uppercase font-mono">
               {t("home.catalog")}
@@ -45,31 +57,35 @@ function HomePage() {
             placeholder={t("catalog.searchPlaceholder")}
             className="w-full sm:w-64"
           />
+        </div>
 
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={`btn btn-sm ${!categoryFilter ? "btn-primary" : "btn-ghost border border-base-300"}`}
-              onClick={() => setCategory("")}
-            >
-              {t("catalog.all")}
-            </button>
+        {/* A single scrollable row instead of wrapping — with 13+ category
+            pills, wrapping always produced a cramped multi-line block no
+            matter the width. .no-scrollbar is the same established pattern
+            already used for AdminLayout's sidebar and NotificationBell. */}
+        <div className="mb-6 flex flex-nowrap gap-2 overflow-x-auto no-scrollbar pb-1">
+          <button
+            type="button"
+            className={`btn btn-sm shrink-0 ${!categoryFilter ? "btn-primary" : "btn-ghost border border-base-300"}`}
+            onClick={() => setCategory("")}
+          >
+            {t("catalog.all")}
+          </button>
 
-            {categoryChipsLoading
-              ? [1, 2, 3, 4].map((i) => (
-                  <div key={i} className="skeleton h-8 w-20 rounded-lg" aria-hidden />
-                ))
-              : categories.map((c) => (
-                  <button
-                    key={c.name}
-                    type="button"
-                    className={`btn btn-sm ${categoryFilter === c.name ? "btn-primary" : "btn-ghost border border-base-300"}`}
-                    onClick={() => setCategory(c.name)}
-                  >
-                    {localizedText(c, "name", locale)}
-                  </button>
-                ))}
-          </div>
+          {categoryChipsLoading
+            ? [1, 2, 3, 4].map((i) => (
+                <div key={i} className="skeleton h-8 w-20 shrink-0 rounded-lg" aria-hidden />
+              ))
+            : categories.map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  className={`btn btn-sm shrink-0 ${categoryFilter === c.name ? "btn-primary" : "btn-ghost border border-base-300"}`}
+                  onClick={() => setCategory(c.name)}
+                >
+                  {localizedText(c, "name", locale)}
+                </button>
+              ))}
         </div>
 
         {loadingList ? (
