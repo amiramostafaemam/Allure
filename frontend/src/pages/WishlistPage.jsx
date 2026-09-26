@@ -1,10 +1,12 @@
 import { useAuth, SignInButton } from "@clerk/react";
 import { Link } from "react-router";
 import { HeartIcon, LogInIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useWishlist } from "../hooks/useWishlist";
 import { CatalogProductCard } from "../components/CatalogProductCard";
 
 function WishlistPage() {
+  const { t } = useTranslation();
   const { isSignedIn } = useAuth();
   const { items, isLoading } = useWishlist();
 
@@ -12,16 +14,16 @@ function WishlistPage() {
     <div className="text-left">
       <h1 className="mb-8 flex items-center gap-2 text-3xl font-bold text-base-content">
         <HeartIcon className="size-8 text-primary" aria-hidden />
-        Your wishlist
+        {t("wishlist.title")}
       </h1>
 
       {!isSignedIn ? (
         <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 py-16 text-center">
-          <p className="text-base-content/60">Sign in to see products you've saved.</p>
+          <p className="text-base-content/60">{t("wishlist.signInPrompt")}</p>
           <SignInButton mode="modal">
             <button type="button" className="btn btn-primary mt-6 gap-2 shadow-md">
               <LogInIcon className="size-4" aria-hidden />
-              Sign in
+              {t("common.signIn")}
             </button>
           </SignInButton>
         </div>
@@ -36,10 +38,10 @@ function WishlistPage() {
       ) : items.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 py-16 text-center">
           <p className="text-base-content/60">
-            Nothing saved yet — tap the heart on a product to keep it here.
+            {t("wishlist.empty")}
           </p>
           <Link to="/" className="btn btn-primary mt-6 gap-2 shadow-md">
-            Browse catalog
+            {t("common.browseCatalog")}
           </Link>
         </div>
       ) : (

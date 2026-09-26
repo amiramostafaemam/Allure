@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="forest">
+<html lang="en" dir="ltr" data-theme="forest">
   <head>
     <meta charset="UTF-8" />
     <!-- Default dark value — the inline script right below overwrites it to
@@ -21,6 +21,16 @@
           if (meta) meta.setAttribute("content", theme === "light" ? "#f6faf6" : "#1b1717");
         } catch (e) {}
       })();
+      // Same reasoning as the theme script above: stamp lang/dir on <html>
+      // before React mounts, so an Arabic visitor never sees a flash of
+      // left-to-right layout that then jumps to RTL.
+      (function () {
+        try {
+          var locale = localStorage.getItem("allure-locale") === "ar" ? "ar" : "en";
+          document.documentElement.setAttribute("lang", locale);
+          document.documentElement.setAttribute("dir", locale === "ar" ? "rtl" : "ltr");
+        } catch (e) {}
+      })();
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -32,7 +42,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <!-- Default, sitewide meta — the backend swaps these for a specific
          product's own title/description/photo on /product/:slug requests

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Show, SignInButton, UserButton } from "@clerk/react";
 import { Link, NavLink, useLocation } from "react-router";
 
@@ -16,6 +17,7 @@ import { useCart } from "../store/cart";
 import { useMe } from "../hooks/useMe";
 import NotificationBell from "./NotificationBell";
 import ThemeToggle from "./ThemeToggle";
+import LanguageToggle from "./LanguageToggle";
 
 // Ghost nav link, highlighted only while its route is actually active —
 // not a permanently-colored link regardless of where you are.
@@ -30,11 +32,12 @@ function mobileLinkClass({ isActive }) {
 }
 
 function CartLink({ cartCount, className, children }) {
+  const { t } = useTranslation();
   return (
     <NavLink
       to="/cart"
       className={className}
-      aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
+      aria-label={cartCount > 0 ? t("nav.cartAria", { count: cartCount }) : t("nav.cartAriaEmpty")}
     >
       {/* The indicator badge anchors to its nearest "indicator" ancestor's
           corner — scoping that class to just the icon (not the whole
@@ -54,6 +57,7 @@ function CartLink({ cartCount, className, children }) {
 }
 
 const Navbar = () => {
+  const { t } = useTranslation();
   const { role } = useMe();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -95,24 +99,24 @@ const Navbar = () => {
         <nav className="hidden items-center gap-1 md:flex md:gap-1.5">
           <NavLink to="/" end className={navLinkClass}>
             <ShoppingBagIcon className="size-6 opacity-90" aria-hidden />
-            <span>Shop</span>
+            <span>{t("nav.shop")}</span>
           </NavLink>
 
           <Show when={"signed-in"}>
             <NavLink to="/orders" className={navLinkClass}>
               <PackageIcon className="size-6 opacity-90" aria-hidden />
-              <span>Orders</span>
+              <span>{t("nav.orders")}</span>
             </NavLink>
 
             <NavLink to="/wishlist" className={navLinkClass}>
               <HeartIcon className="size-6 opacity-90" aria-hidden />
-              <span>Wishlist</span>
+              <span>{t("nav.wishlist")}</span>
             </NavLink>
 
             {role === "admin" ? (
               <NavLink to="/admin" className={navLinkClass}>
                 <SettingsIcon className="size-6" aria-hidden />
-                <span>Admin</span>
+                <span>{t("nav.admin")}</span>
               </NavLink>
             ) : null}
 
@@ -120,10 +124,11 @@ const Navbar = () => {
           </Show>
 
           <CartLink cartCount={cartCount} className={navLinkClass}>
-            <span>Cart</span>
+            <span>{t("nav.cart")}</span>
           </CartLink>
 
           <ThemeToggle />
+          <LanguageToggle />
 
           <Show when={"signed-out"}>
             <SignInButton mode="modal">
@@ -132,7 +137,7 @@ const Navbar = () => {
                 className="btn btn-primary btn-sm gap-1.5 px-3 shadow-md"
               >
                 <LogInIcon className="size-4 drop-shadow-sm" aria-hidden />
-                Sign in
+                {t("common.signIn")}
               </button>
             </SignInButton>
           </Show>
@@ -175,7 +180,7 @@ const Navbar = () => {
           <button
             type="button"
             className="btn btn-ghost btn-square"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileOpen ? t("nav.closeMenu") : t("nav.openMenu")}
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen((o) => !o)}
           >
@@ -194,7 +199,7 @@ const Navbar = () => {
             <li>
               <NavLink to="/" end className={mobileLinkClass}>
                 <ShoppingBagIcon className="size-5 opacity-90" aria-hidden />
-                Shop
+                {t("nav.shop")}
               </NavLink>
             </li>
 
@@ -202,14 +207,14 @@ const Navbar = () => {
               <li>
                 <NavLink to="/orders" className={mobileLinkClass}>
                   <PackageIcon className="size-5 opacity-90" aria-hidden />
-                  Orders
+                  {t("nav.orders")}
                 </NavLink>
               </li>
 
               <li>
                 <NavLink to="/wishlist" className={mobileLinkClass}>
                   <HeartIcon className="size-5 opacity-90" aria-hidden />
-                  Wishlist
+                  {t("nav.wishlist")}
                 </NavLink>
               </li>
 
@@ -217,7 +222,7 @@ const Navbar = () => {
                 <li>
                   <NavLink to="/admin" className={mobileLinkClass}>
                     <SettingsIcon className="size-5" aria-hidden />
-                    Admin
+                    {t("nav.admin")}
                   </NavLink>
                 </li>
               ) : null}
@@ -225,8 +230,13 @@ const Navbar = () => {
           </ul>
 
           <div className="mt-3 flex items-center justify-between border-t border-base-300 pt-3">
-            <span className="text-sm font-medium text-base-content/70">Theme</span>
+            <span className="text-sm font-medium text-base-content/70">{t("nav.theme")}</span>
             <ThemeToggle />
+          </div>
+
+          <div className="mt-3 flex items-center justify-between border-t border-base-300 pt-3">
+            <span className="text-sm font-medium text-base-content/70">{t("nav.language")}</span>
+            <LanguageToggle />
           </div>
 
           <Show when={"signed-out"}>
@@ -237,7 +247,7 @@ const Navbar = () => {
                   className="btn btn-primary w-full gap-1.5 shadow-md"
                 >
                   <LogInIcon className="size-4 drop-shadow-sm" aria-hidden />
-                  Sign in
+                  {t("common.signIn")}
                 </button>
               </SignInButton>
             </div>

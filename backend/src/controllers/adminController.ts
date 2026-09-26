@@ -17,8 +17,12 @@ const env=getEnv();
 const productCreate=z.object({
     slug:z.string().min(1),
     name:z.string().min(1),
+    // Optional Arabic translation — null/omitted means untranslated, and
+    // every reader falls back to the English field.
+    nameAr:z.string().trim().max(200).nullable().optional(),
     category:z.string().min(1),
     description:z.string().default(""),
+    descriptionAr:z.string().trim().max(4000).nullable().optional(),
     pricePounds:z.number().int().positive(),
     currency:z.string().min(1).default("egp"),
     // null/omitted = untracked, unlimited stock
@@ -35,8 +39,10 @@ function buildProductUpdateSet(body: z.infer<typeof productPatch>) {
   const data: Partial<typeof products.$inferInsert> = {};
   if (body.slug !== undefined) data.slug = body.slug;
   if (body.name !== undefined) data.name = body.name;
+  if (body.nameAr !== undefined) data.nameAr = body.nameAr === "" ? null : body.nameAr;
   if (body.category !== undefined) data.category = body.category;
   if (body.description !== undefined) data.description = body.description;
+  if (body.descriptionAr !== undefined) data.descriptionAr = body.descriptionAr === "" ? null : body.descriptionAr;
   if (body.pricePounds !== undefined) data.pricePounds = body.pricePounds;
   if (body.currency !== undefined) data.currency = body.currency;
   if (body.stockQuantity !== undefined) data.stockQuantity = body.stockQuantity;
@@ -137,10 +143,12 @@ export async function createAdminProduct(req:Request,res:Response,next:NextFunct
             return;
         }
 
-        const {imageUrl,imageKitFileId,...rest}=parsed.data;
+        const {imageUrl,imageKitFileId,nameAr,descriptionAr,...rest}=parsed.data;
 
         const [row]=await db.insert(products).values({
             ...rest,
+            nameAr:nameAr || null,
+            descriptionAr:descriptionAr || null,
             imageUrl:imageUrl || null,
             imageKitFileId:imageKitFileId || null
         }).returning();

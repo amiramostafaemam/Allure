@@ -21,8 +21,8 @@ export function useAdminCategories() {
   });
 
   const renameCategory = useMutation({
-    mutationFn: ({ id, name }) =>
-      apiFetch(`/api/admin/categories/${id}`, { getToken, method: "PATCH", body: { name } }),
+    mutationFn: ({ id, ...body }) =>
+      apiFetch(`/api/admin/categories/${id}`, { getToken, method: "PATCH", body }),
     onSuccess: invalidate,
   });
 

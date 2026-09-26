@@ -24,6 +24,7 @@ A full-stack e-commerce platform with authenticated checkout, an admin product d
 - **Wishlist & saved addresses** — save products for later with optimistic-update heart toggles, and save shipping addresses for faster repeat checkout (first save becomes the default automatically).
 - **Auth** — Clerk-backed sign-in, with roles (`customer` / `support` / `admin`) synced into the local database via Clerk webhooks.
 - **Light/dark mode** — a theme toggle with the brand accent carried across both palettes, persisted per visitor.
+- **Arabic + RTL** — a full i18n layer (i18next) for the storefront's UI text, plus live content translation: products, categories, and variant options each have an optional Arabic field that admins fill in independently of the English original — no rebuild or redeploy, the translation is live as soon as it's saved, with English as the graceful fallback until then.
 - **SEO & installable** — server-rendered Open Graph/Twitter previews per product (real title/description/photo, not the generic sitewide fallback), and a PWA manifest for "Add to Home Screen."
 - **Admin analytics** — a dashboard with a revenue trend, order-status mix, and top-products charts, alongside the product/category/customer/promo-code management screens.
 - **Observability** — Sentry error tracking and performance monitoring on both the API and the browser, with session replay input/text masking left on for privacy.

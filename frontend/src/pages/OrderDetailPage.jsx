@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { ArrowLeftIcon, BanIcon, LogInIcon, MapPinIcon, PhoneIcon, RotateCcwIcon, VideoIcon } from "lucide-react";
 import { SignInButton } from "@clerk/react";
+import { useTranslation } from "react-i18next";
 import { useOrderDetail } from "../hooks/useOrderDetail";
 import { useMe } from "../hooks/useMe";
 import { OrderChatPanel } from "../components/OrderChatPanel";
@@ -13,24 +14,28 @@ import PageError from "../components/PageError";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { formatOrderNumber, formatOrderWhen, formatPrice } from "../utils/format";
 import { isChatEligible, nextStatusOptions, requestableStatusOptions, statusBadgeClass } from "../utils/orderStatus";
+import { useLocale } from "../store/locale";
+import { localizedText } from "../utils/localized";
 
-const REQUEST_LABEL = { cancelled: "cancellation", refunded: "refund" };
+const REQUEST_KEY = { cancelled: "cancellation", refunded: "refund" };
 const REQUEST_ICON = { cancelled: BanIcon, refunded: RotateCcwIcon };
 
 function OrderRequestPanel({ order, requestAction }) {
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
   const [pendingStatus, setPendingStatus] = useState(null);
   const [note, setNote] = useState("");
 
   if (order.requestedStatus) {
+    const requestType = t(`orderDetail.${REQUEST_KEY[order.requestedStatus]}`);
     return (
       <div className="card border border-dashed border-warning/40 bg-warning/5">
         <div className="card-body">
           <h3 className="font-semibold text-base-content">
-            {REQUEST_LABEL[order.requestedStatus]} requested
+            {t("orderDetail.requested", { type: requestType })}
           </h3>
           <p className="text-sm text-base-content/65">
-            You asked for a {REQUEST_LABEL[order.requestedStatus]} on{" "}
-            {formatOrderWhen(order.requestedAt)}. Our team will review it shortly.
+            {t("orderDetail.youAskedFor", { type: requestType, when: formatOrderWhen(order.requestedAt, { locale }) })}
           </p>
           {order.requestedNote ? (
             <p className="text-sm italic text-base-content/60">"{order.requestedNote}"</p>
@@ -46,12 +51,12 @@ function OrderRequestPanel({ order, requestAction }) {
   return (
     <div className="card border border-base-300 bg-base-100">
       <div className="card-body gap-3">
-        <h3 className="font-semibold text-base-content">Need something changed?</h3>
+        <h3 className="font-semibold text-base-content">{t("orderDetail.needSomethingChanged")}</h3>
 
         {pendingStatus ? (
           <div className="space-y-3">
             <TextAreaField
-              label="Note for our team"
+              label={t("orderDetail.noteForTeam")}
               optional
               rows={2}
               value={note}
@@ -63,7 +68,7 @@ function OrderRequestPanel({ order, requestAction }) {
                 className="btn btn-sm"
                 onClick={() => setPendingStatus(null)}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 type="button"
@@ -76,7 +81,9 @@ function OrderRequestPanel({ order, requestAction }) {
                   );
                 }}
               >
-                {requestAction.isPending ? "Sending…" : `Submit ${REQUEST_LABEL[pendingStatus]} request`}
+                {requestAction.isPending
+                  ? t("common.sending")
+                  : t("orderDetail.submitRequest", { type: t(`orderDetail.${REQUEST_KEY[pendingStatus]}`) })}
               </button>
             </div>
           </div>
@@ -92,7 +99,7 @@ function OrderRequestPanel({ order, requestAction }) {
                   onClick={() => setPendingStatus(status)}
                 >
                   <Icon className="size-4" aria-hidden />
-                  Request {REQUEST_LABEL[status]}
+                  {t("orderDetail.requestType", { type: t(`orderDetail.${REQUEST_KEY[status]}`) })}
                 </button>
               );
             })}
@@ -100,7 +107,7 @@ function OrderRequestPanel({ order, requestAction }) {
         )}
 
         {requestAction.isError ? (
-          <p className="text-sm text-error">Couldn't send the request. Try again.</p>
+          <p className="text-sm text-error">{t("orderDetail.couldNotSendRequest")}</p>
         ) : null}
       </div>
     </div>
@@ -108,6 +115,8 @@ function OrderRequestPanel({ order, requestAction }) {
 }
 
 function OrderDetailPage() {
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
   const {
     orderId,
     order,
@@ -140,11 +149,11 @@ function OrderDetailPage() {
   if (!isSignedIn) {
     return (
       <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 py-16 text-center">
-        <p className="text-base-content/60">Sign in to view this order.</p>
+        <p className="text-base-content/60">{t("orderDetail.signInPrompt")}</p>
         <SignInButton mode="modal">
           <button type="button" className="btn btn-primary mt-6 gap-2 shadow-md">
             <LogInIcon className="size-4" aria-hidden />
-            Sign in
+            {t("common.signIn")}
           </button>
         </SignInButton>
       </div>
@@ -156,8 +165,8 @@ function OrderDetailPage() {
   if (isError || !order) {
     return (
       <PageError
-        message="We couldn't find this order."
-        action={{ to: "/orders", label: "Back to orders" }}
+        message={t("orderDetail.notFound")}
+        action={{ to: "/orders", label: t("orderDetail.backToOrders") }}
       />
     );
   }
@@ -168,8 +177,8 @@ function OrderDetailPage() {
         to="/orders"
         className="btn btn-ghost btn-sm gap-2 px-2 text-base-content/70"
       >
-        <ArrowLeftIcon className="size-4" aria-hidden />
-        Back to orders
+        <ArrowLeftIcon className="size-4 rtl:rotate-180" aria-hidden />
+        {t("orderDetail.backToOrders")}
       </Link>
 
       {isStaff && (order.requestedStatus || nextStatusOptions(order.status).length > 0) ? (
@@ -198,13 +207,13 @@ function OrderDetailPage() {
         <div className="flex flex-col gap-6 bg-base-200/50 px-5 py-6 sm:flex-row sm:items-start sm:justify-between sm:px-8 sm:py-8">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-base-content/50">
-              Order
+              {t("orderDetail.order")}
             </p>
             <h1 className="mt-1 text-2xl font-bold text-base-content sm:text-3xl">
               #{formatOrderNumber(order.orderNumber)}
             </h1>
             <p className="mt-1 text-sm text-base-content/60">
-              Placed {formatOrderWhen(order.createdAt)}
+              {t("orderDetail.placed", { when: formatOrderWhen(order.createdAt, { locale }) })}
             </p>
           </div>
 
@@ -212,7 +221,7 @@ function OrderDetailPage() {
             <span
               className={`badge capitalize ${statusBadgeClass(order.status)}`}
             >
-              {order.status}
+              {t(`status.${order.status}`)}
             </span>
             <p className="text-2xl font-bold tabular-nums text-base-content">
               {formatPrice(order.totalPounds, "egp")}
@@ -245,13 +254,13 @@ function OrderDetailPage() {
                     to={`/product/${row.product.slug}`}
                     className="link-hover link-primary font-medium"
                   >
-                    {row.product.name}
+                    {localizedText(row.product, "name", locale)}
                     {row.variantLabel ? (
                       <span className="text-base-content/50"> — {row.variantLabel}</span>
                     ) : null}
                   </Link>
                 ) : (
-                  <span className="font-medium">Unknown product</span>
+                  <span className="font-medium">{t("cart.unknownProduct")}</span>
                 )}
                 <p className="text-sm text-base-content/60">
                   {formatPrice(row.unitPricePounds, "egp")} × {row.quantity}
@@ -272,7 +281,7 @@ function OrderDetailPage() {
         <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
           <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">
             <MapPinIcon className="size-4" aria-hidden />
-            Shipping address
+            {t("orderDetail.shippingAddress")}
           </h3>
           <div className="mt-3 space-y-2 text-sm">
             <p className="font-medium text-base-content">{order.shippingAddress.fullName}</p>
@@ -329,7 +338,7 @@ function OrderDetailPage() {
         <OrderChatPanel orderId={orderId} />
       ) : (
         <div className="rounded-box border border-dashed border-base-300 bg-base-100 p-6 text-center text-sm text-base-content/60">
-          Support chat opens once this order is paid.
+          {t("orderDetail.chatOpensWhenPaid")}
         </div>
       )}
     </div>

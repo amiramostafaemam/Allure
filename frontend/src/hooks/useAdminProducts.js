@@ -38,11 +38,11 @@ export function useAdminProducts({ q = "" } = {}) {
   });
 
   const saveVariants = useMutation({
-    mutationFn: ({ productId, variantName, variants }) =>
+    mutationFn: ({ productId, variantName, variantNameAr, variants }) =>
       apiFetch(`/api/admin/products/${productId}/variants`, {
         getToken,
         method: "PUT",
-        body: { variantName, variants },
+        body: { variantName, variantNameAr, variants },
       }),
     onSuccess: invalidate,
   });

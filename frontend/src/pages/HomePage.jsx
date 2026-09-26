@@ -1,11 +1,16 @@
+import { useTranslation } from "react-i18next";
 import { CatalogProductCard } from "../components/CatalogProductCard";
 import { HomeHero } from "../components/HomeHero";
 import PageError from "../components/PageError";
 import { SearchInput } from "../components/SearchInput";
 import { TrustStrip } from "../components/TrustStrip";
 import { useHomeCatalog } from "../hooks/useHomeCatalog";
+import { useLocale } from "../store/locale";
+import { localizedText } from "../utils/localized";
 
 function HomePage() {
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
   const {
     products,
     categories,
@@ -30,14 +35,14 @@ function HomePage() {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-base-content md:text-2xl uppercase font-mono">
-              Catalog
+              {t("home.catalog")}
             </h2>
           </div>
 
           <SearchInput
             value={searchTerm}
             onChange={setSearchTerm}
-            placeholder="Search products…"
+            placeholder={t("catalog.searchPlaceholder")}
             className="w-full sm:w-64"
           />
 
@@ -47,7 +52,7 @@ function HomePage() {
               className={`btn btn-sm ${!categoryFilter ? "btn-primary" : "btn-ghost border border-base-300"}`}
               onClick={() => setCategory("")}
             >
-              All
+              {t("catalog.all")}
             </button>
 
             {categoryChipsLoading
@@ -56,12 +61,12 @@ function HomePage() {
                 ))
               : categories.map((c) => (
                   <button
-                    key={c}
+                    key={c.name}
                     type="button"
-                    className={`btn btn-sm ${categoryFilter === c ? "btn-primary" : "btn-ghost border border-base-300"}`}
-                    onClick={() => setCategory(c)}
+                    className={`btn btn-sm ${categoryFilter === c.name ? "btn-primary" : "btn-ghost border border-base-300"}`}
+                    onClick={() => setCategory(c.name)}
                   >
-                    {c}
+                    {localizedText(c, "name", locale)}
                   </button>
                 ))}
           </div>
@@ -76,12 +81,12 @@ function HomePage() {
             ))}
           </ul>
         ) : error ? (
-          <PageError message="We couldn't load products. Please try again in a moment." />
+          <PageError message={t("catalog.loadError")} />
         ) : products.length === 0 ? (
           <div className="rounded-box border border-base-300 bg-base-100 py-16 text-center text-base-content/60">
             {searchTerm
-              ? `No products match "${searchTerm}".`
-              : "No products in this category yet."}
+              ? t("catalog.noProductsSearch", { term: searchTerm })
+              : t("catalog.noProductsCategory")}
           </div>
         ) : (
           <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">

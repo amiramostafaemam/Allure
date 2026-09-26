@@ -1,25 +1,18 @@
 import { InfoIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import StaticPageLayout from "../components/StaticPageLayout";
 
 function AboutPage() {
+  const { t } = useTranslation();
   return (
-    <StaticPageLayout title="About Allure" icon={InfoIcon}>
-      <p>
-        Allure curates everyday essentials — audio, wearables, desk setups,
-        cameras, travel gear, apparel, watches, fragrance, and the goods
-        that make daily life better. We pick products we'd actually use,
-        not just list whatever's trending.
-      </p>
-      <p>
-        Every paid order comes with priority support: a private chat thread
-        scoped to that order, and a video call link when our team wants to
-        walk you through something in person.
-      </p>
-      <h2>What we care about</h2>
+    <StaticPageLayout title={t("about.title")} icon={InfoIcon}>
+      <p>{t("about.p1")}</p>
+      <p>{t("about.p2")}</p>
+      <h2>{t("about.whatWeCareAbout")}</h2>
       <ul>
-        <li>Clear specs and honest descriptions — no inflated claims.</li>
-        <li>Fast, trackable fulfillment from order to delivery.</li>
-        <li>Human support, not a ticket queue that goes nowhere.</li>
+        <li>{t("about.li1")}</li>
+        <li>{t("about.li2")}</li>
+        <li>{t("about.li3")}</li>
       </ul>
     </StaticPageLayout>
   );

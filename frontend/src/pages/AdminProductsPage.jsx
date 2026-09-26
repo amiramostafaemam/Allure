@@ -60,9 +60,11 @@ function AdminProductsPage() {
 
       const body = {
         name: values.name,
+        nameAr: values.nameAr.trim() || null,
         slug: values.slug,
         category: values.category,
         description: values.description,
+        descriptionAr: values.descriptionAr.trim() || null,
         pricePounds: values.pricePounds,
         stockQuantity: values.stockQuantity,
         currency: "egp",
@@ -85,6 +87,7 @@ function AdminProductsPage() {
         await saveVariants.mutateAsync({
           productId,
           variantName: values.variantsEnabled ? values.variantName : null,
+          variantNameAr: values.variantsEnabled ? values.variantNameAr : null,
           variants: values.variantsEnabled ? values.variantRows : [],
         });
       }

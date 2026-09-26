@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { SearchIcon, XIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 // Debounces free typing before calling onChange, and stays in sync when
 // `value` changes externally (e.g. browser back/forward).
-export function SearchInput({ value, onChange, placeholder = "Search…", className = "" }) {
+export function SearchInput({ value, onChange, placeholder, className = "" }) {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState(value);
   const [syncedValue, setSyncedValue] = useState(value);
   const debounced = useDebouncedValue(draft, 300);
@@ -27,7 +29,7 @@ export function SearchInput({ value, onChange, placeholder = "Search…", classN
       <input
         type="search"
         className="grow"
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("catalog.searchPlaceholder")}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
       />
@@ -36,7 +38,7 @@ export function SearchInput({ value, onChange, placeholder = "Search…", classN
           type="button"
           className="text-base-content/40 hover:text-base-content"
           onClick={() => setDraft("")}
-          aria-label="Clear search"
+          aria-label={t("common.clearSearch")}
         >
           <XIcon className="size-4" aria-hidden />
         </button>

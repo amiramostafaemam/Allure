@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   CheckIcon,
   ChevronRightIcon,
@@ -17,8 +18,12 @@ import PageError from "../components/PageError";
 import { WishlistButton } from "../components/WishlistButton";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { formatPrice } from "../utils/format";
+import { useLocale } from "../store/locale";
+import { localizedText } from "../utils/localized";
 
 function ProductPage() {
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
   const {
     product,
     relatedProducts,
@@ -57,8 +62,8 @@ function ProductPage() {
   if (isError || !product) {
     return (
       <PageError
-        message="We couldn't find this product. It may be unavailable or the link is wrong."
-        action={{ to: "/", label: "Back to catalog" }}
+        message={t("product.notFound")}
+        action={{ to: "/", label: t("product.backToCatalog") }}
       />
     );
   }
@@ -70,17 +75,17 @@ function ProductPage() {
         className="mb-6 flex items-center gap-1.5 text-sm text-base-content/50"
       >
         <Link to="/" className="transition hover:text-primary">
-          Shop
+          {t("nav.shop")}
         </Link>
-        <ChevronRightIcon className="size-3.5 shrink-0" aria-hidden />
+        <ChevronRightIcon className="size-3.5 shrink-0 rtl:rotate-180" aria-hidden />
         <Link
           to={`/?category=${encodeURIComponent(product.category)}#catalog`}
           className="transition hover:text-primary"
         >
           {product.category}
         </Link>
-        <ChevronRightIcon className="size-3.5 shrink-0" aria-hidden />
-        <span className="truncate text-base-content/70">{product.name}</span>
+        <ChevronRightIcon className="size-3.5 shrink-0 rtl:rotate-180" aria-hidden />
+        <span className="truncate text-base-content/70">{localizedText(product, "name", locale)}</span>
       </nav>
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14">
@@ -97,7 +102,7 @@ function ProductPage() {
                     product.imageUrl,
                     IK_PRESETS.productHero,
                   )}
-                  alt={product.name}
+                  alt={localizedText(product, "name", locale)}
                   className="h-full w-full object-cover"
                 />
               ) : null}
@@ -110,7 +115,7 @@ function ProductPage() {
 
         <div className="flex flex-col gap-6">
           <h1 className="text-3xl font-bold tracking-tight text-balance text-base-content sm:text-4xl">
-            {product.name}
+            {localizedText(product, "name", locale)}
           </h1>
 
           <div className="flex items-baseline gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-5 py-4">
@@ -118,20 +123,20 @@ function ProductPage() {
               {formatPrice(product.pricePounds, product.currency)}
             </span>
             <span className="text-sm text-base-content/50">
-              tax where applicable
+              {t("product.taxWhereApplicable")}
             </span>
           </div>
 
           <p className="leading-relaxed text-base-content/70">
-            {product.description}
+            {localizedText(product, "description", locale)}
           </p>
 
           {hasVariants ? (
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium text-base-content/80">
-                {product.variantName}
+                {localizedText(product, "variantName", locale)}
                 {selectedVariant ? (
-                  <span className="text-base-content/50"> — {selectedVariant.label}</span>
+                  <span className="text-base-content/50"> — {localizedText(selectedVariant, "label", locale)}</span>
                 ) : null}
               </span>
               <div className="flex flex-wrap gap-2">
@@ -148,7 +153,7 @@ function ProductPage() {
                         isSelected ? "btn-primary" : "btn-ghost border border-base-300"
                       } ${variantOut ? "line-through opacity-50" : ""}`}
                     >
-                      {v.label}
+                      {localizedText(v, "label", locale)}
                     </button>
                   );
                 })}
@@ -170,7 +175,7 @@ function ProductPage() {
                     type="button"
                     className="btn join-item gap-0 px-4"
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    aria-label="Decrease quantity"
+                    aria-label={t("product.decreaseQuantity")}
                   >
                     <MinusIcon className="size-4" aria-hidden />
                   </button>
@@ -185,7 +190,7 @@ function ProductPage() {
                     className="btn join-item gap-0 px-4"
                     onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
                     disabled={outOfStock || quantity >= maxQty}
-                    aria-label="Increase quantity"
+                    aria-label={t("product.increaseQuantity")}
                   >
                     <PlusIcon className="size-4" aria-hidden />
                   </button>
@@ -201,10 +206,10 @@ function ProductPage() {
             </div>
 
             {outOfStock ? (
-              <p className="text-sm font-medium text-error">Out of stock</p>
+              <p className="text-sm font-medium text-error">{t("catalog.outOfStock")}</p>
             ) : stockQuantity !== null && stockQuantity <= 5 ? (
               <p className="text-sm font-medium text-warning">
-                Only {stockQuantity} left in stock
+                {t("product.onlyLeftInStock", { count: stockQuantity })}
               </p>
             ) : null}
 
@@ -221,7 +226,7 @@ function ProductPage() {
               ) : (
                 <ShoppingCartIcon className="size-5" aria-hidden />
               )}
-              {added ? "Added to cart" : outOfStock ? "Out of stock" : "Add to cart"}
+              {added ? t("product.addedToCart") : outOfStock ? t("catalog.outOfStock") : t("product.addToCart")}
             </button>
           </div>
 
@@ -233,10 +238,10 @@ function ProductPage() {
               />
               <div>
                 <p className="text-sm font-semibold text-base-content">
-                  Secure checkout
+                  {t("product.secureCheckout")}
                 </p>
                 <p className="text-xs text-base-content/60">
-                  Encrypted payments and order confirmation
+                  {t("product.secureCheckoutDesc")}
                 </p>
               </div>
             </div>
@@ -247,10 +252,10 @@ function ProductPage() {
               />
               <div>
                 <p className="text-sm font-semibold text-base-content">
-                  Human support
+                  {t("product.humanSupport")}
                 </p>
                 <p className="text-xs text-base-content/60">
-                  Order-scoped chat and optional video after payment
+                  {t("product.humanSupportDesc")}
                 </p>
               </div>
             </div>
@@ -263,7 +268,7 @@ function ProductPage() {
       {relatedProducts.length > 0 ? (
         <section className="mt-16 border-t border-base-300 pt-12">
           <h2 className="mb-6 text-xl font-bold uppercase tracking-wide text-base-content">
-            You might also like
+            {t("product.youMightAlsoLike")}
           </h2>
           <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
             {relatedProducts.slice(0, 4).map((p) => (

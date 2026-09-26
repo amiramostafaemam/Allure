@@ -1,5 +1,5 @@
 import type { Request, Response , NextFunction } from 'express';
-import { productVariants, products } from '../db/schema';
+import { categories, productVariants, products } from '../db/schema';
 import { asc, desc } from 'drizzle-orm/sql/expressions/select';
 import { db } from '../db';
 import { and, eq, ilike, inArray } from 'drizzle-orm';
@@ -47,14 +47,24 @@ export async function listProducts(req:Request,res:Response,next:NextFunction){
 
 export async function getCategories(_req:Request,res:Response,next:NextFunction){
     try{
-        const rows=await db.select({category:products.category})
+        // products.category stores the English name verbatim (it's what
+        // filtering/joins key off), so distinct that first, then join the
+        // categories table for each one's Arabic translation — a category
+        // can exist there with zero active products right now, so this only
+        // ever returns names that actually have something to show.
+        const activeNames=await db.selectDistinct({category:products.category})
         .from(products)
         .where(eq(products.active,true));
-        
-        const categories=[...new Set(rows.map((r)=>r.category))].sort((a,b)=>
-            a.localeCompare(b));
 
-        res.json({categories});
+        const names=activeNames.map((r)=>r.category);
+        if(names.length===0){res.json({categories:[]});return;}
+
+        const rows=await db.select({name:categories.name,nameAr:categories.nameAr})
+        .from(categories)
+        .where(inArray(categories.name,names))
+        .orderBy(asc(categories.name));
+
+        res.json({categories:rows});
     }catch(err){
         next(err);
     }

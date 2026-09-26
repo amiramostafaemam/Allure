@@ -13,6 +13,7 @@ function AdminCategoriesPage() {
   const [createError, setCreateError] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState("");
+  const [editValueAr, setEditValueAr] = useState("");
   const [rowError, setRowError] = useState(null);
 
   async function handleCreate(e) {
@@ -31,6 +32,7 @@ function AdminCategoriesPage() {
   function startEdit(category) {
     setEditingId(category.id);
     setEditValue(category.name);
+    setEditValueAr(category.nameAr ?? "");
     setRowError(null);
   }
 
@@ -39,7 +41,7 @@ function AdminCategoriesPage() {
     if (!name) return;
     setRowError(null);
     try {
-      await renameCategory.mutateAsync({ id, name });
+      await renameCategory.mutateAsync({ id, name, nameAr: editValueAr.trim() || null });
       setEditingId(null);
     } catch (err) {
       setRowError({ id, message: err.message || "Couldn't rename category." });
@@ -88,6 +90,7 @@ function AdminCategoriesPage() {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Name (Arabic)</th>
               <th>Products</th>
               <th className="text-right">Actions</th>
             </tr>
@@ -108,6 +111,22 @@ function AdminCategoriesPage() {
                       />
                     ) : (
                       <span className="font-medium text-base-content">{category.name}</span>
+                    )}
+                  </td>
+                  <td>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        dir="rtl"
+                        placeholder="اسم القسم بالعربي"
+                        className="input input-sm focus:[--input-color:var(--color-primary)] focus:outline-none!"
+                        value={editValueAr}
+                        onChange={(e) => setEditValueAr(e.target.value)}
+                      />
+                    ) : (
+                      <span className="text-base-content/70" dir="rtl">
+                        {category.nameAr || <span className="text-base-content/30">—</span>}
+                      </span>
                     )}
                   </td>
                   <td className="tabular-nums">{category.productCount}</td>

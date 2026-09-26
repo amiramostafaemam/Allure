@@ -6,7 +6,13 @@ import { asc, count, eq } from "drizzle-orm";
 import { slugify } from "../lib/slugify";
 import { isUniqueViolation } from "../lib/dbErrors";
 
-const nameSchema = z.object({ name: z.string().trim().min(1).max(100) });
+const nameSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  // Optional Arabic translation — null/omitted means untranslated, falls
+  // back to the English name wherever it's displayed.
+  nameAr: z.string().trim().max(100).nullable().optional(),
+});
+const categoryPatchSchema = nameSchema.partial();
 
 export async function listCategories(_req: Request, res: Response, next: NextFunction) {
   try {
@@ -14,6 +20,7 @@ export async function listCategories(_req: Request, res: Response, next: NextFun
       .select({
         id: categories.id,
         name: categories.name,
+        nameAr: categories.nameAr,
         slug: categories.slug,
         createdAt: categories.createdAt,
         productCount: count(products.id),
@@ -39,7 +46,11 @@ export async function createCategory(req: Request, res: Response, next: NextFunc
 
     const [row] = await db
       .insert(categories)
-      .values({ name: parsed.data.name, slug: slugify(parsed.data.name) })
+      .values({
+        name: parsed.data.name,
+        nameAr: parsed.data.nameAr || null,
+        slug: slugify(parsed.data.name),
+      })
       .returning();
 
     res.status(201).json({ category: { ...row, productCount: 0 } });
@@ -54,14 +65,17 @@ export async function createCategory(req: Request, res: Response, next: NextFunc
 
 export async function renameCategory(req: Request, res: Response, next: NextFunction) {
   try {
-    const parsed = nameSchema.safeParse(req.body);
+    const parsed = categoryPatchSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid category", details: parsed.error.flatten() });
       return;
     }
+    if (parsed.data.name === undefined && parsed.data.nameAr === undefined) {
+      res.status(400).json({ error: "No fields to update" });
+      return;
+    }
 
     const id = req.params.id as string;
-    const newName = parsed.data.name;
 
     const [existing] = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
     if (!existing) {
@@ -69,16 +83,23 @@ export async function renameCategory(req: Request, res: Response, next: NextFunc
       return;
     }
 
-    if (existing.name === newName) {
+    const newName = parsed.data.name ?? existing.name;
+    const newNameAr = parsed.data.nameAr !== undefined ? (parsed.data.nameAr || null) : existing.nameAr;
+
+    if (existing.name === newName && existing.nameAr === newNameAr) {
       res.json({ category: existing });
       return;
     }
 
     const [updated] = await db.transaction(async (tx) => {
-      await tx.update(products).set({ category: newName }).where(eq(products.category, existing.name));
+      // Only bulk-update products when the English name (the actual FK-ish
+      // value products.category stores) is the part that changed.
+      if (newName !== existing.name) {
+        await tx.update(products).set({ category: newName }).where(eq(products.category, existing.name));
+      }
       return tx
         .update(categories)
-        .set({ name: newName, slug: slugify(newName) })
+        .set({ name: newName, nameAr: newNameAr, slug: slugify(newName) })
         .where(eq(categories.id, id))
         .returning();
     });

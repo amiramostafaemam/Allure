@@ -50,6 +50,14 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   category: text("category").notNull().default("General"),
   description: text("description").notNull().default(""),
+  // Optional Arabic translation, filled in independently of (often after)
+  // the English original — null means untranslated, and every reader falls
+  // back to the English field rather than showing a blank. Living on the
+  // same row (not a separate translations table) keeps a translation just
+  // another admin edit: save it and it's live immediately, same as any
+  // other field, with no separate publish step.
+  nameAr: text("name_ar"),
+  descriptionAr: text("description_ar"),
   pricePounds: integer("price_pounds").notNull(),
   currency: text("currency").notNull().default("egp"),
   // null = untracked/unlimited stock (the default for every existing
@@ -61,6 +69,7 @@ export const products = pgTable("products", {
   // this product has no variants at all (the default for every existing
   // product). Set together with at least one productVariants row.
   variantName: text("variant_name"),
+  variantNameAr: text("variant_name_ar"),
   imageUrl: text("image_url"),
   /** ImageKit `fileId` for deletes */
   imageKitFileId: text("image_kit_file_id"),
@@ -80,6 +89,7 @@ export const productVariants = pgTable("product_variants", {
     .notNull()
     .references(() => products.id, { onDelete: "cascade" }),
   label: text("label").notNull(),
+  labelAr: text("label_ar"),
   // Same null-means-unlimited convention as products.stockQuantity.
   stockQuantity: integer("stock_quantity"),
   sortOrder: integer("sort_order").notNull().default(0),
@@ -99,6 +109,7 @@ export const productVariantsRelations = relations(productVariants, ({ one }) => 
 export const categories = pgTable("categories", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull().unique(),
+  nameAr: text("name_ar"),
   slug: text("slug").notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });

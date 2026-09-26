@@ -1,9 +1,13 @@
 import { Link } from "react-router";
 import { BellIcon, CheckCheckIcon, MessageCircleIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNotifications } from "../hooks/useNotifications";
 import { formatOrderNumber, formatOrderWhen } from "../utils/format";
+import { useLocale } from "../store/locale";
 
 function NotificationBell() {
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
   const { notifications, unreadCount, markOrderRead, markAllRead } = useNotifications();
 
   return (
@@ -12,7 +16,7 @@ function NotificationBell() {
         tabIndex={0}
         role="button"
         className="btn btn-ghost btn-square indicator"
-        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        aria-label={unreadCount > 0 ? t("notifications.unreadAria", { count: unreadCount }) : t("notifications.title")}
         onFocus={() => {
           if (unreadCount > 0 && !markAllRead.isPending) markAllRead.mutate();
         }}
@@ -36,7 +40,7 @@ function NotificationBell() {
         className="dropdown-content menu z-10 mt-2 w-80 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg max-sm:fixed! max-sm:inset-x-4! max-sm:top-16! max-sm:mt-0! max-sm:w-auto!"
       >
         <div className="flex items-center justify-between px-2 py-1">
-          <span className="text-sm font-semibold text-base-content">Notifications</span>
+          <span className="text-sm font-semibold text-base-content">{t("notifications.title")}</span>
           {unreadCount > 0 ? (
             <button
               type="button"
@@ -45,14 +49,14 @@ function NotificationBell() {
               disabled={markAllRead.isPending}
             >
               <CheckCheckIcon className="size-3.5" aria-hidden />
-              Mark all read
+              {t("notifications.markAllRead")}
             </button>
           ) : null}
         </div>
 
         {notifications.length === 0 ? (
           <p className="px-2 py-4 text-center text-sm text-base-content/60">
-            No notifications yet.
+            {t("notifications.empty")}
           </p>
         ) : (
           <ul className="no-scrollbar max-h-96 space-y-1 overflow-y-auto">
@@ -73,13 +77,13 @@ function NotificationBell() {
                       {n.message}
                       {n.count > 1 ? (
                         <span className="ml-1 text-xs font-normal text-base-content/50">
-                          ({n.count} messages)
+                          {t("notifications.messagesCount", { count: n.count })}
                         </span>
                       ) : null}
                     </span>
                     <span className="mt-0.5 block text-xs font-normal text-base-content/50">
-                      Order #{n.orderNumber != null ? formatOrderNumber(n.orderNumber) : "—"} ·{" "}
-                      {formatOrderWhen(n.createdAt)}
+                      {t("orders.orderNumber", { number: n.orderNumber != null ? formatOrderNumber(n.orderNumber) : "—" })} ·{" "}
+                      {formatOrderWhen(n.createdAt, { locale })}
                     </span>
                   </span>
                   {!n.read ? (

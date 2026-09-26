@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import { CheckIcon, PlusIcon, SlidersHorizontalIcon } from "lucide-react";
 import { formatPrice } from "../utils/format.js";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl.js";
 import { useCart } from "../store/cart.js";
+import { useLocale } from "../store/locale.js";
+import { localizedText } from "../utils/localized.js";
 import { WishlistButton } from "./WishlistButton.jsx";
 
 export function CatalogProductCard({ product }) {
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
   const addItem = useCart((s) => s.addItem);
   const [added, setAdded] = useState(false);
   const hasVariants = Boolean(product.variantName);
@@ -53,7 +58,7 @@ export function CatalogProductCard({ product }) {
         </span>
         {outOfStock ? (
           <span className="badge badge-sm badge-neutral absolute right-3 top-3 border-0 text-xs font-medium shadow">
-            Out of stock
+            {t("catalog.outOfStock")}
           </span>
         ) : null}
       </Link>
@@ -62,10 +67,10 @@ export function CatalogProductCard({ product }) {
           to={`/product/${product.slug}`}
           className="card-title line-clamp-2 text-lg transition group-hover:text-primary"
         >
-          {product.name}
+          {localizedText(product, "name", locale)}
         </Link>
         <p className="line-clamp-3 text-sm leading-relaxed text-base-content/70">
-          {product.description}
+          {localizedText(product, "description", locale)}
         </p>
         <div className="card-actions mt-auto items-center justify-between border-t border-base-200 pt-4">
           <span className="text-lg font-bold tabular-nums text-base-content">
@@ -82,7 +87,7 @@ export function CatalogProductCard({ product }) {
                 className={`btn btn-sm gap-1 shadow transition-colors ${outOfStock ? "btn-disabled" : "btn-primary"}`}
               >
                 <SlidersHorizontalIcon className="size-4" aria-hidden />
-                {outOfStock ? "Out of stock" : "Select options"}
+                {outOfStock ? t("catalog.outOfStock") : t("catalog.selectOptions")}
               </Link>
             ) : (
               <button
@@ -96,7 +101,7 @@ export function CatalogProductCard({ product }) {
                 ) : (
                   <PlusIcon className="size-4" aria-hidden />
                 )}
-                {added ? "Added" : outOfStock ? "Out of stock" : "Add"}
+                {added ? t("catalog.added") : outOfStock ? t("catalog.outOfStock") : t("catalog.add")}
               </button>
             )}
           </div>

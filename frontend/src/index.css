@@ -42,6 +42,14 @@
   --noise: 0;
 }
 
+/* Arabic needs a face actually designed for the script — the default
+   sans-serif stack renders it inconsistently across platforms. Scoped to
+   :lang(ar) rather than a class, so it follows the <html lang> attribute
+   automatically (see store/locale.js) with nothing else to keep in sync. */
+:lang(ar) {
+  font-family: "Cairo", ui-sans-serif, system-ui, sans-serif;
+}
+
 /* For horizontally swipeable pill/tab rows (e.g. AdminLayout's mobile nav)
    — the swipe gesture is the affordance, a visible native scrollbar under
    a row of rounded pills just reads as clutter, not as a scroll hint. */

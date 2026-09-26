@@ -1,0 +1,279 @@
+{
+  "common": {
+    "signIn": "Sign in",
+    "browseCatalog": "Browse catalog",
+    "cancel": "Cancel",
+    "sending": "Sending…",
+    "tryAgain": "Try again",
+    "loading": "Loading…",
+    "clearSearch": "Clear search"
+  },
+  "nav": {
+    "shop": "Shop",
+    "orders": "Orders",
+    "wishlist": "Wishlist",
+    "admin": "Admin",
+    "cart": "Cart",
+    "cartAria": "Cart, {{count}} items",
+    "cartAriaEmpty": "Cart",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "footer": {
+    "tagline": "Curated everyday essentials — tech, apparel, and the goods that make daily life better. Paid orders include priority support, chat with our team and join a video call when we share a link.",
+    "shop": "Shop",
+    "allProducts": "All products",
+    "support": "Support",
+    "supportBlurb": "Order-scoped chat after payment. Video links shared in-thread.",
+    "contactUs": "Contact us",
+    "faq": "FAQ",
+    "shippingPolicy": "Shipping policy",
+    "company": "Company",
+    "companyBlurb": "Built for teams who care about clear specs, fast fulfillment, and human support when it matters.",
+    "about": "About",
+    "terms": "Terms of service",
+    "privacy": "Privacy policy",
+    "copyright": "© {{year}} Allure · All prices in EGP"
+  },
+  "home": {
+    "heroTitle": "Everyday essentials,",
+    "heroTitleAccent": "ready to ship",
+    "heroSubtitle": "Tech, apparel, and the goods that make daily life better—curated for work, home, and beyond. Secure checkout; after payment, use your order page for support chat and video.",
+    "shopCatalog": "Shop catalog",
+    "viewCart": "View cart",
+    "categories": "Categories",
+    "curatedGroups": "Curated groups",
+    "secureCheckout": "Secure checkout · Priority support on paid orders",
+    "catalog": "Catalog",
+    "trust": {
+      "fulfillment": { "title": "Fulfillment", "desc": "Structured catalog & inventory-ready model" },
+      "securePay": { "title": "Secure pay", "desc": "Encrypted payments and order confirmation" },
+      "transparent": { "title": "Transparent", "desc": "Prices in EGP, tax where applicable" },
+      "humanSupport": { "title": "Human support", "desc": "Order-scoped chat + optional video" }
+    }
+  },
+  "catalog": {
+    "searchPlaceholder": "Search products…",
+    "all": "All",
+    "loadError": "We couldn't load products. Please try again in a moment.",
+    "noProductsSearch": "No products match \"{{term}}\".",
+    "noProductsCategory": "No products in this category yet.",
+    "add": "Add",
+    "added": "Added",
+    "outOfStock": "Out of stock",
+    "selectOptions": "Select options",
+    "saveToWishlist": "Save to wishlist",
+    "removeFromWishlist": "Remove from wishlist"
+  },
+  "product": {
+    "notFound": "We couldn't find this product. It may be unavailable or the link is wrong.",
+    "backToCatalog": "Back to catalog",
+    "taxWhereApplicable": "tax where applicable",
+    "decreaseQuantity": "Decrease quantity",
+    "increaseQuantity": "Increase quantity",
+    "onlyLeftInStock": "Only {{count}} left in stock",
+    "addToCart": "Add to cart",
+    "addedToCart": "Added to cart",
+    "secureCheckout": "Secure checkout",
+    "secureCheckoutDesc": "Encrypted payments and order confirmation",
+    "humanSupport": "Human support",
+    "humanSupportDesc": "Order-scoped chat and optional video after payment",
+    "youMightAlsoLike": "You might also like"
+  },
+  "cart": {
+    "title": "Cart",
+    "loadError": "Could not load product details. Refresh the page or try again shortly.",
+    "unknownProduct": "Unknown product",
+    "priceEach": "{{price}} each",
+    "option": "Option",
+    "qty": "Qty",
+    "removeFromCart": "Remove from cart",
+    "onlyLeftReduceQty": "Only {{count}} left — reduce quantity to check out",
+    "subtotal": "Subtotal",
+    "checkoutSecurely": "Checkout securely",
+    "signInToCheckout": "Sign in to checkout",
+    "supportBlurbPrefix": "After payment, open your order for",
+    "supportChat": "support chat",
+    "supportBlurbSuffix": ". Video invites appear in that thread.",
+    "empty": {
+      "title": "Your cart is empty",
+      "desc": "When you add products from the catalog, they'll show up here. Ready when you are.",
+      "viewOrders": "View orders"
+    }
+  },
+  "checkout": {
+    "signInToContinue": "Sign in to continue to checkout.",
+    "backToCart": "Back to cart",
+    "shippingDetails": "Shipping details",
+    "contact": "Contact",
+    "fullName": "Full name",
+    "phone": "Phone",
+    "deliveryAddress": "Delivery address",
+    "enterNewAddress": "Enter a new address",
+    "addressLine1": "Address line 1",
+    "addressLine2": "Address line 2",
+    "city": "City",
+    "governorate": "Governorate",
+    "country": "Country",
+    "saveAddress": "Save this address for next time",
+    "deleteAddress": "Delete address",
+    "openingCheckout": "Opening checkout…",
+    "continueToPayment": "Continue to payment",
+    "orderSummary": "Order summary",
+    "promoApplied": "{{code}} · {{percent}}% off",
+    "removePromoCode": "Remove promo code",
+    "promoCode": "Promo code",
+    "apply": "Apply",
+    "havePromoCode": "Have a promo code?",
+    "promoHint": "Apply your code here — the payment page's own discount field is separate and won't recognize it.",
+    "discount": "Discount",
+    "total": "Total"
+  },
+  "wishlist": {
+    "title": "Your wishlist",
+    "signInPrompt": "Sign in to see products you've saved.",
+    "empty": "Nothing saved yet — tap the heart on a product to keep it here."
+  },
+  "orders": {
+    "title": "Your orders",
+    "signInPrompt": "Sign in to see your orders.",
+    "loadError": "We couldn't load your orders. Please try again in a moment.",
+    "empty": "You haven't placed any orders yet.",
+    "orderNumber": "Order #{{number}}",
+    "noItems": "No items"
+  },
+  "orderDetail": {
+    "signInPrompt": "Sign in to view this order.",
+    "notFound": "We couldn't find this order.",
+    "backToOrders": "Back to orders",
+    "order": "Order",
+    "placed": "Placed {{when}}",
+    "shippingAddress": "Shipping address",
+    "chatOpensWhenPaid": "Support chat opens once this order is paid.",
+    "cancellation": "cancellation",
+    "refund": "refund",
+    "requested": "{{type}} requested",
+    "youAskedFor": "You asked for a {{type}} on {{when}}. Our team will review it shortly.",
+    "needSomethingChanged": "Need something changed?",
+    "noteForTeam": "Note for our team",
+    "submitRequest": "Submit {{type}} request",
+    "requestType": "Request {{type}}",
+    "couldNotSendRequest": "Couldn't send the request. Try again."
+  },
+  "status": {
+    "pending": "Pending",
+    "paid": "Paid",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "refunded": "Refunded",
+    "failed": "Failed"
+  },
+  "orderTimeline": {
+    "title": "Order tracking",
+    "orderPlaced": "Order placed",
+    "paymentConfirmed": "Payment confirmed",
+    "marked": "Marked {{status}}",
+    "awaitingShipment": "Awaiting shipment",
+    "awaitingDelivery": "Awaiting delivery"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unreadAria": "Notifications, {{count}} unread",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications yet.",
+    "messagesCount_one": "({{count}} message)",
+    "messagesCount_other": "({{count}} messages)"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "yourRating": "Your rating",
+    "starRating_one": "{{count}} star",
+    "starRating_other": "{{count}} stars",
+    "shareExperience": "Share your experience with this product (optional)",
+    "submitError": "Couldn't submit your review. Try again.",
+    "submitting": "Submitting…",
+    "submitReview": "Submit review",
+    "ratingSummary_one": "{{rating}} · {{count}} review",
+    "ratingSummary_other": "{{rating}} · {{count}} reviews",
+    "empty": "No reviews yet — be the first to share your experience.",
+    "customer": "Customer"
+  },
+  "notFound": {
+    "title": "404 — page not found",
+    "desc": "The page you're looking for doesn't exist or may have moved.",
+    "backToShop": "Back to shop"
+  },
+  "about": {
+    "title": "About Allure",
+    "p1": "Allure curates everyday essentials — audio, wearables, desk setups, cameras, travel gear, apparel, watches, fragrance, and the goods that make daily life better. We pick products we'd actually use, not just list whatever's trending.",
+    "p2": "Every paid order comes with priority support: a private chat thread scoped to that order, and a video call link when our team wants to walk you through something in person.",
+    "whatWeCareAbout": "What we care about",
+    "li1": "Clear specs and honest descriptions — no inflated claims.",
+    "li2": "Fast, trackable fulfillment from order to delivery.",
+    "li3": "Human support, not a ticket queue that goes nowhere."
+  },
+  "contact": {
+    "title": "Contact us",
+    "fastestWay": "The fastest way to reach us about an existing order is the support chat attached to that order — our team sees those first.",
+    "goToOrders": "Go to your orders",
+    "somethingElse": "Something else?",
+    "beforeOrderPrefix": "For anything before you've placed an order — product questions, bulk pricing, partnerships — email us at",
+    "beforeOrderSuffix": ". We typically reply within one business day."
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "trackOrder": {
+      "q": "How do I track my order?",
+      "a": "Open the order from your Orders page — it shows a step-by-step timeline (placed, paid, shipped, delivered) plus a live support chat once it's paid."
+    },
+    "cancelRefund": {
+      "q": "Can I cancel or get a refund?",
+      "a": "Yes. From the order page, use \"Request cancellation\" or \"Request refund.\" Our team reviews every request and follows up in the order chat."
+    },
+    "supportChat": {
+      "q": "How does the support chat work?",
+      "a": "Every paid order gets its own private chat thread with our team. If a call helps more than text, we'll drop a one-tap video link right into that thread."
+    },
+    "paymentMethods": {
+      "q": "Which payment methods are accepted?",
+      "a": "Checkout is handled by Polar's secure hosted payment page — cards and the methods Polar supports in your region."
+    },
+    "reviewProduct": {
+      "q": "Can I review a product?",
+      "a": "Yes, once your order for it has been paid — the review form appears on the product page for anyone who's purchased it."
+    }
+  },
+  "terms": {
+    "title": "Terms of service",
+    "intro": "By placing an order on Allure, you agree to the terms below. This is a general summary, not legal advice — replace with your counsel-reviewed terms before taking real orders.",
+    "ordersPayment": "Orders and payment",
+    "ordersPaymentBody": "Prices are shown in EGP and are confirmed by our server at checkout, not set by the browser. Payment is processed by Polar; we never see or store your card details. An order is confirmed once payment succeeds and you'll see it on your Orders page.",
+    "cancellationsRefunds": "Cancellations and refunds",
+    "cancellationsRefundsBody": "You can request a cancellation before an order ships, or a refund after, from the order page. Requests are reviewed by our team — a request doesn't guarantee approval, but every one gets a response.",
+    "account": "Account",
+    "accountBody": "You're responsible for keeping your account credentials secure. Support and admin roles are granted only to our team."
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "intro": "This is a summary of what we collect and why — replace with your counsel-reviewed policy before taking real orders.",
+    "whatWeCollect": "What we collect",
+    "collect1": "Account info (name, email) via Clerk, our authentication provider.",
+    "collect2": "Order details and the shipping address you enter at checkout.",
+    "collect3": "Support chat messages tied to your order, via Stream Chat.",
+    "whatWeDontCollect": "What we don't collect",
+    "dontCollectBody": "We never see or store your card details — payment is handled entirely by Polar's hosted checkout.",
+    "thirdParties": "Third parties",
+    "thirdPartiesBody": "We use Clerk (auth), Polar (payments), Stream (chat/video), ImageKit (product images), and Sentry (error monitoring) to run the store. Each only receives the data it needs to do its job."
+  },
+  "shipping": {
+    "title": "Shipping policy",
+    "intro": "We ship to the address you provide at checkout — double-check it before paying, since it's what our team ships to.",
+    "orderStatus": "Order status",
+    "orderStatusBody": "Track every step on the order page: placed, paid, shipped, delivered. You'll see a timestamp for each, plus any note our team adds when marking an order shipped.",
+    "deliveryIssues": "Delivery issues",
+    "deliveryIssuesBody": "If something arrives damaged or doesn't show up, open the order's support chat — that's the fastest way to reach our team, and it keeps the whole conversation attached to the right order."
+  }
+}

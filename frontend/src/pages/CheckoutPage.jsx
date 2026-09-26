@@ -12,6 +12,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import { SignInButton, useAuth } from "@clerk/react";
 import useCartPage from "../hooks/useCartPage";
 import { useCheckout } from "../hooks/useCheckout";
@@ -22,6 +23,8 @@ import { CartSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { TextField } from "../components/FormField";
 import { formatPrice } from "../utils/format";
+import { useLocale } from "../store/locale";
+import { localizedText } from "../utils/localized";
 
 function SectionHeading({ icon: Icon, children }) {
   return (
@@ -33,6 +36,7 @@ function SectionHeading({ icon: Icon, children }) {
 }
 
 function SavedAddressPicker({ addresses, selectedId, onSelect, onDelete, deletingId }) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       {addresses.map((addr) => {
@@ -61,7 +65,7 @@ function SavedAddressPicker({ addresses, selectedId, onSelect, onDelete, deletin
               type="button"
               onClick={() => onDelete(addr.id)}
               disabled={deletingId === addr.id}
-              aria-label="Delete address"
+              aria-label={t("checkout.deleteAddress")}
               className="btn btn-ghost btn-xs btn-square absolute right-2 top-2 text-error hover:bg-error/10"
             >
               <Trash2Icon className="size-3.5" aria-hidden />
@@ -74,6 +78,8 @@ function SavedAddressPicker({ addresses, selectedId, onSelect, onDelete, deletin
 }
 
 function CheckoutPage() {
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
   const { isSignedIn } = useAuth();
   const { items, lines, subtotal, productsLoading, productsError } = useCartPage();
   const { address, setField, fillFrom, submitOrder, submitting, error } = useCheckout();
@@ -123,11 +129,11 @@ function CheckoutPage() {
   if (!isSignedIn) {
     return (
       <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 py-16 text-center">
-        <p className="text-base-content/60">Sign in to continue to checkout.</p>
+        <p className="text-base-content/60">{t("checkout.signInToContinue")}</p>
         <SignInButton mode="modal">
           <button type="button" className="btn btn-primary mt-6 gap-2 shadow-md">
             <LogInIcon className="size-4" aria-hidden />
-            Sign in
+            {t("common.signIn")}
           </button>
         </SignInButton>
       </div>
@@ -137,7 +143,7 @@ function CheckoutPage() {
   if (productsLoading) return <CartSkeleton lines={items.length} />;
   if (productsError) {
     return (
-      <PageError message="Could not load product details. Refresh the page or try again shortly." />
+      <PageError message={t("cart.loadError")} />
     );
   }
 
@@ -161,13 +167,13 @@ function CheckoutPage() {
   return (
     <div className="text-left">
       <Link to="/cart" className="btn btn-ghost btn-sm gap-2 px-2 text-base-content/70">
-        <ArrowLeftIcon className="size-4" aria-hidden />
-        Back to cart
+        <ArrowLeftIcon className="size-4 rtl:rotate-180" aria-hidden />
+        {t("checkout.backToCart")}
       </Link>
 
       <h1 className="mb-8 mt-2 flex items-center gap-2 text-3xl font-bold text-base-content">
         <MapPinIcon className="size-8 text-primary" aria-hidden />
-        Shipping details
+        {t("checkout.shippingDetails")}
       </h1>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
@@ -177,16 +183,16 @@ function CheckoutPage() {
         >
           <div className="card-body space-y-6">
             <section className="space-y-4">
-              <SectionHeading icon={UserIcon}>Contact</SectionHeading>
+              <SectionHeading icon={UserIcon}>{t("checkout.contact")}</SectionHeading>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <TextField
-                  label="Full name"
+                  label={t("checkout.fullName")}
                   required
                   value={address.fullName}
                   onChange={(e) => setField("fullName", e.target.value)}
                 />
                 <TextField
-                  label="Phone"
+                  label={t("checkout.phone")}
                   type="tel"
                   required
                   value={address.phone}
@@ -198,7 +204,7 @@ function CheckoutPage() {
             <div className="divider my-0" />
 
             <section className="space-y-4">
-              <SectionHeading icon={MapPinIcon}>Delivery address</SectionHeading>
+              <SectionHeading icon={MapPinIcon}>{t("checkout.deliveryAddress")}</SectionHeading>
 
               {addresses.length > 0 ? (
                 <div className="space-y-2">
@@ -215,21 +221,21 @@ function CheckoutPage() {
                     className="btn btn-ghost btn-sm gap-2 px-2 text-base-content/60"
                   >
                     <PlusIcon className="size-3.5" aria-hidden />
-                    Enter a new address
+                    {t("checkout.enterNewAddress")}
                   </button>
                   <div className="divider my-0" />
                 </div>
               ) : null}
 
               <TextField
-                label="Address line 1"
+                label={t("checkout.addressLine1")}
                 required
                 value={address.line1}
                 onChange={(e) => setField("line1", e.target.value)}
               />
 
               <TextField
-                label="Address line 2"
+                label={t("checkout.addressLine2")}
                 optional
                 value={address.line2}
                 onChange={(e) => setField("line2", e.target.value)}
@@ -237,13 +243,13 @@ function CheckoutPage() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <TextField
-                  label="City"
+                  label={t("checkout.city")}
                   required
                   value={address.city}
                   onChange={(e) => setField("city", e.target.value)}
                 />
                 <TextField
-                  label="Governorate"
+                  label={t("checkout.governorate")}
                   required
                   value={address.governorate}
                   onChange={(e) => setField("governorate", e.target.value)}
@@ -251,7 +257,7 @@ function CheckoutPage() {
               </div>
 
               <TextField
-                label="Country"
+                label={t("checkout.country")}
                 required
                 value={address.country}
                 onChange={(e) => setField("country", e.target.value)}
@@ -264,7 +270,7 @@ function CheckoutPage() {
                   checked={saveAddress}
                   onChange={(e) => setSaveAddress(e.target.checked)}
                 />
-                Save this address for next time
+                {t("checkout.saveAddress")}
               </label>
             </section>
 
@@ -281,18 +287,18 @@ function CheckoutPage() {
               ) : (
                 <ShoppingCartIcon className="size-4" aria-hidden />
               )}
-              {submitting ? "Opening checkout…" : "Continue to payment"}
+              {submitting ? t("checkout.openingCheckout") : t("checkout.continueToPayment")}
             </button>
           </div>
         </form>
 
         <aside className="card h-fit border border-base-300 bg-base-100 p-6 shadow-md">
-          <h2 className="mb-4 text-sm font-semibold text-base-content">Order summary</h2>
+          <h2 className="mb-4 text-sm font-semibold text-base-content">{t("checkout.orderSummary")}</h2>
           <ul className="space-y-2 text-sm">
             {lines.map(({ line, product: p }) => (
               <li key={line.productId} className="flex justify-between gap-2">
                 <span className="min-w-0 truncate text-base-content/70">
-                  {p?.name ?? "Unknown product"} × {line.quantity}
+                  {p ? localizedText(p, "name", locale) : t("cart.unknownProduct")} × {line.quantity}
                 </span>
                 <span className="shrink-0 tabular-nums text-base-content">
                   {p ? formatPrice(p.pricePounds * line.quantity, p.currency) : "-"}
@@ -306,13 +312,13 @@ function CheckoutPage() {
               <div className="flex items-center justify-between gap-2 rounded-lg bg-success/10 px-3 py-2 text-sm">
                 <span className="flex items-center gap-1.5 font-medium text-success">
                   <TagIcon className="size-3.5" aria-hidden />
-                  {promo.applied.code} · {promo.applied.percentOff}% off
+                  {t("checkout.promoApplied", { code: promo.applied.code, percent: promo.applied.percentOff })}
                 </span>
                 <button
                   type="button"
                   className="btn btn-ghost btn-xs btn-square"
                   onClick={promo.clear}
-                  aria-label="Remove promo code"
+                  aria-label={t("checkout.removePromoCode")}
                 >
                   <XIcon className="size-3.5" aria-hidden />
                 </button>
@@ -323,7 +329,7 @@ function CheckoutPage() {
                   <input
                     type="text"
                     className="input input-sm w-full rounded-lg uppercase transition-colors duration-150 focus:[--input-color:var(--color-primary)] focus:outline-none!"
-                    placeholder="Promo code"
+                    placeholder={t("checkout.promoCode")}
                     value={promo.code}
                     onChange={(e) => promo.setCode(e.target.value)}
                   />
@@ -333,7 +339,7 @@ function CheckoutPage() {
                     disabled={promo.validating || !promo.code.trim()}
                     onClick={handleApplyPromo}
                   >
-                    {promo.validating ? "…" : "Apply"}
+                    {promo.validating ? "…" : t("checkout.apply")}
                   </button>
                 </div>
                 {promo.error ? <p className="text-xs text-error">{promo.error}</p> : null}
@@ -345,28 +351,27 @@ function CheckoutPage() {
                 onClick={() => setPromoInputOpen(true)}
               >
                 <TagIcon className="size-3.5" aria-hidden />
-                Have a promo code?
+                {t("checkout.havePromoCode")}
               </button>
             )}
             <p className="mt-1.5 text-xs text-base-content/40">
-              Apply your code here — the payment page's own discount field is separate and won't
-              recognize it.
+              {t("checkout.promoHint")}
             </p>
           </div>
 
           <div className="mt-4 space-y-1.5 border-t border-base-300 pt-4 text-sm">
             <div className="flex justify-between">
-              <span className="text-base-content/70">Subtotal</span>
+              <span className="text-base-content/70">{t("cart.subtotal")}</span>
               <span className="text-base-content">{formatPrice(subtotal, currency)}</span>
             </div>
             {promo.applied ? (
               <div className="flex justify-between text-success">
-                <span>Discount</span>
+                <span>{t("checkout.discount")}</span>
                 <span>−{formatPrice(promo.applied.discountPounds, currency)}</span>
               </div>
             ) : null}
             <div className="flex justify-between pt-1 text-base font-semibold text-base-content">
-              <span>Total</span>
+              <span>{t("checkout.total")}</span>
               <span>{formatPrice(total, currency)}</span>
             </div>
           </div>

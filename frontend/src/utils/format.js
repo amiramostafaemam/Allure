@@ -19,13 +19,13 @@ export function formatOrderNumber(orderNumber) {
 }
 
 export function formatOrderWhen(iso, opts = {}) {
-  const { dateStyle = "medium" } = opts;
+  const { dateStyle = "medium", locale = "en" } = opts;
   if (!iso) return "";
 
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
 
-  return new Intl.DateTimeFormat("en-EG", {
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-EG", {
     dateStyle,
     timeStyle: "short",
   }).format(date);

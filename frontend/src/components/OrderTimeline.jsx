@@ -7,7 +7,9 @@ import {
   RotateCcwIcon,
   TruckIcon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { formatOrderWhen } from "../utils/format";
+import { useLocale } from "../store/locale";
 
 const STEP_ICON = {
   placed: PackageIcon,
@@ -23,16 +25,16 @@ const TERMINAL_TONE = {
   refunded: "text-base-content/50",
 };
 
-function buildSteps(order, statusEvents) {
+function buildSteps(order, statusEvents, t) {
   const steps = [
-    { key: "placed", label: "Order placed", at: order.createdAt },
-    { key: "paid", label: "Payment confirmed", at: order.createdAt },
+    { key: "placed", label: t("orderTimeline.orderPlaced"), at: order.createdAt },
+    { key: "paid", label: t("orderTimeline.paymentConfirmed"), at: order.createdAt },
   ];
 
   for (const event of statusEvents) {
     steps.push({
       key: `${event.id}`,
-      label: `Marked ${event.toStatus}`,
+      label: t("orderTimeline.marked", { status: t(`status.${event.toStatus}`) }),
       at: event.createdAt,
       note: event.note,
       tone: TERMINAL_TONE[event.toStatus],
@@ -46,13 +48,15 @@ function buildSteps(order, statusEvents) {
 const IN_PROGRESS_STATUSES = new Set(["paid", "shipped"]);
 
 function OrderTimeline({ order, statusEvents }) {
-  const steps = buildSteps(order, statusEvents);
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
+  const steps = buildSteps(order, statusEvents, t);
   const inProgress = IN_PROGRESS_STATUSES.has(order.status);
 
   return (
     <div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
       <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-base-content/60">
-        Order tracking
+        {t("orderTimeline.title")}
       </h3>
       <ol className="space-y-4">
         {steps.map((step, i) => {
@@ -77,7 +81,7 @@ function OrderTimeline({ order, statusEvents }) {
                 <p className={`text-sm font-medium ${step.tone ?? "text-base-content"}`}>
                   {step.label}
                 </p>
-                <p className="text-xs text-base-content/50">{formatOrderWhen(step.at)}</p>
+                <p className="text-xs text-base-content/50">{formatOrderWhen(step.at, { locale })}</p>
                 {step.note ? (
                   <p className="mt-1 text-xs italic text-base-content/60">"{step.note}"</p>
                 ) : null}
@@ -92,7 +96,7 @@ function OrderTimeline({ order, statusEvents }) {
               <CircleDotIcon className="size-4" aria-hidden />
             </span>
             <p className="text-sm">
-              {order.status === "paid" ? "Awaiting shipment" : "Awaiting delivery"}
+              {order.status === "paid" ? t("orderTimeline.awaitingShipment") : t("orderTimeline.awaitingDelivery")}
             </p>
           </li>
         ) : null}

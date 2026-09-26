@@ -7,6 +7,7 @@ import {
   ShoppingCartIcon,
   Trash2Icon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import useCartPage from "../hooks/useCartPage";
 import EmptyCart from "../components/EmptyCart";
 import { CartSkeleton } from "../components/LoadingSkeletons";
@@ -15,8 +16,12 @@ import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { Link } from "react-router";
 import { formatPrice } from "../utils/format";
 import { Show, SignInButton } from "@clerk/react";
+import { useLocale } from "../store/locale";
+import { localizedText } from "../utils/localized";
 
 function CartPage() {
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
   const {
     items,
     lines,
@@ -31,7 +36,7 @@ function CartPage() {
     <div className="text-left">
       <h1 className="mb-8 flex items-center gap-2 text-3xl font-bold text-base-content">
         <ShoppingCartIcon className="size-8 text-primary" aria-hidden />
-        Cart
+        {t("cart.title")}
       </h1>
 
       {items.length === 0 ? (
@@ -39,7 +44,7 @@ function CartPage() {
       ) : productsLoading ? (
         <CartSkeleton lines={items.length} />
       ) : productsError ? (
-        <PageError message="Could not load product details. Refresh the page or try again shortly." />
+        <PageError message={t("cart.loadError")} />
       ) : (
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]">
           <ul className="space-y-4">
@@ -78,20 +83,22 @@ function CartPage() {
                           to={`/product/${p.slug}`}
                           className="link-hover link-primary"
                         >
-                          {p.name}
+                          {localizedText(p, "name", locale)}
                         </Link>
                       ) : (
-                        "Unknown product"
+                        t("cart.unknownProduct")
                       )}
                     </div>
                     {p ? (
                       <p className="text-sm text-base-content/60">
-                        {formatPrice(p.pricePounds, p.currency)} each
-                        {variant ? ` · ${p.variantName ?? "Option"}: ${variant.label}` : null}
+                        {t("cart.priceEach", { price: formatPrice(p.pricePounds, p.currency) })}
+                        {variant
+                          ? ` · ${localizedText(p, "variantName", locale) || t("cart.option")}: ${localizedText(variant, "label", locale)}`
+                          : null}
                       </p>
                     ) : null}
                     <div className="mt-2 flex flex-wrap items-center gap-3">
-                      <span className="text-sm text-base-content/70">Qty</span>
+                      <span className="text-sm text-base-content/70">{t("cart.qty")}</span>
                       <div className="join overflow-hidden rounded-full border border-base-300">
                         <button
                           type="button"
@@ -101,8 +108,8 @@ function CartPage() {
                           }
                           aria-label={
                             line.quantity <= 1
-                              ? "Remove from cart"
-                              : "Decrease quantity"
+                              ? t("cart.removeFromCart")
+                              : t("product.decreaseQuantity")
                           }
                         >
                           <MinusIcon className="size-4" aria-hidden />
@@ -124,7 +131,7 @@ function CartPage() {
                             )
                           }
                           disabled={line.quantity >= maxQty}
-                          aria-label="Increase quantity"
+                          aria-label={t("product.increaseQuantity")}
                         >
                           <PlusIcon className="size-4" aria-hidden />
                         </button>
@@ -133,15 +140,15 @@ function CartPage() {
                         type="button"
                         onClick={() => removeItem(line.productId, line.variantId)}
                         className="btn btn-ghost btn-square btn-sm text-error hover:bg-error/10"
-                        aria-label="Remove from cart"
-                        title="Remove from cart"
+                        aria-label={t("cart.removeFromCart")}
+                        title={t("cart.removeFromCart")}
                       >
                         <Trash2Icon className="size-4" aria-hidden />
                       </button>
                     </div>
                     {overStock ? (
                       <p className="mt-1.5 text-xs font-medium text-error">
-                        Only {stockQuantity} left — reduce quantity to check out
+                        {t("cart.onlyLeftReduceQty", { count: stockQuantity })}
                       </p>
                     ) : null}
                   </div>
@@ -158,7 +165,7 @@ function CartPage() {
 
           <aside className="card border border-base-300 bg-base-100 p-6 shadow-md">
             <div className="flex justify-between text-sm">
-              <span className="text-base-content/70">Subtotal</span>
+              <span className="text-base-content/70">{t("cart.subtotal")}</span>
               <span className="font-semibold text-base-content">
                 {formatPrice(subtotal, lines[0]?.product?.currency ?? "egp")}
               </span>
@@ -167,7 +174,7 @@ function CartPage() {
             <Show when="signed-in">
               <Link to="/checkout" className="btn btn-primary mt-6 w-full gap-2">
                 <ShoppingCartIcon className="size-4" aria-hidden />
-                Checkout securely
+                {t("cart.checkoutSecurely")}
               </Link>
             </Show>
 
@@ -178,7 +185,7 @@ function CartPage() {
                   className="btn btn-outline btn-primary mt-6 w-full gap-2"
                 >
                   <LogInIcon className="size-4" aria-hidden />
-                  Sign in to checkout
+                  {t("cart.signInToCheckout")}
                 </button>
               </SignInButton>
             </Show>
@@ -189,9 +196,9 @@ function CartPage() {
                 aria-hidden
               />
               <span>
-                After payment, open your order for{" "}
-                <strong className="text-base-content">support chat</strong>.
-                Video invites appear in that thread.
+                {t("cart.supportBlurbPrefix")}{" "}
+                <strong className="text-base-content">{t("cart.supportChat")}</strong>
+                {t("cart.supportBlurbSuffix")}
               </span>
             </p>
           </aside>

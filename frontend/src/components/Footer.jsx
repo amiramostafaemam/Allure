@@ -1,7 +1,9 @@
 import { Link } from "react-router";
 import { HeadphonesIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
+  const { t } = useTranslation();
   return (
     <footer className="border-t border-base-300 bg-base-100">
       <div className="mx-auto max-w-7xl px-4 py-12 md:px-6">
@@ -14,20 +16,18 @@ export default function Footer() {
               Allure
             </div>
             <p className="mt-3 text-sm leading-relaxed text-base-content/65">
-              Curated everyday essentials — tech, apparel, and the goods that
-              make daily life better. Paid orders include priority support,
-              chat with our team and join a video call when we share a link.
+              {t("footer.tagline")}
             </p>
           </div>
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-base-content/50">
-              Shop
+              {t("footer.shop")}
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
               <li>
                 <Link to="/" className="link link-hover text-base-content/80">
-                  All products
+                  {t("footer.allProducts")}
                 </Link>
               </li>
               <li>
@@ -35,7 +35,7 @@ export default function Footer() {
                   to="/cart"
                   className="link link-hover text-base-content/80"
                 >
-                  Cart
+                  {t("nav.cart")}
                 </Link>
               </li>
               <li>
@@ -43,7 +43,7 @@ export default function Footer() {
                   to="/orders"
                   className="link link-hover text-base-content/80"
                 >
-                  Orders
+                  {t("nav.orders")}
                 </Link>
               </li>
             </ul>
@@ -51,7 +51,7 @@ export default function Footer() {
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-base-content/50">
-              Support
+              {t("footer.support")}
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
               <li className="flex items-start gap-2 text-base-content/70">
@@ -59,23 +59,21 @@ export default function Footer() {
                   className="mt-0.5 size-5 shrink-0 text-primary"
                   aria-hidden
                 />
-                <span>
-                  Order-scoped chat after payment. Video links shared in-thread.
-                </span>
+                <span>{t("footer.supportBlurb")}</span>
               </li>
               <li>
                 <Link to="/contact" className="link link-hover text-base-content/80">
-                  Contact us
+                  {t("footer.contactUs")}
                 </Link>
               </li>
               <li>
                 <Link to="/faq" className="link link-hover text-base-content/80">
-                  FAQ
+                  {t("footer.faq")}
                 </Link>
               </li>
               <li>
                 <Link to="/shipping-policy" className="link link-hover text-base-content/80">
-                  Shipping policy
+                  {t("footer.shippingPolicy")}
                 </Link>
               </li>
             </ul>
@@ -83,26 +81,25 @@ export default function Footer() {
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-base-content/50">
-              Company
+              {t("footer.company")}
             </h3>
             <p className="mt-3 text-sm text-base-content/65">
-              Built for teams who care about clear specs, fast fulfillment, and
-              human support when it matters.
+              {t("footer.companyBlurb")}
             </p>
             <ul className="mt-3 space-y-2 text-sm">
               <li>
                 <Link to="/about" className="link link-hover text-base-content/80">
-                  About
+                  {t("footer.about")}
                 </Link>
               </li>
               <li>
                 <Link to="/terms" className="link link-hover text-base-content/80">
-                  Terms of service
+                  {t("footer.terms")}
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className="link link-hover text-base-content/80">
-                  Privacy policy
+                  {t("footer.privacy")}
                 </Link>
               </li>
             </ul>
@@ -111,7 +108,7 @@ export default function Footer() {
 
         <div className="mt-10 space-y-4 border-t border-base-300 pt-6">
           <p className="text-center text-xs text-base-content/50">
-            © {new Date().getFullYear()} Allure · All prices in EGP
+            {t("footer.copyright", { year: new Date().getFullYear() })}
           </p>
         </div>
       </div>

@@ -7,9 +7,11 @@ import { SelectField, TextAreaField, TextField } from "./FormField";
 function emptyForm() {
   return {
     name: "",
+    nameAr: "",
     slug: "",
     category: "",
     description: "",
+    descriptionAr: "",
     pricePounds: "",
     stockQuantity: "",
     active: true,
@@ -20,9 +22,11 @@ function formFromProduct(product) {
   if (!product) return emptyForm();
   return {
     name: product.name,
+    nameAr: product.nameAr ?? "",
     slug: product.slug,
     category: product.category ?? "",
     description: product.description ?? "",
+    descriptionAr: product.descriptionAr ?? "",
     pricePounds: String(product.pricePounds ?? ""),
     stockQuantity: product.stockQuantity == null ? "" : String(product.stockQuantity),
     active: product.active,
@@ -50,16 +54,18 @@ export function AdminProductFormModal({
   const [categorySaving, setCategorySaving] = useState(false);
   const [variantsEnabled, setVariantsEnabled] = useState(Boolean(product?.variantName));
   const [variantName, setVariantName] = useState(product?.variantName ?? "");
+  const [variantNameAr, setVariantNameAr] = useState(product?.variantNameAr ?? "");
   const [variantRows, setVariantRows] = useState(() =>
     (product?.variants ?? []).map((v) => ({
       id: v.id,
       label: v.label,
+      labelAr: v.labelAr ?? "",
       stockQuantity: v.stockQuantity == null ? "" : String(v.stockQuantity),
     })),
   );
 
   function addVariantRow() {
-    setVariantRows((rows) => [...rows, { label: "", stockQuantity: "" }]);
+    setVariantRows((rows) => [...rows, { label: "", labelAr: "", stockQuantity: "" }]);
   }
 
   function updateVariantRow(index, patch) {
@@ -119,11 +125,13 @@ export function AdminProductFormModal({
       imageFile,
       variantsEnabled,
       variantName: variantName.trim(),
+      variantNameAr: variantNameAr.trim(),
       variantRows: variantRows
         .filter((r) => r.label.trim())
         .map((r) => ({
           ...(r.id ? { id: r.id } : {}),
           label: r.label.trim(),
+          labelAr: r.labelAr.trim() || null,
           stockQuantity: r.stockQuantity === "" ? null : Number(r.stockQuantity),
         })),
     });
@@ -142,12 +150,22 @@ export function AdminProductFormModal({
         </h3>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <TextField
-            label="Name"
-            required
-            value={form.name}
-            onChange={handleNameChange}
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TextField
+              label="Name"
+              required
+              value={form.name}
+              onChange={handleNameChange}
+            />
+            <TextField
+              label="Name (Arabic)"
+              optional
+              dir="rtl"
+              placeholder="اسم المنتج بالعربي"
+              value={form.nameAr}
+              onChange={(e) => setForm((f) => ({ ...f, nameAr: e.target.value }))}
+            />
+          </div>
 
           <TextField
             label="Slug"
@@ -251,6 +269,18 @@ export function AdminProductFormModal({
             }
           />
 
+          <TextAreaField
+            label="Description (Arabic)"
+            optional
+            dir="rtl"
+            rows={3}
+            placeholder="وصف المنتج بالعربي"
+            value={form.descriptionAr}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, descriptionAr: e.target.value }))
+            }
+          />
+
           <div className="flex flex-col gap-3 rounded-xl border border-base-300 p-4">
             <label className="flex cursor-pointer items-center gap-3">
               <input
@@ -261,7 +291,7 @@ export function AdminProductFormModal({
                   const enabled = e.target.checked;
                   setVariantsEnabled(enabled);
                   if (enabled && variantRows.length === 0) {
-                    setVariantRows([{ label: "", stockQuantity: "" }]);
+                    setVariantRows([{ label: "", labelAr: "", stockQuantity: "" }]);
                   }
                 }}
               />
@@ -272,13 +302,23 @@ export function AdminProductFormModal({
 
             {variantsEnabled ? (
               <div className="flex flex-col gap-3 pl-1">
-                <TextField
-                  label="Option name"
-                  placeholder="e.g. Size, Color"
-                  required
-                  value={variantName}
-                  onChange={(e) => setVariantName(e.target.value)}
-                />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <TextField
+                    label="Option name"
+                    placeholder="e.g. Size, Color"
+                    required
+                    value={variantName}
+                    onChange={(e) => setVariantName(e.target.value)}
+                  />
+                  <TextField
+                    label="Option name (Arabic)"
+                    optional
+                    dir="rtl"
+                    placeholder="مثلاً المقاس، اللون"
+                    value={variantNameAr}
+                    onChange={(e) => setVariantNameAr(e.target.value)}
+                  />
+                </div>
 
                 <div className="flex flex-col gap-2">
                   {variantRows.map((row, i) => (
@@ -288,6 +328,15 @@ export function AdminProductFormModal({
                         placeholder="e.g. Black"
                         value={row.label}
                         onChange={(e) => updateVariantRow(i, { label: e.target.value })}
+                        className="flex-1"
+                      />
+                      <TextField
+                        label={i === 0 ? "Label (Arabic)" : undefined}
+                        optional
+                        dir="rtl"
+                        placeholder="مثلاً أسود"
+                        value={row.labelAr}
+                        onChange={(e) => updateVariantRow(i, { labelAr: e.target.value })}
                         className="flex-1"
                       />
                       <TextField

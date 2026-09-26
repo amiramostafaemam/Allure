@@ -1,5 +1,6 @@
 import { SignInButton, useAuth } from "@clerk/react";
 import { HeartIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useWishlist } from "../hooks/useWishlist";
 
 // The outer span both stops the click from bubbling AND prevents its
@@ -10,6 +11,7 @@ import { useWishlist } from "../hooks/useWishlist";
 // Belt-and-suspenders even now that nothing renders this inside a <Link>
 // anymore, so it stays safe wherever it's reused next.
 export function WishlistButton({ productId, className = "" }) {
+  const { t } = useTranslation();
   const { isSignedIn } = useAuth();
   const { isWishlisted, addItem, removeItem } = useWishlist();
   const saved = isSignedIn && isWishlisted(productId);
@@ -25,7 +27,7 @@ export function WishlistButton({ productId, className = "" }) {
       type="button"
       onClick={isSignedIn ? toggle : undefined}
       disabled={isSignedIn && pending}
-      aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
+      aria-label={saved ? t("catalog.removeFromWishlist") : t("catalog.saveToWishlist")}
       aria-pressed={saved}
       className={`btn btn-ghost btn-square btn-sm ${className}`}
     >

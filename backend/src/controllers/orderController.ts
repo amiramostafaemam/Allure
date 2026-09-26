@@ -81,7 +81,7 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
        if(orderIds.length>0){
             const orderItemsRows=await db.select({
                 orderId:orderItems.orderId,quantity:orderItems.quantity,
-                name:products.name,
+                name:products.name,nameAr:products.nameAr,
                 variantLabel:orderItems.variantLabel,
                 slug:products.slug,imageUrl:products.imageUrl})
                 .from(orderItems)
@@ -93,6 +93,7 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
                 const list=previewByOrder.get(orderItemRow.orderId) ?? [];
                 list.push({
                     name:orderItemRow.name,
+                    nameAr:orderItemRow.nameAr,
                     quantity:orderItemRow.quantity,
                     variantLabel:orderItemRow.variantLabel,
                     slug:orderItemRow.slug,

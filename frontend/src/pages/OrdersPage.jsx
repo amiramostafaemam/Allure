@@ -1,42 +1,47 @@
 import { Link } from "react-router";
 import { LogInIcon, PackageIcon, ChevronRightIcon } from "lucide-react";
 import { SignInButton } from "@clerk/react";
+import { useTranslation } from "react-i18next";
 import { useOrders } from "../hooks/useOrders";
 import { OrdersListSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl";
 import { formatOrderNumber, formatOrderWhen, formatPrice } from "../utils/format";
 import { statusBadgeClass } from "../utils/orderStatus";
+import { useLocale } from "../store/locale";
+import { localizedText } from "../utils/localized";
 
 function OrdersPage() {
+  const { t } = useTranslation();
+  const locale = useLocale((s) => s.locale);
   const { orders, isLoading, isError, isSignedIn } = useOrders();
 
   return (
     <div className="text-left">
       <h1 className="mb-8 flex items-center gap-2 text-3xl font-bold text-base-content">
         <PackageIcon className="size-8 text-primary" aria-hidden />
-        Your orders
+        {t("orders.title")}
       </h1>
 
       {!isSignedIn ? (
         <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 py-16 text-center">
-          <p className="text-base-content/60">Sign in to see your orders.</p>
+          <p className="text-base-content/60">{t("orders.signInPrompt")}</p>
           <SignInButton mode="modal">
             <button type="button" className="btn btn-primary mt-6 gap-2 shadow-md">
               <LogInIcon className="size-4" aria-hidden />
-              Sign in
+              {t("common.signIn")}
             </button>
           </SignInButton>
         </div>
       ) : isLoading ? (
         <OrdersListSkeleton />
       ) : isError ? (
-        <PageError message="We couldn't load your orders. Please try again in a moment." />
+        <PageError message={t("orders.loadError")} />
       ) : orders.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 py-16 text-center">
-          <p className="text-base-content/60">You haven&apos;t placed any orders yet.</p>
+          <p className="text-base-content/60">{t("orders.empty")}</p>
           <Link to="/" className="btn btn-primary mt-6 gap-2 shadow-md">
-            Browse catalog
+            {t("common.browseCatalog")}
           </Link>
         </div>
       ) : (
@@ -75,23 +80,23 @@ function OrdersPage() {
 
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-base-content">
-                      Order #{formatOrderNumber(order.orderNumber)}
+                      {t("orders.orderNumber", { number: formatOrderNumber(order.orderNumber) })}
                     </p>
                     <p className="truncate text-sm text-base-content/60">
                       {order.previewItems?.length
                         ? order.previewItems
-                            .map((i) => `${i.name}${i.variantLabel ? ` (${i.variantLabel})` : ""} ×${i.quantity}`)
+                            .map((i) => `${localizedText(i, "name", locale)}${i.variantLabel ? ` (${i.variantLabel})` : ""} ×${i.quantity}`)
                             .join(", ")
-                        : "No items"}
+                        : t("orders.noItems")}
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span
                         className={`badge badge-sm capitalize ${statusBadgeClass(order.status)}`}
                       >
-                        {order.status}
+                        {t(`status.${order.status}`)}
                       </span>
                       <span className="text-xs text-base-content/50">
-                        {formatOrderWhen(order.createdAt)}
+                        {formatOrderWhen(order.createdAt, { locale })}
                       </span>
                     </div>
                   </div>
@@ -101,7 +106,7 @@ function OrdersPage() {
                       {formatPrice(order.totalPounds, "egp")}
                     </span>
                     <ChevronRightIcon
-                      className="size-5 text-base-content/40"
+                      className="size-5 text-base-content/40 rtl:rotate-180"
                       aria-hidden
                     />
                   </div>
