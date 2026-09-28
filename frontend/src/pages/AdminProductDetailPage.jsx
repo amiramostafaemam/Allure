@@ -94,13 +94,21 @@ function AdminProductDetailPage() {
       </Link>
 
       <div className="flex flex-col gap-6">
-        <div className="flex h-64 items-center justify-center overflow-hidden rounded-box border border-base-300 bg-base-300 sm:h-80 lg:h-96">
+        <div className="relative h-64 overflow-hidden rounded-box border border-base-300 bg-base-300 sm:h-80 lg:h-96">
           {product.imageUrl ? (
-            <img
-              src={imageKitOptimizedUrl(product.imageUrl, IK_PRESETS.productHero)}
-              alt=""
-              className="h-full w-full object-contain"
-            />
+            <>
+              <img
+                src={imageKitOptimizedUrl(product.imageUrl, IK_PRESETS.productHero)}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
+              />
+              <img
+                src={imageKitOptimizedUrl(product.imageUrl, IK_PRESETS.productHero)}
+                alt=""
+                className="relative h-full w-full object-contain"
+              />
+            </>
           ) : null}
         </div>
 
