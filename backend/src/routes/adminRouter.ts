@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { createAdminProduct, deleteAdminProduct, getImageKitAuth, listAdminProducts, requireAdmin, updateAdminProduct } from '../controllers/adminController';
+import { createAdminProduct, deleteAdminProduct, getAdminProduct, getImageKitAuth, listAdminProducts, requireAdmin, updateAdminProduct } from '../controllers/adminController';
 import { replaceProductVariants } from '../controllers/adminProductVariantsController';
 import { dismissOrderRequest, updateOrderStatus } from '../controllers/orderController';
 import { getAdminStats } from '../controllers/adminStatsController';
@@ -14,6 +14,7 @@ adminRouter.use(requireAdmin)
 
 adminRouter.get("/imagekit/auth",getImageKitAuth)
 adminRouter.get("/products",listAdminProducts);
+adminRouter.get("/products/:id",validateUuidParam("id"),getAdminProduct);
 adminRouter.post("/products",createAdminProduct);
 adminRouter.patch("/products/:id",validateUuidParam("id"),updateAdminProduct);
 adminRouter.delete("/products/:id",validateUuidParam("id"),deleteAdminProduct);

@@ -4,7 +4,7 @@ import { getLocalUser } from '../lib/users';
 import { isStaff } from '../lib/roles';
 import { db } from '../db';
 import { notifications, orderItems, orders, orderStatusEvents, productVariants, products, users } from '../db/schema';
-import { and, asc, desc, eq, ilike, inArray, isNotNull, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import { getStreamChatServer, streamChatDisplayName, streamUserId } from '../lib/stream';
 import { getEnv } from '../lib/env';
 import { parsePagination } from '../lib/pagination';
@@ -41,7 +41,10 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
         const statusFilter=isOrderStatus(rawStatus) ? rawStatus : "";
         const q=typeof req.query.q==="string" ? req.query.q.trim() : "";
 
-        let rows;
+        // Built once and reused for both the row query and the total count
+        // below — the count has to see the exact same filter as whichever
+        // branch actually ran, or the two would disagree.
+        let whereClause;
         if(staffView){
             const conditions=[];
             if(statusFilter) conditions.push(eq(orders.status,statusFilter));
@@ -56,12 +59,16 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
                 conditions.push(or(...qConditions)!);
             }
 
-            rows=await db.select().from(orders)
-                .where(conditions.length>0 ? and(...conditions) : undefined)
-                .orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
+            whereClause=conditions.length>0 ? and(...conditions) : undefined;
         }else{
-            rows=await db.select().from(orders).where(eq(orders.userId,localUser.id)).orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
+            whereClause=eq(orders.userId,localUser.id);
         }
+
+        const [rows,[totalRow]]=await Promise.all([
+            db.select().from(orders).where(whereClause).orderBy(desc(orders.createdAt)).limit(limit).offset(offset),
+            db.select({c:count()}).from(orders).where(whereClause),
+        ]);
+        const total=Number(totalRow?.c ?? 0);
 
         const orderIds=rows.map((r)=>r.id);
         const previewByOrder=new Map();
@@ -108,7 +115,7 @@ export async function listOrders(req: Request, res: Response, next: NextFunction
             previewItems:previewByOrder.get(r.id) ?? [],
             ...(staffView ? {customer:customerByUserId.get(r.userId) ?? null} : {}),
         }));
-        res.json({orders:ordersPayload,limit,offset});
+        res.json({orders:ordersPayload,total,limit,offset});
                 
     }catch(err){
         next(err);

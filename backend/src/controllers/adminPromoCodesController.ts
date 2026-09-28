@@ -2,8 +2,9 @@ import type { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { db } from "../db";
 import { promoCodes } from "../db/schema";
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { isUniqueViolation } from "../lib/dbErrors";
+import { parsePagination } from "../lib/pagination";
 
 const createSchema = z.object({
   code: z.string().trim().min(2).max(40),
@@ -17,10 +18,14 @@ const updateSchema = z.object({
   expiresAt: z.string().datetime().optional().nullable(),
 });
 
-export async function listPromoCodes(_req: Request, res: Response, next: NextFunction) {
+export async function listPromoCodes(req: Request, res: Response, next: NextFunction) {
   try {
-    const rows = await db.select().from(promoCodes).orderBy(desc(promoCodes.createdAt));
-    res.json({ promoCodes: rows });
+    const { limit, offset } = parsePagination(req);
+    const [rows, [totalRow]] = await Promise.all([
+      db.select().from(promoCodes).orderBy(desc(promoCodes.createdAt)).limit(limit).offset(offset),
+      db.select({ c: count() }).from(promoCodes),
+    ]);
+    res.json({ promoCodes: rows, total: Number(totalRow?.c ?? 0), limit, offset });
   } catch (err) {
     next(err);
   }

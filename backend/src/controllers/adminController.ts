@@ -121,6 +121,25 @@ export async function listAdminProducts(req:Request,res:Response,next:NextFuncti
     }
 }
 
+export async function getAdminProduct(req:Request,res:Response,next:NextFunction){
+    try{
+        const id=req.params.id as string;
+        const [product]=await db.select().from(products).where(eq(products.id,id)).limit(1);
+        if(!product){
+            res.status(404).json({error:"Product not found"});
+            return;
+        }
+
+        const variants=await db.select().from(productVariants)
+            .where(eq(productVariants.productId,id))
+            .orderBy(asc(productVariants.sortOrder));
+
+        res.json({product:{...product,variants}});
+    }catch(err){
+        next(err);
+    }
+}
+
 async function categoryExists(name: string): Promise<boolean> {
     const [row] = await db.select({ id: categories.id }).from(categories).where(eq(categories.name, name)).limit(1);
     return Boolean(row);
