@@ -93,13 +93,13 @@ function AdminProductDetailPage() {
         Back to products
       </Link>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
-        <div className="aspect-square overflow-hidden rounded-box border border-base-300 bg-base-300">
+      <div className="flex flex-col gap-6">
+        <div className="flex h-64 items-center justify-center overflow-hidden rounded-box border border-base-300 bg-base-300 sm:h-80 lg:h-96">
           {product.imageUrl ? (
             <img
               src={imageKitOptimizedUrl(product.imageUrl, IK_PRESETS.productHero)}
               alt=""
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
             />
           ) : null}
         </div>
