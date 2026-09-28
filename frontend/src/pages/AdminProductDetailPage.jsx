@@ -93,8 +93,8 @@ function AdminProductDetailPage() {
         Back to products
       </Link>
 
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
-        <div className="relative h-64 overflow-hidden rounded-box border border-base-300 bg-base-300 sm:h-80 lg:h-112 lg:col-span-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <div className="relative h-64 overflow-hidden rounded-box border border-base-300 bg-base-300 sm:h-80 lg:h-112">
           {product.imageUrl ? (
             <>
               <img
@@ -163,7 +163,7 @@ function AdminProductDetailPage() {
           </div>
         </div>
 
-        <div className="card border border-base-300 bg-base-100 lg:col-span-3">
+        <div className="card border border-base-300 bg-base-100 lg:col-span-2">
           <div className="card-body">
             <h2 className="text-sm font-semibold text-base-content">Description</h2>
             <p className="mt-1 text-sm leading-relaxed text-base-content/70">
