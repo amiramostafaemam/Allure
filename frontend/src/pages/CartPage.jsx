@@ -46,7 +46,7 @@ function CartPage() {
       ) : productsError ? (
         <PageError message={t("cart.loadError")} />
       ) : (
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_320px]">
           <ul className="space-y-4">
             {lines.map(({ line, product: p, variant }) => {
               // Once a product has variants, stock lives per-variant — the

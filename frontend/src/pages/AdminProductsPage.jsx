@@ -164,6 +164,15 @@ function AdminProductsPage() {
                 const variants = product.variants ?? [];
                 const allVariantsOut =
                   product.variantName && variants.length > 0 && variants.every((v) => v.stockQuantity != null && v.stockQuantity <= 0);
+                // Some variants may be individually untracked (unlimited) —
+                // sum only the ones that have a real number, and only claim
+                // a total once every variant is actually tracked, otherwise
+                // the sum would understate real availability.
+                const trackedVariants = variants.filter((v) => v.stockQuantity != null);
+                const variantStockTotal =
+                  trackedVariants.length === variants.length && variants.length > 0
+                    ? trackedVariants.reduce((sum, v) => sum + v.stockQuantity, 0)
+                    : null;
                 return (
                 <tr key={product.id}>
                   <td>
@@ -198,8 +207,16 @@ function AdminProductsPage() {
                         <span className="badge badge-error badge-sm border-0">Out of stock</span>
                       ) : (
                         <span className="text-base-content/70">
-                          {variants.length} {product.variantName.toLowerCase()}
-                          {variants.length === 1 ? "" : "s"}
+                          {variantStockTotal === null ? (
+                            <span className="text-base-content/50">Unlimited</span>
+                          ) : (
+                            variantStockTotal
+                          )}
+                          <span className="text-base-content/40">
+                            {" "}
+                            · {variants.length} {product.variantName.toLowerCase()}
+                            {variants.length === 1 ? "" : "s"}
+                          </span>
                         </span>
                       )
                     ) : product.stockQuantity == null ? (
