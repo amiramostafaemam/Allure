@@ -93,8 +93,8 @@ function AdminProductDetailPage() {
         Back to products
       </Link>
 
-      <div className="flex flex-col gap-6">
-        <div className="relative h-64 overflow-hidden rounded-box border border-base-300 bg-base-300 sm:h-80 lg:h-96">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <div className="relative h-64 overflow-hidden rounded-box border border-base-300 bg-base-300 sm:h-80 lg:h-112 lg:col-span-2">
           {product.imageUrl ? (
             <>
               <img
@@ -113,58 +113,62 @@ function AdminProductDetailPage() {
         </div>
 
         <div className="card border border-base-300 bg-base-100">
-          <div className="card-body">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-base-content">{product.name}</h1>
-                <p className="mt-1 font-mono text-xs text-base-content/50">{product.slug}</p>
-              </div>
-              <div className="flex gap-2">
-                <button type="button" className="btn btn-sm gap-2" onClick={() => setModalOpen(true)}>
-                  <PencilIcon className="size-4" aria-hidden />
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-sm gap-2 text-error hover:bg-error/10"
-                  onClick={() => setConfirmDelete(true)}
-                >
-                  <Trash2Icon className="size-4" aria-hidden />
-                  Delete
-                </button>
-              </div>
+          <div className="card-body gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-base-content">{product.name}</h1>
+              <p className="mt-1 font-mono text-xs text-base-content/50">{product.slug}</p>
             </div>
 
-            <p className="mt-2 text-sm leading-relaxed text-base-content/70">
-              {product.description || <span className="text-base-content/40">No description.</span>}
-            </p>
+            <div className="flex gap-2">
+              <button type="button" className="btn btn-sm flex-1 gap-2" onClick={() => setModalOpen(true)}>
+                <PencilIcon className="size-4" aria-hidden />
+                Edit
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm flex-1 gap-2 text-error hover:bg-error/10"
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2Icon className="size-4" aria-hidden />
+                Delete
+              </button>
+            </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="divider my-0" />
+
+            <div>
+              <p className="text-xs uppercase tracking-wide text-base-content/50">Price</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-base-content">
+                {formatPrice(product.pricePounds, product.currency)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-base-content/50">Category</p>
+              <p className="mt-1 font-semibold text-base-content">{product.category}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-base-content/50">Status</p>
+              <span className={`badge badge-sm mt-1 border-0 ${product.active ? "badge-success" : "badge-neutral"}`}>
+                {product.active ? "Active" : "Inactive"}
+              </span>
+            </div>
+            {!product.variantName ? (
               <div>
-                <p className="text-xs uppercase tracking-wide text-base-content/50">Price</p>
+                <p className="text-xs uppercase tracking-wide text-base-content/50">Stock</p>
                 <p className="mt-1 font-semibold tabular-nums text-base-content">
-                  {formatPrice(product.pricePounds, product.currency)}
+                  {product.stockQuantity == null ? "Unlimited" : product.stockQuantity}
                 </p>
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-base-content/50">Category</p>
-                <p className="mt-1 font-semibold text-base-content">{product.category}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-base-content/50">Status</p>
-                <span className={`badge badge-sm mt-1 border-0 ${product.active ? "badge-success" : "badge-neutral"}`}>
-                  {product.active ? "Active" : "Inactive"}
-                </span>
-              </div>
-              {!product.variantName ? (
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-base-content/50">Stock</p>
-                  <p className="mt-1 font-semibold tabular-nums text-base-content">
-                    {product.stockQuantity == null ? "Unlimited" : product.stockQuantity}
-                  </p>
-                </div>
-              ) : null}
-            </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="card border border-base-300 bg-base-100 lg:col-span-3">
+          <div className="card-body">
+            <h2 className="text-sm font-semibold text-base-content">Description</h2>
+            <p className="mt-1 text-sm leading-relaxed text-base-content/70">
+              {product.description || <span className="text-base-content/40">No description.</span>}
+            </p>
 
             {product.variantName ? (
               <div className="mt-6">
