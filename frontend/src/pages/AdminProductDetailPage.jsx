@@ -93,23 +93,17 @@ function AdminProductDetailPage() {
         Back to products
       </Link>
 
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-        <div className="relative h-64 overflow-hidden rounded-box border border-base-300 bg-base-300 sm:h-80 lg:h-112">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <div className="overflow-hidden rounded-box border border-base-300 lg:col-span-2">
           {product.imageUrl ? (
-            <>
-              <img
-                src={imageKitOptimizedUrl(product.imageUrl, IK_PRESETS.productHero)}
-                alt=""
-                aria-hidden
-                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
-              />
-              <img
-                src={imageKitOptimizedUrl(product.imageUrl, IK_PRESETS.productHero)}
-                alt=""
-                className="relative h-full w-full object-contain"
-              />
-            </>
-          ) : null}
+            <img
+              src={imageKitOptimizedUrl(product.imageUrl, IK_PRESETS.productHero)}
+              alt=""
+              className="h-auto w-full"
+            />
+          ) : (
+            <div className="h-64 bg-base-300 sm:h-80 lg:h-112" />
+          )}
         </div>
 
         <div className="card border border-base-300 bg-base-100">
@@ -160,18 +154,18 @@ function AdminProductDetailPage() {
                 </p>
               </div>
             ) : null}
-          </div>
-        </div>
 
-        <div className="card border border-base-300 bg-base-100 lg:col-span-2">
-          <div className="card-body">
-            <h2 className="text-sm font-semibold text-base-content">Description</h2>
-            <p className="mt-1 text-sm leading-relaxed text-base-content/70">
-              {product.description || <span className="text-base-content/40">No description.</span>}
-            </p>
+            <div className="divider my-0" />
+
+            <div>
+              <h2 className="text-sm font-semibold text-base-content">Description</h2>
+              <p className="mt-1 text-sm leading-relaxed text-base-content/70">
+                {product.description || <span className="text-base-content/40">No description.</span>}
+              </p>
+            </div>
 
             {product.variantName ? (
-              <div className="mt-6">
+              <div>
                 <h2 className="mb-2 text-sm font-semibold text-base-content">
                   {product.variantName} options
                 </h2>
