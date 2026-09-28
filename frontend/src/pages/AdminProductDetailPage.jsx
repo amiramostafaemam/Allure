@@ -93,25 +93,22 @@ function AdminProductDetailPage() {
         Back to products
       </Link>
 
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="overflow-hidden rounded-box border border-base-300 lg:col-span-2">
           {product.imageUrl ? (
             <img
               src={imageKitOptimizedUrl(product.imageUrl, IK_PRESETS.productHero)}
               alt=""
-              className="h-auto w-full"
+              className="h-auto w-full object-cover lg:h-full"
             />
           ) : (
-            <div className="h-64 bg-base-300 sm:h-80 lg:h-112" />
+            <div className="h-64 bg-base-300 sm:h-80 lg:h-full" />
           )}
         </div>
 
         <div className="card border border-base-300 bg-base-100">
           <div className="card-body gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-base-content">{product.name}</h1>
-              <p className="mt-1 font-mono text-xs text-base-content/50">{product.slug}</p>
-            </div>
+            <h1 className="text-2xl font-bold text-base-content">{product.name}</h1>
 
             <div className="flex gap-2">
               <button type="button" className="btn btn-sm flex-1 gap-2" onClick={() => setModalOpen(true)}>
@@ -136,15 +133,17 @@ function AdminProductDetailPage() {
                 {formatPrice(product.pricePounds, product.currency)}
               </p>
             </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-base-content/50">Category</p>
-              <p className="mt-1 font-semibold text-base-content">{product.category}</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-base-content/50">Status</p>
-              <span className={`badge badge-sm mt-1 border-0 ${product.active ? "badge-success" : "badge-neutral"}`}>
-                {product.active ? "Active" : "Inactive"}
-              </span>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-base-content/50">Category</p>
+                <p className="mt-1 font-semibold text-base-content">{product.category}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-base-content/50">Status</p>
+                <span className={`badge badge-sm mt-1 border-0 ${product.active ? "badge-success" : "badge-neutral"}`}>
+                  {product.active ? "Active" : "Inactive"}
+                </span>
+              </div>
             </div>
             {!product.variantName ? (
               <div>
