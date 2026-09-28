@@ -29,9 +29,9 @@ const STATUS_COLOR_VAR = {
 function ChartCard({ title, action, children }) {
   return (
     <div className="card border border-base-300 bg-base-100">
-      <div className="card-body">
+      <div className="card-body p-6">
         <div className="flex items-center justify-between">
-          <h2 className="card-title text-base">{title}</h2>
+          <h2 className="card-title text-base font-bold">{title}</h2>
           {action}
         </div>
         {children}
@@ -129,6 +129,8 @@ export function OrdersByStatusChart({ ordersByStatus }) {
                 data={entries.map(([status, count]) => ({ status, count }))}
                 dataKey="count"
                 nameKey="status"
+                cx="50%"
+                cy="45%"
                 innerRadius="55%"
                 outerRadius="80%"
                 paddingAngle={2}
@@ -137,6 +139,21 @@ export function OrdersByStatusChart({ ordersByStatus }) {
                   <Cell key={status} fill={colors[STATUS_COLOR_VAR[status] ?? "base-content"]} />
                 ))}
               </Pie>
+              {/* Recharts' own <Label position="center"> doesn't resolve a
+                  cx/cy for a polar (Pie) chart in this version — its
+                  content() callback receives an empty viewBox, which
+                  silently renders the text at the SVG origin (top-left)
+                  instead of the ring's center. A plain sibling <text>
+                  pinned to the exact same cx/cy passed to <Pie> above stays
+                  correct without depending on that API. */}
+              <text x="50%" y="45%" textAnchor="middle" dominantBaseline="central">
+                <tspan x="50%" dy="-0.3em" fontSize={24} fontWeight={700} fill={colors["base-content"]}>
+                  {total}
+                </tspan>
+                <tspan x="50%" dy="1.5em" fontSize={11} fill={colors["base-content"]} opacity={0.6}>
+                  orders
+                </tspan>
+              </text>
               <Tooltip
                 {...tooltipStyle(colors)}
                 formatter={(value, name) => [`${value} (${Math.round((value / total) * 100)}%)`, name]}

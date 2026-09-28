@@ -42,14 +42,6 @@
   --noise: 0;
 }
 
-/* Arabic needs a face actually designed for the script — the default
-   sans-serif stack renders it inconsistently across platforms. Scoped to
-   :lang(ar) rather than a class, so it follows the <html lang> attribute
-   automatically (see store/locale.js) with nothing else to keep in sync. */
-:lang(ar) {
-  font-family: "Cairo", ui-sans-serif, system-ui, sans-serif;
-}
-
 /* For horizontally swipeable pill/tab rows (e.g. AdminLayout's mobile nav)
    — the swipe gesture is the affordance, a visible native scrollbar under
    a row of rounded pills just reads as clutter, not as a scroll hint. */
@@ -59,4 +51,21 @@
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Shared professional look for every admin table (Products, Orders,
+   Customers, Promo codes, Categories) — daisyUI's bare .table default is
+   too tight/plain for a management screen. Layered onto daisyUI's own
+   .table via a class combo (className="table admin-table") rather than a
+   wrapper component, since every admin table's markup already differs
+   slightly (extra columns, action cells) and a shared component would just
+   be a thin, easily-diverging pass-through. */
+.admin-table thead th {
+  @apply bg-base-100 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-base-content/60;
+}
+.admin-table tbody td {
+  @apply px-4 py-3.5;
+}
+.admin-table tbody tr {
+  @apply transition-colors hover:bg-base-200/50;
 }

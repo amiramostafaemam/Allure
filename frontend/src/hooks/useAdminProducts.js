@@ -1,15 +1,23 @@
 import { useAuth } from "@clerk/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
 
-export function useAdminProducts({ q = "" } = {}) {
+export const ADMIN_PAGE_SIZE = 20;
+
+export function useAdminProducts({ q = "", page = 1 } = {}) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-products", q],
-    queryFn: () =>
-      apiFetch(`/api/admin/products${q ? `?q=${encodeURIComponent(q)}` : ""}`, { getToken }),
+    queryKey: ["admin-products", q, page],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (q) params.set("q", q);
+      params.set("limit", String(ADMIN_PAGE_SIZE));
+      params.set("offset", String((page - 1) * ADMIN_PAGE_SIZE));
+      return apiFetch(`/api/admin/products?${params.toString()}`, { getToken });
+    },
+    placeholderData: keepPreviousData,
   });
 
   const invalidate = () =>
@@ -38,22 +46,40 @@ export function useAdminProducts({ q = "" } = {}) {
   });
 
   const saveVariants = useMutation({
-    mutationFn: ({ productId, variantName, variantNameAr, variants }) =>
+    mutationFn: ({ productId, variantName, variants }) =>
       apiFetch(`/api/admin/products/${productId}/variants`, {
         getToken,
         method: "PUT",
-        body: { variantName, variantNameAr, variants },
+        body: { variantName, variants },
       }),
     onSuccess: invalidate,
   });
 
   return {
     products: data?.products ?? [],
+    total: data?.total ?? 0,
+    limit: ADMIN_PAGE_SIZE,
     isLoading,
     isError,
     createProduct,
     updateProduct,
     deleteProduct,
     saveVariants,
+  };
+}
+
+export function useAdminProduct(id) {
+  const { getToken } = useAuth();
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["admin-products", id],
+    queryFn: () => apiFetch(`/api/admin/products/${id}`, { getToken }),
+    enabled: Boolean(id),
+  });
+
+  return {
+    product: data?.product ?? null,
+    isLoading,
+    isError,
   };
 }

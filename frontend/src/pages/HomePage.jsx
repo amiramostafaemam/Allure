@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { CatalogProductCard } from "../components/CatalogProductCard";
-import { CategoryShowcase } from "../components/CategoryShowcase";
 import { HomeHero } from "../components/HomeHero";
 import PageError from "../components/PageError";
 import { SearchInput } from "../components/SearchInput";
@@ -8,6 +7,7 @@ import { TrustStrip } from "../components/TrustStrip";
 import { useHomeCatalog } from "../hooks/useHomeCatalog";
 import { useLocale } from "../store/locale";
 import { localizedText } from "../utils/localized";
+import { CATEGORY_ICONS, DEFAULT_CATEGORY_ICON } from "../lib/categoryIcons";
 
 function HomePage() {
   const { t } = useTranslation();
@@ -25,22 +25,11 @@ function HomePage() {
     setCategory,
   } = useHomeCatalog();
 
-  function selectCategoryAndScroll(name) {
-    setCategory(name);
-    document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
-  }
-
   return (
     <div className="space-y-12">
       <HomeHero categories={categories} loadingCategories={loadingCategories} />
 
       <TrustStrip />
-
-      <CategoryShowcase
-        categories={categories}
-        loadingCategories={loadingCategories}
-        onSelect={selectCategoryAndScroll}
-      />
 
       {/* CATELOG */}
       <section id="catalog" className="scroll-mt-24">
@@ -55,18 +44,22 @@ function HomePage() {
             value={searchTerm}
             onChange={setSearchTerm}
             placeholder={t("catalog.searchPlaceholder")}
-            className="w-full sm:w-64"
+            className="w-full sm:w-80"
           />
         </div>
 
         {/* A single scrollable row instead of wrapping — with 13+ category
             pills, wrapping always produced a cramped multi-line block no
             matter the width. .no-scrollbar is the same established pattern
-            already used for AdminLayout's sidebar and NotificationBell. */}
+            already used for AdminLayout's sidebar and NotificationBell. This
+            is now the SOLE category-browsing UI on the page (a separate
+            animated icon-grid used to sit above it, duplicating the same
+            filter) — icons here give it some of that grid's visual interest
+            without the redundancy. */}
         <div className="mb-6 flex flex-nowrap gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
             type="button"
-            className={`btn btn-sm shrink-0 ${!categoryFilter ? "btn-primary" : "btn-ghost border border-base-300"}`}
+            className={`btn btn-md shrink-0 gap-1.5 ${!categoryFilter ? "btn-primary" : "btn-ghost border border-base-300"}`}
             onClick={() => setCategory("")}
           >
             {t("catalog.all")}
@@ -74,18 +67,22 @@ function HomePage() {
 
           {categoryChipsLoading
             ? [1, 2, 3, 4].map((i) => (
-                <div key={i} className="skeleton h-8 w-20 shrink-0 rounded-lg" aria-hidden />
+                <div key={i} className="skeleton h-10 w-24 shrink-0 rounded-lg" aria-hidden />
               ))
-            : categories.map((c) => (
-                <button
-                  key={c.name}
-                  type="button"
-                  className={`btn btn-sm shrink-0 ${categoryFilter === c.name ? "btn-primary" : "btn-ghost border border-base-300"}`}
-                  onClick={() => setCategory(c.name)}
-                >
-                  {localizedText(c, "name", locale)}
-                </button>
-              ))}
+            : categories.map((c) => {
+                const Icon = CATEGORY_ICONS[c.name] ?? DEFAULT_CATEGORY_ICON;
+                return (
+                  <button
+                    key={c.name}
+                    type="button"
+                    className={`btn btn-md shrink-0 gap-1.5 ${categoryFilter === c.name ? "btn-primary" : "btn-ghost border border-base-300"}`}
+                    onClick={() => setCategory(c.name)}
+                  >
+                    <Icon className="size-4" aria-hidden />
+                    {localizedText(c, "name", locale)}
+                  </button>
+                );
+              })}
         </div>
 
         {loadingList ? (

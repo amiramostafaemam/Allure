@@ -16,11 +16,13 @@ import { statusBadgeClass } from "../utils/orderStatus";
 function StatCard({ icon: Icon, label, value }) {
   return (
     <div className="card border border-base-300 bg-base-100 p-5">
-      <div className="flex items-center gap-2 text-sm text-base-content/60">
-        <Icon className="size-4" aria-hidden />
+      <div className="flex items-center gap-2.5 text-sm font-medium text-base-content/60">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Icon className="size-4" aria-hidden />
+        </span>
         {label}
       </div>
-      <p className="mt-2 text-2xl font-bold tabular-nums text-base-content">{value}</p>
+      <p className="mt-3 text-2xl font-bold tabular-nums text-base-content">{value}</p>
     </div>
   );
 }
@@ -77,7 +79,10 @@ function AdminOverviewPage() {
           ) : (
             <ul className="divide-y divide-base-300">
               {recentOrders.map((order) => (
-                <li key={order.id} className="flex items-center justify-between py-2 text-sm">
+                <li
+                  key={order.id}
+                  className="flex items-center justify-between rounded-lg px-2 py-3 text-sm transition-colors hover:bg-base-200/50"
+                >
                   <div>
                     <p className="font-medium text-base-content">#{formatOrderNumber(order.orderNumber)}</p>
                     <p className="text-xs text-base-content/50">{formatOrderWhen(order.createdAt)}</p>

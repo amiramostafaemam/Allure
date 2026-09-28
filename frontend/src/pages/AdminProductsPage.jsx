@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "@clerk/react";
+import { Link, useNavigate } from "react-router";
 import { BoxIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useAdminProducts } from "../hooks/useAdminProducts";
 import { useAdminCategories } from "../hooks/useAdminCategories";
 import { AdminProductFormModal } from "../components/AdminProductFormModal";
+import { AdminPagination } from "../components/admin/AdminPagination";
 import { AdminProductsTableSkeleton } from "../components/LoadingSkeletons";
 import PageError from "../components/PageError";
 import { SearchInput } from "../components/SearchInput";
@@ -13,16 +15,25 @@ import { formatPrice } from "../utils/format";
 
 function AdminProductsPage() {
   const { getToken } = useAuth();
+  const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
   const {
     products,
+    total,
+    limit,
     isLoading,
     isError,
     createProduct,
     updateProduct,
     deleteProduct,
     saveVariants,
-  } = useAdminProducts({ q });
+  } = useAdminProducts({ q, page });
+
+  function handleSearch(value) {
+    setQ(value);
+    setPage(1);
+  }
 
   const { categories, createCategory } = useAdminCategories();
 
@@ -110,6 +121,9 @@ function AdminProductsPage() {
     setDeleteErrorId(null);
     try {
       await deleteProduct.mutateAsync(product.id);
+      // Deleting the only row left on a page beyond the first would
+      // otherwise strand the view on a now-empty page.
+      if (products.length === 1 && page > 1) setPage((p) => p - 1);
     } catch {
       setDeleteErrorId(product.id);
     } finally {
@@ -125,7 +139,7 @@ function AdminProductsPage() {
           Manage products
         </h1>
         <div className="flex flex-wrap gap-2">
-          <SearchInput value={q} onChange={setQ} placeholder="Search products…" className="w-64" />
+          <SearchInput value={q} onChange={handleSearch} placeholder="Search products…" className="w-64" />
           <button
             type="button"
             className="btn btn-primary gap-2 shadow-md"
@@ -147,7 +161,7 @@ function AdminProductsPage() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
-          <table className="table">
+          <table className="table admin-table">
             <thead>
               <tr>
                 <th className="w-24">Image</th>
@@ -174,7 +188,11 @@ function AdminProductsPage() {
                     ? trackedVariants.reduce((sum, v) => sum + v.stockQuantity, 0)
                     : null;
                 return (
-                <tr key={product.id}>
+                <tr
+                  key={product.id}
+                  className="cursor-pointer"
+                  onClick={() => navigate(`/admin/products/${product.id}`)}
+                >
                   <td>
                     <div className="mx-auto size-14 overflow-hidden rounded-xl bg-base-300 sm:size-18">
                       {product.imageUrl ? (
@@ -190,12 +208,13 @@ function AdminProductsPage() {
                     </div>
                   </td>
                   <td>
-                    <p className="font-medium text-base-content">
+                    <Link
+                      to={`/admin/products/${product.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="link-hover link-primary font-medium"
+                    >
                       {product.name}
-                    </p>
-                    <p className="font-mono text-xs text-base-content/50">
-                      {product.slug}
-                    </p>
+                    </Link>
                   </td>
                   <td>{product.category}</td>
                   <td className="tabular-nums">
@@ -227,7 +246,7 @@ function AdminProductsPage() {
                       product.stockQuantity
                     )}
                   </td>
-                  <td>
+                  <td onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       className="toggle toggle-primary toggle-sm"
@@ -238,7 +257,7 @@ function AdminProductsPage() {
                       }
                     />
                   </td>
-                  <td>
+                  <td onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
@@ -270,6 +289,8 @@ function AdminProductsPage() {
           </table>
         </div>
       )}
+
+      <AdminPagination page={page} limit={limit} total={total} onPageChange={setPage} />
 
       {modalOpen ? (
         <AdminProductFormModal

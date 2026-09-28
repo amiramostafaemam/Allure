@@ -175,45 +175,58 @@ function ProductPage() {
                 doubling the space. */}
             <div className="divider my-0" />
 
-            {/* Quantity + wishlist share a row — justify-between left them
-                as two small islands with a dead gap between them at most
-                widths. Splitting the row 2:1 and centering each control in
-                its own share reads as a deliberate layout instead. */}
-            <div className="flex items-stretch gap-4">
-              <div className="flex flex-2 items-center justify-center">
-                <div className="join overflow-hidden rounded-full border border-base-300">
-                  <button
-                    type="button"
-                    className="btn join-item gap-0 px-4"
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    aria-label={t("product.decreaseQuantity")}
-                  >
-                    <MinusIcon className="size-4" aria-hidden />
-                  </button>
-                  <span
-                    className="join-item flex min-w-14 items-center justify-center bg-base-200 px-3 text-base font-semibold tabular-nums text-base-content"
-                    aria-live="polite"
-                  >
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    className="btn join-item gap-0 px-4"
-                    onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
-                    disabled={outOfStock || quantity >= maxQty}
-                    aria-label={t("product.increaseQuantity")}
-                  >
-                    <PlusIcon className="size-4" aria-hidden />
-                  </button>
-                </div>
+            {/* Quantity, "Add to cart", and wishlist are the actually-
+                related actions here — one row instead of splitting them
+                across a centered stepper/wishlist row plus a separate
+                full-width button below, which read as disconnected. Wraps
+                gracefully on very narrow screens instead of squeezing. */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="join overflow-hidden rounded-full border border-base-300">
+                <button
+                  type="button"
+                  className="btn join-item gap-0 px-4"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  aria-label={t("product.decreaseQuantity")}
+                >
+                  <MinusIcon className="size-4" aria-hidden />
+                </button>
+                <span
+                  className="join-item flex min-w-14 items-center justify-center bg-base-200 px-3 text-base font-semibold tabular-nums text-base-content"
+                  aria-live="polite"
+                >
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  className="btn join-item gap-0 px-4"
+                  onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
+                  disabled={outOfStock || quantity >= maxQty}
+                  aria-label={t("product.increaseQuantity")}
+                >
+                  <PlusIcon className="size-4" aria-hidden />
+                </button>
               </div>
 
-              <div className="flex flex-1 items-center justify-center">
-                <WishlistButton
-                  productId={product.id}
-                  className="border border-base-300 shadow-sm"
-                />
-              </div>
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={added || outOfStock}
+                className={`btn min-w-40 flex-1 gap-2 shadow-md transition-colors ${
+                  added ? "btn-neutral" : "btn-primary"
+                }`}
+              >
+                {added ? (
+                  <CheckIcon className="size-5" aria-hidden />
+                ) : (
+                  <ShoppingCartIcon className="size-5" aria-hidden />
+                )}
+                {added ? t("product.addedToCart") : outOfStock ? t("catalog.outOfStock") : t("product.addToCart")}
+              </button>
+
+              <WishlistButton
+                productId={product.id}
+                className="border border-base-300 shadow-sm"
+              />
             </div>
 
             {outOfStock ? (
@@ -223,22 +236,6 @@ function ProductPage() {
                 {t("product.onlyLeftInStock", { count: stockQuantity })}
               </p>
             ) : null}
-
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={added || outOfStock}
-              className={`btn w-full gap-2 shadow-md transition-colors sm:w-auto sm:self-start sm:px-10 ${
-                added ? "btn-neutral" : "btn-primary"
-              }`}
-            >
-              {added ? (
-                <CheckIcon className="size-5" aria-hidden />
-              ) : (
-                <ShoppingCartIcon className="size-5" aria-hidden />
-              )}
-              {added ? t("product.addedToCart") : outOfStock ? t("catalog.outOfStock") : t("product.addToCart")}
-            </button>
           </div>
 
           <div className="grid grid-cols-1 gap-4 rounded-2xl border border-base-300 bg-base-100 p-5 sm:grid-cols-2">

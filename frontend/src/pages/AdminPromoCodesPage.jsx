@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PlusIcon, TagIcon, Trash2Icon } from "lucide-react";
 import { useAdminPromoCodes } from "../hooks/useAdminPromoCodes";
 import { AdminTableSkeleton } from "../components/LoadingSkeletons";
+import { AdminPagination } from "../components/admin/AdminPagination";
 import PageError from "../components/PageError";
 import { TextField } from "../components/FormField";
 import { DatePickerField } from "../components/DatePickerField";
@@ -12,8 +13,17 @@ function emptyForm() {
 }
 
 function AdminPromoCodesPage() {
-  const { promoCodes, isLoading, isError, createPromoCode, updatePromoCode, deletePromoCode } =
-    useAdminPromoCodes();
+  const [page, setPage] = useState(1);
+  const {
+    promoCodes,
+    total,
+    limit,
+    isLoading,
+    isError,
+    createPromoCode,
+    updatePromoCode,
+    deletePromoCode,
+  } = useAdminPromoCodes({ page });
 
   const [form, setForm] = useState(emptyForm);
   const [createError, setCreateError] = useState("");
@@ -51,6 +61,7 @@ function AdminPromoCodesPage() {
     setRowError(null);
     try {
       await deletePromoCode.mutateAsync(promo.id);
+      if (promoCodes.length === 1 && page > 1) setPage((p) => p - 1);
     } catch (err) {
       setRowError({ id: promo.id, message: err.message || "Couldn't delete." });
     }
@@ -110,7 +121,7 @@ function AdminPromoCodesPage() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
-          <table className="table">
+          <table className="table admin-table">
             <thead>
               <tr>
                 <th>Code</th>
@@ -159,6 +170,8 @@ function AdminPromoCodesPage() {
           </table>
         </div>
       )}
+
+      <AdminPagination page={page} limit={limit} total={total} onPageChange={setPage} />
     </div>
   );
 }

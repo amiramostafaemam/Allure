@@ -3,13 +3,15 @@ import { UsersIcon } from "lucide-react";
 import { useAdminCustomers } from "../hooks/useAdminCustomers";
 import { useMe } from "../hooks/useMe";
 import { AdminTableSkeleton } from "../components/LoadingSkeletons";
+import { AdminPagination } from "../components/admin/AdminPagination";
 import PageError from "../components/PageError";
 import { formatOrderWhen } from "../utils/format";
 
 const ROLES = ["customer", "support", "admin"];
 
 function AdminCustomersPage() {
-  const { customers, isLoading, isError, updateRole } = useAdminCustomers();
+  const [page, setPage] = useState(1);
+  const { customers, total, limit, isLoading, isError, updateRole } = useAdminCustomers({ page });
   const { me } = useMe();
   const [errorForId, setErrorForId] = useState(null);
 
@@ -33,7 +35,7 @@ function AdminCustomersPage() {
       </h1>
 
       <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
-        <table className="table">
+        <table className="table admin-table">
           <thead>
             <tr>
               <th>Name</th>
@@ -84,6 +86,8 @@ function AdminCustomersPage() {
           </tbody>
         </table>
       </div>
+
+      <AdminPagination page={page} limit={limit} total={total} onPageChange={setPage} />
     </div>
   );
 }

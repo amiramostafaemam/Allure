@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { PackageIcon } from "lucide-react";
 import { useAdminOrders } from "../hooks/useAdminOrders";
 import { AdminTableSkeleton } from "../components/LoadingSkeletons";
+import { AdminPagination } from "../components/admin/AdminPagination";
 import PageError from "../components/PageError";
 import { SearchInput } from "../components/SearchInput";
 import { OrderStaffControls } from "../components/OrderStaffControls";
@@ -15,8 +16,23 @@ const ALL_STATUSES = ["pending", "paid", "failed", "shipped", "delivered", "canc
 function AdminOrdersPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
-  const { orders, isLoading, isError, updateStatus, dismissRequest } = useAdminOrders({ status, q });
+  const [page, setPage] = useState(1);
+  const { orders, total, limit, isLoading, isError, updateStatus, dismissRequest } = useAdminOrders({
+    status,
+    q,
+    page,
+  });
   const [errorForId, setErrorForId] = useState(null);
+
+  function handleSearch(value) {
+    setQ(value);
+    setPage(1);
+  }
+
+  function handleStatusFilter(value) {
+    setStatus(value);
+    setPage(1);
+  }
 
   async function handleStatusChange(id, status) {
     setErrorForId(null);
@@ -38,13 +54,13 @@ function AdminOrdersPage() {
         <div className="flex flex-wrap gap-2">
           <SearchInput
             value={q}
-            onChange={setQ}
+            onChange={handleSearch}
             placeholder="Search order # or customer…"
             className="w-64"
           />
           <SelectField
             value={status}
-            onChange={setStatus}
+            onChange={handleStatusFilter}
             options={[
               { value: "", label: "All statuses" },
               ...ALL_STATUSES.map((s) => ({ value: s, label: s })),
@@ -63,7 +79,7 @@ function AdminOrdersPage() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
-          <table className="table">
+          <table className="table admin-table">
             <thead>
               <tr>
                 <th>Order</th>
@@ -114,6 +130,8 @@ function AdminOrdersPage() {
           </table>
         </div>
       )}
+
+      <AdminPagination page={page} limit={limit} total={total} onPageChange={setPage} />
     </div>
   );
 }

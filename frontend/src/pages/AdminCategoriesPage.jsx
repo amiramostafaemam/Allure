@@ -84,7 +84,7 @@ function AdminCategoriesPage() {
       </form>
 
       <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
-        <table className="table">
+        <table className="table admin-table">
           <thead>
             <tr>
               <th>Name</th>

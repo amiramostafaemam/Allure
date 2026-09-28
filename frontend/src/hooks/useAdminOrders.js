@@ -1,20 +1,24 @@
 import { useAuth } from "@clerk/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
+import { ADMIN_PAGE_SIZE } from "./useAdminProducts";
 
-export function useAdminOrders({ status = "", q = "" } = {}) {
+export function useAdminOrders({ status = "", q = "", page = 1 } = {}) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-orders", status, q],
+    queryKey: ["admin-orders", status, q, page],
     queryFn: () => {
       const params = new URLSearchParams();
       params.set("scope", "staff");
       if (status) params.set("status", status);
       if (q) params.set("q", q);
+      params.set("limit", String(ADMIN_PAGE_SIZE));
+      params.set("offset", String((page - 1) * ADMIN_PAGE_SIZE));
       return apiFetch(`/api/orders?${params.toString()}`, { getToken });
     },
+    placeholderData: keepPreviousData,
   });
 
   const updateStatus = useMutation({
@@ -38,6 +42,8 @@ export function useAdminOrders({ status = "", q = "" } = {}) {
 
   return {
     orders: data?.orders ?? [],
+    total: data?.total ?? 0,
+    limit: ADMIN_PAGE_SIZE,
     isLoading,
     isError,
     updateStatus,

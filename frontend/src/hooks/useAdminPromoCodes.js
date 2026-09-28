@@ -1,14 +1,21 @@
 import { useAuth } from "@clerk/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
+import { ADMIN_PAGE_SIZE } from "./useAdminProducts";
 
-export function useAdminPromoCodes() {
+export function useAdminPromoCodes({ page = 1 } = {}) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-promo-codes"],
-    queryFn: () => apiFetch("/api/admin/promo-codes", { getToken }),
+    queryKey: ["admin-promo-codes", page],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      params.set("limit", String(ADMIN_PAGE_SIZE));
+      params.set("offset", String((page - 1) * ADMIN_PAGE_SIZE));
+      return apiFetch(`/api/admin/promo-codes?${params.toString()}`, { getToken });
+    },
+    placeholderData: keepPreviousData,
   });
 
   const invalidate = () =>
@@ -34,6 +41,8 @@ export function useAdminPromoCodes() {
 
   return {
     promoCodes: data?.promoCodes ?? [],
+    total: data?.total ?? 0,
+    limit: ADMIN_PAGE_SIZE,
     isLoading,
     isError,
     createPromoCode,
